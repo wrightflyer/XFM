@@ -4,6 +4,13 @@ window = tk.Tk()
 window.title("Envelope")
 window.geometry("560x480")
 
+envelopes = [
+[ 0,0,0,0,0,0,0,0 ],
+[ 0,0,0,0,0,0,0,0 ],
+[ 0,0,0,0,0,0,0,0 ],
+[ 0,0,0,0,0,0,0,0 ]
+]
+
 def setcanvas():
     global activecanvas
     val = active.get()
@@ -18,7 +25,6 @@ def setcanvas():
     print(id(activecanvas))
 
 def update(val):
-    print("draw to:", id(activecanvas))
     activecanvas.delete("all")
     ax = atVar.get()
     ay = 256 - (2 * alVar.get())
@@ -85,8 +91,5 @@ r1.place(x=10, y=0)
 r2.place(x=280, y=0)
 r3.place(x=10, y=155)
 r4.place(x=280, y=155)
-
-print(type(plot2))
-print(type(activecanvas))
 
 window.mainloop()
