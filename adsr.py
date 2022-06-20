@@ -1,8 +1,9 @@
 import tkinter as tk
+from tkinter import *
 
 window = tk.Tk()
 window.title("Envelope")
-window.geometry("560x480")
+window.geometry("680x480")
 
 envelopes = [
 [ 0,0,0,0,0,0,0,0 ],
@@ -27,24 +28,24 @@ def setcanvas():
 def update(val):
     activecanvas.delete("all")
     ax = atVar.get()
-    ay = 256 - (2 * alVar.get())
+    ay = 128 - alVar.get()
 
     dx = dtVar.get() + ax
-    dy = 256 - (2 * dlVar.get())
+    dy = 128 - dlVar.get()
 
     sx = stVar.get() + dx
-    sy = 256 - (2 * slVar.get())
+    sy = 128 - slVar.get()
 
     rx = rtVar.get() + sx
-    ry = 256 - (2 * rlVar.get())
+    ry = 128 - rlVar.get()
 
-    padding = 512 - (atVar.get() + dtVar.get() + stVar.get() + rtVar.get())
+    padding = 256 - (atVar.get() + dtVar.get() + stVar.get() + rtVar.get())
 
-    activecanvas.create_line(0, 256, ax, ay, width=3)
+    activecanvas.create_line(0, 128, ax, ay, width=3)
     activecanvas.create_line(ax, ay, dx, dy, width=3)
     activecanvas.create_line(dx, dy, sx, sy, width=3)
     activecanvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1))
-    activecanvas.create_line(sx + padding, sy, 512, ry, width=3)
+    activecanvas.create_line(sx + padding, sy, 256, ry, width=3)
 
 def sliders(label, xpos, varLevel, varTime):
     ypos=310
@@ -91,5 +92,14 @@ r1.place(x=10, y=0)
 r2.place(x=280, y=0)
 r3.place(x=10, y=155)
 r4.place(x=280, y=155)
+
+def feedcall():
+    #print(fooVar.get())
+    pass
+
+feedVar = tk.StringVar(value = 64)
+feed = tk.Spinbox(from_=0, to=127, textvariable=feedVar, wrap=True, width=5, command=feedcall)
+feed.place(x=620, y=30)
+tk.Label(text="Feedback:").place(x=550, y=30)
 
 window.mainloop()
