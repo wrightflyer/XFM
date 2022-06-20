@@ -31,6 +31,7 @@ def rxmsg(msg):
         txt += chr(bytes[0x30])
         txt += chr(bytes[0x32])
         patch['name'] = txt
+
         patch["OP1"]['feedback'] = bytes[0x45]
         patch["OP1"]['OP2 input'] = bytes[0xAF]
         patch["OP1"]['OP3 input'] = bytes[0xB0]
@@ -60,6 +61,37 @@ def rxmsg(msg):
         patch["OP1"]['R gain '] = bytes[0x9D]
         patch["OP1"]['L curve'] = "Line" if bytes[0x9E] & 0x01 else "Exp"
         patch["OP1"]['R curve'] = "Line" if bytes[0x9E] & 0x10 else "Exp"
+
+        patch["OP2"]['feedback'] = bytes[0x46]
+        patch["OP2"]['OP1 input'] = bytes[0xB3]
+        patch["OP2"]['OP3 input'] = bytes[0xB5]
+        patch["OP2"]['OP4 input'] = bytes[0xB6]
+        patch["OP2"]['Output to Mixer'] = bytes[0xC2]
+        peq = True if bytes[0xCF] == 1 else False
+        patch["OP2"]['Pitch EQ'] = peq
+        fixed = True if bytes[0x4E] == 1 else False
+        patch["OP2"]['Fixed='] = fixed
+        ratio = ((bytes[0x61] * 256) + bytes[0x60] )
+        patch["OP2"]['Ratio/Fixed'] = ratio
+        patch["OP2"]['Detune'] = bytes[0x64]
+        patch["OP2"]['Level'] = bytes[0x63]
+        patch["OP2"]['Velocity Sensitivity'] = bytes[0xC6]
+        patch["OP2"]['Timescale'] = bytes[0xCB]
+        patch["OP2"]['Up Curve'] = bytes[0xD5]
+        patch["OP2"]['Down Curve'] = bytes[0xD6]
+        patch["OP2"]['ScalePos (C4=3)'] = bytes[0xA4]
+        patch["OP2"]['A level '] = bytes[0x7C]
+        patch["OP2"]['A time '] = bytes[0x77]
+        patch["OP2"]['D level '] = bytes[0x7D]
+        patch["OP2"]['D time '] = bytes[0x78]
+        patch["OP2"]['S level '] = bytes[0x7E]
+        patch["OP2"]['S time '] = bytes[0x7A]
+        patch["OP2"]['R level '] = bytes[0x7F]
+        patch["OP2"]['R time '] = bytes[0x7B]
+        patch["OP2"]['L gain '] = bytes[0xA0]
+        patch["OP2"]['R gain '] = bytes[0xA2]
+        patch["OP2"]['L curve'] = "Line" if bytes[0xA3] & 0x01 else "Exp"
+        patch["OP2"]['R curve'] = "Line" if bytes[0xA3] & 0x10 else "Exp"
         print(json.dumps(patch, indent=4))
 
 if (len(inports) > 1):
