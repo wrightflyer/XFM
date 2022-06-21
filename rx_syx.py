@@ -25,7 +25,7 @@ def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
     if msg.type == 'sysex' and msg.bytes()[8] == 2:
-        patch = { "name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}}
+        patch = { "name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
         bytes = msg.bytes()
 
         print_dump(bytes)
@@ -161,6 +161,9 @@ def rxmsg(msg):
         patch["Pitch"]['S time'] = bytes[0x95]
         patch["Pitch"]['R level'] = bytes[0x9B]
         patch["Pitch"]['R time'] = bytes[0x96]
+
+        patch["Mixer"]['Level'] = bytes[0xDC]
+
         print(json.dumps(patch, indent=4))
 
 if (len(inports) > 1):
