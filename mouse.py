@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import *
 from PIL import Image, ImageTk
 
-index = 13
+index = 0
 prevy = 0
 
 def motion(event):
@@ -11,7 +11,7 @@ def motion(event):
     newFrame = False
     print(f"x={event.x}, y={event.y}")
     if event.y > prevy:
-        if index < 126:
+        if index < (numFrames - 1):
             index = index + 1
             newFrame = True
     if event.y < prevy:
@@ -27,22 +27,16 @@ window = Tk()
 window.geometry("640x480")
 window.bind('<B1-Motion>', motion)
 
-imgObj = Image.open("KNB_metal_green_L.gif")
-numFrames = imgObj.n_frames
-#rgba = imgObj.convert("RGBA")
-#data = rgba.getdata()
-#newdata = []
-#for pix in data:
-#    if pix[0] == 49 and pix[1] == 49 and pix[2] == 50:
-#        newdata.append((255, 255, 255, 0))
-#    else:
-#        newdata.append(pix)
-#rgba.putdata(newdata)
+img = Image.open("KNB_vert.png")
+width = img.size[0]
+height = img.size[1]
+#vertically stitched PNG
+numFrames = int(height / width)
 
 frames = []
 for n in range(numFrames):
-    imgObj.seek(n)
-    frame = ImageTk.PhotoImage(imgObj)
+    tup = (0, width * n, width, width * (n + 1))
+    frame = ImageTk.PhotoImage(img.crop(tup))
     frames.append(frame)
 
 canvas = Canvas(window, width = 100, height = 100, bg='#313132')
