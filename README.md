@@ -9,3 +9,6 @@ Also experiment to read Sysex from XFM
 
 ![](sysex_dump.png)
 
+I love playing with knobs:
+
+![](knobman.png)
