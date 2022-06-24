@@ -162,23 +162,23 @@ def encode_bytes(patch, bytes):
     bytes[0x30] = ord(patch['name'][2])
     bytes[0x32] = ord(patch['name'][3])
 
-    bytes[0x45] = patch["OP1"]['feedback']
-    bytes[0xAF] = patch["OP1"]['OP2 input']
+    bytes[0x45] = patch["OP1"]['feedback']                  # -63.0 .. +64.0 (+1.0)
+    bytes[0xAF] = patch["OP1"]['OP2 input']                 # 0 .. 127 (+1)
     bytes[0xB0] = patch["OP1"]['OP3 input']
     bytes[0xB2] = patch["OP1"]['OP4 input']
-    bytes[0xC0] = patch["OP1"]['Output to Mixer']
-    bytes[0xCE] = patch["OP1"]['Pitch EQ']
-    bytes[0x4A] = patch["OP1"]['Fixed']
-    bytes[0x5C] = (patch["OP1"]['Ratio/Fixed']) & 0xFF
+    bytes[0xC0] = patch["OP1"]['Output to Mixer']           # 0..127 (+1)
+    bytes[0xCE] = patch["OP1"]['Pitch EQ']                  # OFF / ON
+    bytes[0x4A] = patch["OP1"]['Fixed']                     # OFF / ON
+    bytes[0x5C] = (patch["OP1"]['Ratio/Fixed']) & 0xFF      # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
     bytes[0x5D] = int((patch["OP1"]['Ratio/Fixed']) / 256)
-    bytes[0x5F] = patch["OP1"]['Detune']
-    bytes[0x5E] = patch["OP1"]['Level']
-    bytes[0xC5] = patch["OP1"]['Velocity Sensitivity']
-    bytes[0xCA] = patch["OP1"]['Timescale']
-    bytes[0xD3] = patch["OP1"]['Up Curve']
-    bytes[0xD4] = patch["OP1"]['Down Curve']
-    bytes[0x9F] = patch["OP1"]['ScalePos']
-    bytes[0x73] = patch["OP1"]['A level']
+    bytes[0x5F] = patch["OP1"]['Detune']                    # -63 .. 63 (+1)
+    bytes[0x5E] = patch["OP1"]['Level']                     # 0 .. 127 (+1)
+    bytes[0xC5] = patch["OP1"]['Velocity Sensitivity']      # 0 .. 127 (+1)
+    bytes[0xCA] = patch["OP1"]['Timescale']                 # 0 .. 127 (+1)
+    bytes[0xD3] = patch["OP1"]['Up Curve']                  # -18 .. +18 (+1)
+    bytes[0xD4] = patch["OP1"]['Down Curve']                # -18 .. +18 (+1)
+    bytes[0x9F] = patch["OP1"]['ScalePos']                  # C1 .. C7
+    bytes[0x73] = patch["OP1"]['A level']                   # 0 .. 127 (+1)
     bytes[0x6E] = patch["OP1"]['A time']
     bytes[0x74] = patch["OP1"]['D level']
     bytes[0x6F] = patch["OP1"]['D time']
@@ -186,9 +186,9 @@ def encode_bytes(patch, bytes):
     bytes[0x70] = patch["OP1"]['S time']
     bytes[0x76] = patch["OP1"]['R level']
     bytes[0x72] = patch["OP1"]['R time']
-    bytes[0x9C] = patch["OP1"]['L gain']
+    bytes[0x9C] = patch["OP1"]['L gain']                    # -63 .. +63 (+1)
     bytes[0x9D] = patch["OP1"]['R gain']
-    curves = (patch["OP1"]['L curve']) | (patch["OP1"]['R curve'])
+    curves = (patch["OP1"]['L curve']) | (patch["OP1"]['R curve'])  # LINE / EXP
     bytes[0x9E] = curves
 
     bytes[0x46] = patch["OP2"]['feedback']
@@ -278,8 +278,8 @@ def encode_bytes(patch, bytes):
     curves = (patch["OP4"]['L curve']) | (patch["OP4"]['R curve'])
     bytes[0xAC] = curves
 
-    bytes[0x97] = patch["Pitch"]['A level']
-    bytes[0x93] = patch["Pitch"]['A time']
+    bytes[0x97] = patch["Pitch"]['A level']         # -48 .. +48 (+1)
+    bytes[0x93] = patch["Pitch"]['A time']          # 0 .. 127 (+1)
     bytes[0x98] = patch["Pitch"]['D level']
     bytes[0x94] = patch["Pitch"]['D time']
     bytes[0x9A] = patch["Pitch"]['S level']
@@ -287,7 +287,7 @@ def encode_bytes(patch, bytes):
     bytes[0x9B] = patch["Pitch"]['R level']
     bytes[0x96] = patch["Pitch"]['R time']
 
-    bytes[0xDC] = patch["Mixer"]['Level']
+    bytes[0xDC] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
 
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
