@@ -27,7 +27,7 @@ window = Tk()
 window.geometry("640x480")
 window.bind('<B1-Motion>', motion)
 
-img = Image.open("KNB_vert.png")
+img = Image.open("possible2.png")
 width = img.size[0]
 height = img.size[1]
 #vertically stitched PNG
@@ -39,7 +39,7 @@ for n in range(numFrames):
     frame = ImageTk.PhotoImage(img.crop(tup))
     frames.append(frame)
 
-canvas = Canvas(window, width = 100, height = 100, bg='#313132')
+canvas = Canvas(window, width = 140, height = 140, bg='#313132')
 canvas.place(x=40, y=40)
 
 canvas.create_image(10, 10, anchor=tk.NW, image = frames[index], tag="pic")
