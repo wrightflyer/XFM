@@ -86,6 +86,8 @@ anim1 = Anim("possible2-18_18.png", 37, "Feedback", 10, 10)
 anim2 = Anim("on_off3.png", 2, "Pitch EQ", 140, 10)
 anim3 = Anim("possible2-63.0_64.0.png", 128, "Level", 10, 10 + anim1.getSize()[2] + 15)
 anim4 = Anim("possible2_C1_C7.png", 7, "Scale Pos", 10, 10 + ((anim1.getSize()[2] + 15) * 2))
+anim5 = Anim("slide_back_h.png", 128, "A Time", 10, 350)
+anim6 = Anim("slide_back_v.png", 128, "D Level", 140, 100)
 
 anim1.setIndex(35)
 
@@ -93,5 +95,7 @@ anim1.draw()
 anim2.draw()
 anim3.draw()
 anim4.draw()
+anim5.draw()
+anim6.draw()
 
 window.mainloop()
