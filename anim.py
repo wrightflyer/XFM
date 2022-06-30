@@ -3,7 +3,8 @@ from tkinter import *
 from PIL import Image, ImageTk
 
 class Anim:
-    def __init__(self, fname, numFrames, title, xpos, ypos):
+    def __init__(self, keyname, title, fname, numFrames, xpos, ypos):
+        self.keyname = keyname
         self.fname = fname
         self.frames = []
         self.index = 0
@@ -22,8 +23,10 @@ class Anim:
         self.canvas.place(x=self.xpos, y=self.ypos)
         self.canvas.bind('<B1-Motion>', self.motion)
         self.canvas.bind('<Button>', self.button_click)
-        self.canvas.create_text(self.width / 2, 4, text=title, fill='#ffffff')
+        if len(title) > 0:
+            self.canvas.create_text(self.width / 2, 4, text=title, fill='#ffffff')
         self.prevy = 0
+        self.prevx = 0
 
     def getFrame(self):
         return self.frames[self.index]
@@ -35,8 +38,8 @@ class Anim:
     def getIndex(self):
         return self.index
 
-    def getSize(self):
-        return (self.width, self.height, self.frameHeight)
+    def getInfo(self):
+        return (self.keyname, self.fname, self.index, self.xpos, self.ypos, self.width, self.frameHeight, self.height, self.numFrames)
 
     def inc(self):
         if (self.index < (self.numFrames - 1)):
@@ -53,11 +56,11 @@ class Anim:
     def motion(self, event):
         newFrame = False
 
-        if event.y < self.prevy:
+        if event.y < self.prevy or event.x > self.prevx:
             self.inc()
             newFrame = True
 
-        if event.y > self.prevy:
+        if event.y > self.prevy or event.x < self.prevx:
             self.dec()
             newFrame = True
 
@@ -65,6 +68,7 @@ class Anim:
             self.draw()
 
         self.prevy = event.y
+        self.prevx = event.x
 
     def button_click(self, event):
         if event.num == 1:
@@ -82,29 +86,28 @@ window.geometry("640x480")
 window.configure(bg='#313132')
 #window.wm_attributes('-transparentcolor', '#123456')
 
-anim1 = Anim("possible2-18_18.png", 37, "Feedback", 10, 10)
-anim2 = Anim("on_off3.png", 2, "Pitch EQ", 140, 10)
-anim3 = Anim("possible2-63.0_64.0.png", 128, "Level", 10, 10 + anim1.getSize()[2] + 15)
-anim4 = Anim("possible2_C1_C7.png", 7, "Scale Pos", 10, 10 + ((anim1.getSize()[2] + 15) * 2))
-anim5 = Anim("slide_back_h.png", 128, "A Time", 10, 350)
-anim6 = Anim("slide_back_v.png", 128, "D Level", 140, 100)
-anim7 = Anim("lcd_chars.png", 36, "", 240, 10)
-#print(anim7.getSize())
-anim8 = Anim("lcd_chars.png", 36, "", 240 + anim7.getSize()[0] - 11, 10)
-anim9 = Anim("lcd_chars.png", 36, "", 240 + ((anim7.getSize()[0] - 11) * 2), 10)
-anim10 = Anim("lcd_chars.png", 36, "", 240 + ((anim7.getSize()[0] - 11) * 3), 10)
+anims = {
+    "OP1:Feedback" : [ "Feedback",  "possible2-18_18.png",      37,     10, 10 ],
+    "OP2:Peq" :      [ "Pitch EQ",  "on_off3.png",              2,      140, 10 ],
+    "OP3:Peq" :      [ "Pitch EQ",  "on_off3.png",              2,      140, 60 ],
+    "OP4:Level" :    [ "Level",     "possible2-63.0_64.0.png",  128,    10, 100 ],
+    "OP2:ScalePos" : [ "Scale Pos", "possible2_C1_C7.png",      7,      10, 200 ],
+    "OP1:Atime" :    [ "A Time",    "slide_back_h.png",         128,    10, 350 ],
+    "OP2:DLevel" :   [ "D Level",   "slide_back_v.png",         128,    140, 140 ],
+    "Name:chr0" :    [ "",          "lcd_chars.png",            36,     240, 10 ],
+    "Name:chr1" :    [ "",          "lcd_chars.png",            36,     240 + 64 - 11, 10 ],
+    "Name:chr2" :    [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 2), 10 ],
+    "Name:chr3":     [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 3), 10 ]
+}
 
-anim1.setIndex(35)
-
-anim1.draw()
-anim2.draw()
-anim3.draw()
-anim4.draw()
-anim5.draw()
-anim6.draw()
-anim7.draw()
-anim8.draw()
-anim9.draw()
-anim10.draw()
+animlist = []
+for key in anims:
+    #print(key, anims[key])
+    thisanim = Anim(key, anims[key][0], anims[key][1], anims[key][2], anims[key][3], anims[key][4])
+    animlist.append(thisanim)
+    thisanim.draw()
+    
+for a in animlist:
+    print(a.getInfo())
 
 window.mainloop()
