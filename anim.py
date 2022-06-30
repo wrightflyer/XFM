@@ -82,22 +82,37 @@ class Anim:
         self.draw()
 
 window = Tk()
-window.geometry("640x480")
-window.configure(bg='#313132')
+window.geometry("1290x1100")
+window.configure(bg='#31FF32')
+rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
+rawback = rawback.resize((680, 440), Image.Resampling.LANCZOS)
+backimg = ImageTk.PhotoImage(rawback)
+Label(image=backimg).place(x=2, y=4)
+Label(image=backimg).place(x=690, y=4)
+Label(image=backimg).place(x=2, y=442)
+Label(image=backimg).place(x=632, y=442)
 #window.wm_attributes('-transparentcolor', '#123456')
 
 anims = {
-    "OP1:Feedback" : [ "Feedback",  "possible2-18_18.png",      37,     10, 10 ],
-    "OP2:Peq" :      [ "Pitch EQ",  "on_off3.png",              2,      140, 10 ],
-    "OP3:Peq" :      [ "Pitch EQ",  "on_off3.png",              2,      140, 60 ],
-    "OP4:Level" :    [ "Level",     "possible2-63.0_64.0.png",  128,    10, 100 ],
-    "OP2:ScalePos" : [ "Scale Pos", "possible2_C1_C7.png",      7,      10, 200 ],
-    "OP1:Atime" :    [ "A Time",    "slide_back_h.png",         128,    10, 350 ],
-    "OP2:DLevel" :   [ "D Level",   "slide_back_v.png",         128,    140, 140 ],
-    "Name:chr0" :    [ "",          "lcd_chars.png",            36,     240, 10 ],
-    "Name:chr1" :    [ "",          "lcd_chars.png",            36,     240 + 64 - 11, 10 ],
-    "Name:chr2" :    [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 2), 10 ],
-    "Name:chr3":     [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 3), 10 ]
+    "OP1:Output" :   [ "Output",    "possible2_0_127.png",      128,    140, 10 ],
+    "OP1:Feedback" : [ "Feedback",  "possible2-63.0_64.0.png",  128,    40, 100 ],
+    "OP1:Lgain" :    [ "L Gain",    "on_off3.png",              2,      240, 10 ],
+    "OP1:Rgain" :    [ "R Gain",    "on_off3.png",              2,      310, 10 ],
+    "OP1:Peq" :      [ "Pitch EQ",  "on_off3.png",              2,      380, 10 ],
+    "OP1:Fixed" :    [ "Fixed",     "on_off3.png",              2,      450, 10 ],
+    "OP1:OP2In" :    [ "OP2 Input", "possible2_0_127.png",      128,    140, 100 ],
+    "OP1:OP3In" :    [ "OP3 Input", "possible2_0_127.png",      128,    40, 190 ],
+    "OP1:OP4In" :    [ "OP4 Input", "possible2_0_127.png",      128,    140, 190 ],
+    "OP1:Level" :    [ "Level",     "possible2-18_18.png",      37,      40, 280 ],
+    "OP1:Atime" :    [ "A Time",    "slide_back_h.png",         128,    10, 380 ],
+    "OP1:Dtime" :    [ "D Time",    "slide_back_h.png",         128,    180, 380 ],
+    "OP1:Stime" :    [ "S Time",    "slide_back_h.png",         128,    350, 380 ],
+    "OP1:Rtime" :    [ "R Time",    "slide_back_h.png",         128,    520, 380 ],
+    "OP2:DLevel" :   [ "D Level",   "slide_back_v.png",         128,    240, 140 ],
+#    "Name:chr0" :    [ "",          "lcd_chars.png",            36,     240, 10 ],
+#    "Name:chr1" :    [ "",          "lcd_chars.png",            36,     240 + 64 - 11, 10 ],
+#    "Name:chr2" :    [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 2), 10 ],
+#    "Name:chr3":     [ "",          "lcd_chars.png",            36,     240 + ((64 - 11) * 3), 10 ]
 }
 
 animlist = []
