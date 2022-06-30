@@ -88,6 +88,11 @@ anim3 = Anim("possible2-63.0_64.0.png", 128, "Level", 10, 10 + anim1.getSize()[2
 anim4 = Anim("possible2_C1_C7.png", 7, "Scale Pos", 10, 10 + ((anim1.getSize()[2] + 15) * 2))
 anim5 = Anim("slide_back_h.png", 128, "A Time", 10, 350)
 anim6 = Anim("slide_back_v.png", 128, "D Level", 140, 100)
+anim7 = Anim("lcd_chars.png", 36, "", 240, 10)
+#print(anim7.getSize())
+anim8 = Anim("lcd_chars.png", 36, "", 240 + anim7.getSize()[0] - 11, 10)
+anim9 = Anim("lcd_chars.png", 36, "", 240 + ((anim7.getSize()[0] - 11) * 2), 10)
+anim10 = Anim("lcd_chars.png", 36, "", 240 + ((anim7.getSize()[0] - 11) * 3), 10)
 
 anim1.setIndex(35)
 
@@ -97,5 +102,9 @@ anim3.draw()
 anim4.draw()
 anim5.draw()
 anim6.draw()
+anim7.draw()
+anim8.draw()
+anim9.draw()
+anim10.draw()
 
 window.mainloop()
