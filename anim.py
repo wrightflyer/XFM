@@ -28,7 +28,9 @@ class Anim:
         return ctrlimgs[self.ctrl]["frames"][self.index]
 
     def setIndex(self, n):
-        if n >= 0 and n < (self.numFrames - 1):
+        #print(self.keyname, "set value=", n, "limit=", self.numFrames)
+        if n >= 0 and n < self.numFrames:
+            #print("so settint it now")
             self.index = n
 
     def getIndex(self):
@@ -49,6 +51,7 @@ class Anim:
             self.index = self.index - 1
 
     def draw(self):
+        #print("draw", self.keyname, "index=", self.index)
         self.canvas.delete(self.keyname)
         self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
 
@@ -69,9 +72,33 @@ class Anim:
             if ctrlType == "slideV" or ctrlType == "slideH":
                 op = self.keyname.split(':')[0] + ":"
                 key = op + "Atime"
-                for n in controllist:
-                    if n.getKey() == key:
-                        print(n.getInfo())
+                at = controllist[key][0].getIndex()
+                key = op + "Dtime"
+                dt = controllist[key][0].getIndex()
+                key = op + "Stime"
+                st = controllist[key][0].getIndex()
+                key = op + "Rtime"
+                rt = controllist[key][0].getIndex()
+
+                key = op + "ALevel"
+                al = controllist[key][0].getIndex()
+                key = op + "DLevel"
+                dl = controllist[key][0].getIndex()
+                key = op + "SLevel"
+                sl = controllist[key][0].getIndex()
+                key = op + "RLevel"
+                rl = controllist[key][0].getIndex()
+                #print(op, at, al, dt, dl, st, sl, rt, rl)
+                if op == "OP1:":
+                    updateADSR(adsr1, at, al, dt, dl, st, sl, rt, rl)
+                if op == "OP2:":
+                    updateADSR(adsr2, at, al, dt, dl, st, sl, rt, rl)
+                if op == "OP3:":
+                    updateADSR(adsr3, at, al, dt, dl, st, sl, rt, rl)
+                if op == "OP4:":
+                    updateADSR(adsr4, at, al, dt, dl, st, sl, rt, rl)
+                if op == "Pitch:":
+                    updateADSR(adsrP, at, al, dt, dl, st, sl, rt, rl)
 
         self.prevy = event.y
         self.prevx = event.x
@@ -88,6 +115,7 @@ class Anim:
         self.draw()
 
 def updateADSR(activecanvas, at, al, dt, dl, st, sl, rt, rl):
+    #print(activecanvas, at, al, dt, dl, st, sl, rt, rl)
     activecanvas.delete("all")
     ax = at
     ay = 128 - al
@@ -103,11 +131,11 @@ def updateADSR(activecanvas, at, al, dt, dl, st, sl, rt, rl):
 
     padding = 256 - (at + dt + st + rt)
 
-    activecanvas.create_line(0, 128, ax, ay, width=3)
-    activecanvas.create_line(ax, ay, dx, dy, width=3)
-    activecanvas.create_line(dx, dy, sx, sy, width=3)
-    activecanvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1))
-    activecanvas.create_line(sx + padding, sy, 256, ry, width=3)
+    activecanvas.create_line(0, 128, ax, ay, width=3, fill='#000CFF')
+    activecanvas.create_line(ax, ay, dx, dy, width=3, fill='#000CFF')
+    activecanvas.create_line(dx, dy, sx, sy, width=3, fill='#000CFF')
+    activecanvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1), fill='#000CFF')
+    activecanvas.create_line(sx + padding, sy, 256, ry, width=3, fill='#000CFF')
 
 window = Tk()
 window.geometry("1710x890")
@@ -171,14 +199,14 @@ for anim in anims:
 controls = {
     "OP1:Output" :   [ "Output",    "0to127",    100, 10 ],
     "OP1:Feedback" : [ "Feedback",  "_63to64",   10, 100 ],
-    "OP1:Lgain" :    [ "L Gain",    "on_off",    200, 10 ],
-    "OP1:Rgain" :    [ "R Gain",    "on_off",    270, 10 ],
+    "OP1:Lgain" :    [ "L Curve",    "on_off",   200, 10 ],
+    "OP1:Rgain" :    [ "R Curve",    "on_off",   270, 10 ],
     "OP1:Peq" :      [ "Pitch EQ",  "on_off",    340, 10 ],
     "OP1:Fixed" :    [ "Fixed",     "on_off",    410, 10 ],
     "OP1:OP2In" :    [ "OP2 Input", "0to127",    100, 100 ],
     "OP1:OP3In" :    [ "OP3 Input", "0to127",    10, 190 ],
     "OP1:OP4In" :    [ "OP4 Input", "0to127",    100, 190 ],
-    "OP1:Level" :    [ "Level",     "_18to18",   10, 280 ],
+    "OP1:Level" :    [ "Level",     "0to127",    10, 280 ],
     "OP1:VelSens" :  [ "Velo Sens", "0to127",    100, 280 ],
     "OP1:Atime" :    [ "A Time",    "slideH",    10, 380 ],
     "OP1:Dtime" :    [ "D Time",    "slideH",    180, 380 ],
@@ -188,7 +216,7 @@ controls = {
     "OP1:DLevel" :   [ "D Level",   "slideV",    270, 60 ],
     "OP1:SLevel" :   [ "S Level",   "slideV",    340, 60 ],
     "OP1:RLevel" :   [ "R Level",   "slideV",    410, 60 ],
-    "OP1:Ratio" :    [ "Output",    "0to127",    500, 10 ],
+    "OP1:Ratio" :    [ "Ratio",     "0to127",    500, 10 ],#not 0to127 !
     "OP1:Detune" :   [ "Detune",    "_63to63",   590, 10 ],
     "OP1:Time" :     [ "TimeScale", "0to127",    500, 100 ],
     "OP1:UpCurv" :   [ "Up Curve",  "_18to18",   590, 100 ],
@@ -199,14 +227,14 @@ controls = {
 
     "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 10 ],
     "OP2:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, 100 ],
-    "OP2:Lgain" :    [ "L Gain",    "on_off",    XOFF + 200, 10 ],
-    "OP2:Rgain" :    [ "R Gain",    "on_off",    XOFF + 270, 10 ],
+    "OP2:Lgain" :    [ "L Curve",    "on_off",   XOFF + 200, 10 ],
+    "OP2:Rgain" :    [ "R Curve",    "on_off",   XOFF + 270, 10 ],
     "OP2:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 340, 10 ],
     "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 410, 10 ],
     "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, 100 ],
     "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, 190 ],
     "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 100, 190 ],
-    "OP2:Level" :    [ "Level",     "_18to18",   XOFF + 10, 280 ],
+    "OP2:Level" :    [ "Level",     "0to127",    XOFF + 10, 280 ],
     "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, 280 ],
     "OP2:Atime" :    [ "A Time",    "slideH",    XOFF + 10, 380 ],
     "OP2:Dtime" :    [ "D Time",    "slideH",    XOFF + 180, 380 ],
@@ -216,7 +244,7 @@ controls = {
     "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 270, 60 ],
     "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 340, 60 ],
     "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 410, 60 ],
-    "OP2:Ratio" :    [ "Output",    "0to127",    XOFF + 500, 10 ],
+    "OP2:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, 10 ],
     "OP2:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, 10 ],
     "OP2:Time" :     [ "TimeScale", "0to127",    XOFF + 500, 100 ],
     "OP2:UpCurv" :   [ "Up Curve",  "_18to18",   XOFF + 590, 100 ],
@@ -227,14 +255,14 @@ controls = {
 
     "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 10 ],
     "OP3:Feedback" : [ "Feedback",  "_63to64",   10, YOFF + 100 ],
-    "OP3:Lgain" :    [ "L Gain",    "on_off",    200, YOFF + 10 ],
-    "OP3:Rgain" :    [ "R Gain",    "on_off",    270, YOFF + 10 ],
+    "OP3:Lgain" :    [ "L Curve",    "on_off",   200, YOFF + 10 ],
+    "OP3:Rgain" :    [ "R Curve",    "on_off",   270, YOFF + 10 ],
     "OP3:Peq" :      [ "Pitch EQ",  "on_off",    340, YOFF + 10 ],
     "OP3:Fixed" :    [ "Fixed",     "on_off",    410, YOFF + 10 ],
     "OP3:OP1In" :    [ "OP1 Input", "0to127",    100, YOFF + 100 ],
     "OP3:OP2In" :    [ "OP2 Input", "0to127",    10, YOFF + 190 ],
     "OP3:OP4In" :    [ "OP4 Input", "0to127",    100, YOFF + 190 ],
-    "OP3:Level" :    [ "Level",     "_18to18",   10, YOFF + 280 ],
+    "OP3:Level" :    [ "Level",     "0to127",    10, YOFF + 280 ],
     "OP3:VelSens" :  [ "Velo Sens", "0to127",    100, YOFF + 280 ],
     "OP3:Atime" :    [ "A Time",    "slideH",    10, YOFF + 380 ],
     "OP3:Dtime" :    [ "D Time",    "slideH",    180, YOFF + 380 ],
@@ -244,7 +272,7 @@ controls = {
     "OP3:DLevel" :   [ "D Level",   "slideV",    270, YOFF + 60 ],
     "OP3:SLevel" :   [ "S Level",   "slideV",    340, YOFF + 60 ],
     "OP3:RLevel" :   [ "R Level",   "slideV",    410, YOFF + 60 ],
-    "OP3:Ratio" :    [ "Output",    "0to127",    500, YOFF + 10 ],
+    "OP3:Ratio" :    [ "Ratio",     "0to127",    500, YOFF + 10 ],
     "OP3:Detune" :   [ "Detune",    "_63to63",   590, YOFF + 10 ],
     "OP3:Time" :     [ "TimeScale", "0to127",    500, YOFF + 100 ],
     "OP3:UpCurv" :   [ "Up Curve",  "_18to18",   590, YOFF + 100 ],
@@ -255,14 +283,14 @@ controls = {
 
     "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 10 ],
     "OP4:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, YOFF + 100 ],
-    "OP4:Lgain" :    [ "L Gain",    "on_off",    XOFF + 200, YOFF + 10 ],
-    "OP4:Rgain" :    [ "R Gain",    "on_off",    XOFF + 270, YOFF + 10 ],
+    "OP4:Lgain" :    [ "L Curve",    "on_off",   XOFF + 200, YOFF + 10 ],
+    "OP4:Rgain" :    [ "R Curve",    "on_off",   XOFF + 270, YOFF + 10 ],
     "OP4:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 340, YOFF + 10 ],
     "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 410, YOFF + 10 ],
     "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, YOFF + 100 ],
     "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 10, YOFF + 190 ],
     "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, YOFF + 190 ],
-    "OP4:Level" :    [ "Level",     "_18to18",   XOFF + 10, YOFF + 280 ],
+    "OP4:Level" :    [ "Level",     "0to127",    XOFF + 10, YOFF + 280 ],
     "OP4:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, YOFF + 280 ],
     "OP4:Atime" :    [ "A Time",    "slideH",    XOFF + 10, YOFF + 380 ],
     "OP4:Dtime" :    [ "D Time",    "slideH",    XOFF + 180, YOFF + 380 ],
@@ -272,7 +300,7 @@ controls = {
     "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 270, YOFF + 60 ],
     "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 340, YOFF + 60 ],
     "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 410, YOFF + 60 ],
-    "OP4:Ratio" :    [ "Output",    "0to127",    XOFF + 500, YOFF + 10 ],
+    "OP4:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, YOFF + 10 ],
     "OP4:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, YOFF + 10 ],
     "OP4:Time" :     [ "TimeScale", "0to127",    XOFF + 500, YOFF + 100 ],
     "OP4:UpCurv" :   [ "Up Curve",  "_18to18",   XOFF + 590, YOFF + 100 ],
@@ -297,13 +325,80 @@ controls = {
     "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 500 ],
 }
 
-controllist = []
+controllist = {}
 for key in controls:
     thisanim = Anim(key, controls[key][0], controls[key][1], controls[key][2], controls[key][3])
-    controllist.append(thisanim)
-    thisanim.draw()
+    #print(key, thisanim)
+    controllist.update({key : [thisanim]})
+    #thisanim.draw()
+
+controllist["OP1:ALevel"][0].setIndex(127)
+controllist["OP1:DLevel"][0].setIndex(127)
+controllist["OP1:SLevel"][0].setIndex(127)
+updateADSR(adsr1, 0, 127, 0, 127, 0, 127, 0, 0)
+controllist["OP2:ALevel"][0].setIndex(127)
+controllist["OP2:DLevel"][0].setIndex(127)
+controllist["OP2:SLevel"][0].setIndex(127)
+updateADSR(adsr2, 0, 127, 0, 127, 0, 127, 0, 0)
+controllist["OP3:ALevel"][0].setIndex(127)
+controllist["OP3:DLevel"][0].setIndex(127)
+controllist["OP3:SLevel"][0].setIndex(127)
+updateADSR(adsr3, 0, 127, 0, 127, 0, 127, 0, 0)
+controllist["OP4:ALevel"][0].setIndex(127)
+controllist["OP4:DLevel"][0].setIndex(127)
+controllist["OP4:SLevel"][0].setIndex(127)
+updateADSR(adsr4, 0, 127, 0, 127, 0, 127, 0, 0)
+controllist["Pitch:ALevel"][0].setIndex(127)
+controllist["Pitch:DLevel"][0].setIndex(127)
+controllist["Pitch:SLevel"][0].setIndex(127)
+updateADSR(adsrP, 0, 127, 0, 127, 0, 127, 0, 0)
+controllist["OP1:Output"][0].setIndex(127)
+controllist["OP1:Level"][0].setIndex(63)
+controllist["OP2:Level"][0].setIndex(63)
+controllist["OP3:Level"][0].setIndex(63)
+controllist["OP4:Level"][0].setIndex(63)
+controllist["OP1:Feedback"][0].setIndex(63)
+controllist["OP2:Feedback"][0].setIndex(63)
+controllist["OP3:Feedback"][0].setIndex(63)
+controllist["OP4:Feedback"][0].setIndex(63)
+controllist["OP1:Ratio"][0].setIndex(1)
+controllist["OP2:Ratio"][0].setIndex(1)
+controllist["OP3:Ratio"][0].setIndex(1)
+controllist["OP4:Ratio"][0].setIndex(1)
+controllist["Mixer:Level"][0].setIndex(63)
+controllist["OP1:Detune"][0].setIndex(63)
+controllist["OP2:Detune"][0].setIndex(63)
+controllist["OP3:Detune"][0].setIndex(63)
+controllist["OP4:Detune"][0].setIndex(63)
+controllist["OP1:UpCurv"][0].setIndex(18)
+controllist["OP2:UpCurv"][0].setIndex(18)
+controllist["OP3:UpCurv"][0].setIndex(18)
+controllist["OP4:UpCurv"][0].setIndex(18)
+controllist["OP1:DnCurv"][0].setIndex(18)
+controllist["OP2:DnCurv"][0].setIndex(18)
+controllist["OP3:DnCurv"][0].setIndex(18)
+controllist["OP4:DnCurv"][0].setIndex(18)
+controllist["OP1:Scale"][0].setIndex(3)
+controllist["OP2:Scale"][0].setIndex(3)
+controllist["OP3:Scale"][0].setIndex(3)
+controllist["OP4:Scale"][0].setIndex(3)
+controllist["Name:chr0"][0].setIndex(18)  #'I'
+controllist["Name:chr1"][0].setIndex(23)  #'N'
+controllist["Name:chr2"][0].setIndex(18)  #'I'
+controllist["Name:chr3"][0].setIndex(29)  #'T'
+controllist["OP1:LGain"][0].setIndex(63)
+controllist["OP2:LGain"][0].setIndex(63)
+controllist["OP3:LGain"][0].setIndex(63)
+controllist["OP4:LGain"][0].setIndex(63)
+controllist["OP1:RGain"][0].setIndex(63)
+controllist["OP2:RGain"][0].setIndex(63)
+controllist["OP3:RGain"][0].setIndex(63)
+controllist["OP4:RGain"][0].setIndex(63)
+
+for entry in controllist:
+    controllist[entry][0].draw()
     
-for a in controllist:
-    print(a.getInfo())
+#for a in controllist:
+#    print(controllist[a][0].getInfo())
 
 window.mainloop()
