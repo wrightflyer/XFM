@@ -137,43 +137,98 @@ def updateADSR(activecanvas, at, al, dt, dl, st, sl, rt, rl):
     activecanvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1), fill='#000CFF')
     activecanvas.create_line(sx + padding, sy, 256, ry, width=3, fill='#000CFF')
 
+#============================= THE start ================================
 window = Tk()
-window.geometry("1710x890")
+window.geometry("1720x890")
+window.title("Quick Edit for Liven XFM")
 window.configure(bg='#313131')
 window.resizable(False, False)
+
+# Textured grey used as background for all 5 sub-windows
 rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
 #rawback = rawback.resize((680, 440), Image.Resampling.LANCZOS)
-opback = rawback.resize((680, 440))
+opback = rawback.resize((685, 440))
 backimg = ImageTk.PhotoImage(opback)
-Label(image=backimg).place(x=0, y=0)
-Label(image=backimg).place(x=682, y=0)
-Label(image=backimg).place(x=2, y=442)
-Label(image=backimg).place(x=682, y=442)
+
+# Background for OP1 edit top left
+back1 = Canvas(width = 684, height = 440)
+back1.place(x=0, y=0)
+back1.create_image(0, 0, anchor=tk.NW, image = backimg)
+
+# Background for OP2 edit top mid
+back2 = Canvas(width = 684, height = 440)
+back2.place(x=688, y=0)
+back2.create_image(0, 0, anchor=tk.NW, image = backimg)
+
+# Background for OP3 edit bot left
+back3 = Canvas(width = 684, height = 440)
+back3.place(x=0, y=442)
+back3.create_image(0, 0, anchor=tk.NW, image = backimg)
+
+# Background for OP4 edit bot mid
+back4 = Canvas(width = 684, height = 440)
+back4.place(x=688, y=442)
+back4.create_image(0, 0, anchor=tk.NW, image = backimg)
+
+# Background for pitch/master edit right
 mstrback=rawback.resize((340, 882))
 mstrimg = ImageTk.PhotoImage(mstrback)
-Label(image=mstrimg).place(x=1364,y=0)
+backm = Canvas(width = 340, height = 882)
+backm.place(x=1375, y=0)
+backm.create_image(0, 0, anchor=tk.NW, image = mstrimg)
+
+# "Quick Edit for Sonicware Liven XFM logo"
 rawlogo = Image.open("logo.png")
 logo = ImageTk.PhotoImage(rawlogo)
-Label(image = logo, borderwidth=0).place(x = 1380, y = 630)
+backm.create_image(30, 630, anchor=tk.NW, image = logo)
 
+# The OP1..OP4 logos all packed into one 4 frame PNG
+rawlogo = Image.open("op_logo.png")
+logwidth = rawlogo.size[0]
+frameH = rawlogo.size[1] / 4
+
+# Place "OP1" top left
+tup = (0, 0, logwidth, frameH)
+op1logo = ImageTk.PhotoImage(rawlogo.crop(tup))
+back1.create_image(0, 8, anchor=tk.NW, image = op1logo)
+
+# Place "OP2" top mid
+tup = (0, frameH, logwidth, frameH * 2)
+op2logo = ImageTk.PhotoImage(rawlogo.crop(tup))
+back2.create_image(0, 8, anchor=tk.NW, image = op2logo)
+
+# Place "OP3" bot left
+tup = (0, frameH * 2, logwidth, frameH * 3)
+op3logo = ImageTk.PhotoImage(rawlogo.crop(tup))
+back3.create_image(0, 8, anchor=tk.NW, image = op3logo)
+
+# Place "OP4" bot mid
+tup = (0, frameH * 3, logwidth, frameH * 4)
+op4logo = ImageTk.PhotoImage(rawlogo.crop(tup))
+back4.create_image(0, 8, anchor=tk.NW, image = op4logo)
+
+
+# The five grey ADSR canvases
 adsr1 = Canvas(window, width=256, height=128, bg='#707070')
-adsr1.place(x=200, y=240)
+adsr1.place(x=210, y=240)
 adsr2 = Canvas(window, width=256, height=128, bg='#707070')
-adsr2.place(x=880, y=240)
+adsr2.place(x=890, y=240)
 adsr3 = Canvas(window, width=256, height=128, bg='#707070')
-adsr3.place(x=200, y=680)
+adsr3.place(x=210, y=680)
 adsr4 = Canvas(window, width=256, height=128, bg='#707070')
-adsr4.place(x=880, y=680)
+adsr4.place(x=890, y=680)
 adsrP = Canvas(window, width=256, height=128, bg='#707070')
 adsrP.place(x=1410, y=270)
 
-XOFF = 680
+XOFF = 690
 YOFF = 440
 
+# There are only so many different types of control and each has an animated PNG
 anims = {
     "0to127" :  [ "possible2_0_127.png", 128 ],
     "_63to64" : [ "possible2-63.0_64.0.png", 128 ],
     "on_off" :  [ "on_off3.png", 2 ],
+    "line_exp" :[ "Line_exp.png", 2 ],
     "_18to18" : [ "possible2-18_18.png", 37 ],
     "slideH" :  [ "slide_back_h.png", 128],
     "slideV" :  [ "slide_back_v.png", 128],
@@ -182,27 +237,33 @@ anims = {
     "chars" :   [ "lcd_chars.png", 36 ]
 }
 
+# Given the above list open each PNG in turn and break them into N separate anim frames
 ctrlimgs = {}
 for anim in anims:
     fname = anims[anim][0]
     numFrame = anims[anim][1]
     img = Image.open(fname)
     width = img.size[0]
+    # followin is total height so if 7 frame anim and each frame is 32px high this is 224 e.g.
     height = img.size[1]
+    # while this is the height of each frame (so 32 in this example)
     frameH = int(height / numFrame)
+    # record everything about the multi-frames complete with empty list of frames
     ctrlimgs.update({ anim : { "type" : anim, "numframes" : numFrame, "width" : width, "height" : height, "frameH" : frameH, "frames" : []}})
     for n in range(numFrame):
         tup = (0, frameH * n, width, frameH * (n + 1))
         frame = ImageTk.PhotoImage(img.crop(tup))
+        # having cropped each frame from PNG store it separatelt in "frames" list
         ctrlimgs[anim]["frames"].append(frame)
 
+# following is list of all anumated controls - a key name, a label, an anim to use and X/Y
 controls = {
     "OP1:Output" :   [ "Output",    "0to127",    100, 10 ],
     "OP1:Feedback" : [ "Feedback",  "_63to64",   10, 100 ],
-    "OP1:Lgain" :    [ "L Curve",    "on_off",   200, 10 ],
-    "OP1:Rgain" :    [ "R Curve",    "on_off",   270, 10 ],
-    "OP1:Peq" :      [ "Pitch EQ",  "on_off",    340, 10 ],
-    "OP1:Fixed" :    [ "Fixed",     "on_off",    410, 10 ],
+    "OP1:Lgain" :    [ "L Curve",   "line_exp",  210, 10 ],
+    "OP1:Rgain" :    [ "R Curve",   "line_exp",  280, 10 ],
+    "OP1:Peq" :      [ "Pitch EQ",  "on_off",    350, 10 ],
+    "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 10 ],
     "OP1:OP2In" :    [ "OP2 Input", "0to127",    100, 100 ],
     "OP1:OP3In" :    [ "OP3 Input", "0to127",    10, 190 ],
     "OP1:OP4In" :    [ "OP4 Input", "0to127",    100, 190 ],
@@ -212,10 +273,10 @@ controls = {
     "OP1:Dtime" :    [ "D Time",    "slideH",    180, 380 ],
     "OP1:Stime" :    [ "S Time",    "slideH",    350, 380 ],
     "OP1:Rtime" :    [ "R Time",    "slideH",    520, 380 ],
-    "OP1:ALevel" :   [ "A Level",   "slideV",    200, 60 ],
-    "OP1:DLevel" :   [ "D Level",   "slideV",    270, 60 ],
-    "OP1:SLevel" :   [ "S Level",   "slideV",    340, 60 ],
-    "OP1:RLevel" :   [ "R Level",   "slideV",    410, 60 ],
+    "OP1:ALevel" :   [ "A Level",   "slideV",    210, 60 ],
+    "OP1:DLevel" :   [ "D Level",   "slideV",    280, 60 ],
+    "OP1:SLevel" :   [ "S Level",   "slideV",    350, 60 ],
+    "OP1:RLevel" :   [ "R Level",   "slideV",    420, 60 ],
     "OP1:Ratio" :    [ "Ratio",     "0to127",    500, 10 ],#not 0to127 !
     "OP1:Detune" :   [ "Detune",    "_63to63",   590, 10 ],
     "OP1:Time" :     [ "TimeScale", "0to127",    500, 100 ],
@@ -227,10 +288,10 @@ controls = {
 
     "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 10 ],
     "OP2:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, 100 ],
-    "OP2:Lgain" :    [ "L Curve",    "on_off",   XOFF + 200, 10 ],
-    "OP2:Rgain" :    [ "R Curve",    "on_off",   XOFF + 270, 10 ],
-    "OP2:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 340, 10 ],
-    "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 410, 10 ],
+    "OP2:Lgain" :    [ "L Curve",   "line_exp",  XOFF + 210, 10 ],
+    "OP2:Rgain" :    [ "R Curve",   "line_exp",  XOFF + 280, 10 ],
+    "OP2:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 350, 10 ],
+    "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, 10 ],
     "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, 100 ],
     "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, 190 ],
     "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 100, 190 ],
@@ -240,10 +301,10 @@ controls = {
     "OP2:Dtime" :    [ "D Time",    "slideH",    XOFF + 180, 380 ],
     "OP2:Stime" :    [ "S Time",    "slideH",    XOFF + 350, 380 ],
     "OP2:Rtime" :    [ "R Time",    "slideH",    XOFF + 520, 380 ],
-    "OP2:ALevel" :   [ "A Level",   "slideV",    XOFF + 200, 60 ],
-    "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 270, 60 ],
-    "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 340, 60 ],
-    "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 410, 60 ],
+    "OP2:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, 60 ],
+    "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, 60 ],
+    "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, 60 ],
+    "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, 60 ],
     "OP2:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, 10 ],
     "OP2:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, 10 ],
     "OP2:Time" :     [ "TimeScale", "0to127",    XOFF + 500, 100 ],
@@ -255,10 +316,10 @@ controls = {
 
     "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 10 ],
     "OP3:Feedback" : [ "Feedback",  "_63to64",   10, YOFF + 100 ],
-    "OP3:Lgain" :    [ "L Curve",    "on_off",   200, YOFF + 10 ],
-    "OP3:Rgain" :    [ "R Curve",    "on_off",   270, YOFF + 10 ],
-    "OP3:Peq" :      [ "Pitch EQ",  "on_off",    340, YOFF + 10 ],
-    "OP3:Fixed" :    [ "Fixed",     "on_off",    410, YOFF + 10 ],
+    "OP3:Lgain" :    [ "L Curve",   "line_exp",  210, YOFF + 10 ],
+    "OP3:Rgain" :    [ "R Curve",   "line_exp",  280, YOFF + 10 ],
+    "OP3:Peq" :      [ "Pitch EQ",  "on_off",    350, YOFF + 10 ],
+    "OP3:Fixed" :    [ "Fixed",     "on_off",    420, YOFF + 10 ],
     "OP3:OP1In" :    [ "OP1 Input", "0to127",    100, YOFF + 100 ],
     "OP3:OP2In" :    [ "OP2 Input", "0to127",    10, YOFF + 190 ],
     "OP3:OP4In" :    [ "OP4 Input", "0to127",    100, YOFF + 190 ],
@@ -268,10 +329,10 @@ controls = {
     "OP3:Dtime" :    [ "D Time",    "slideH",    180, YOFF + 380 ],
     "OP3:Stime" :    [ "S Time",    "slideH",    350, YOFF + 380 ],
     "OP3:Rtime" :    [ "R Time",    "slideH",    520, YOFF + 380 ],
-    "OP3:ALevel" :   [ "A Level",   "slideV",    200, YOFF + 60 ],
-    "OP3:DLevel" :   [ "D Level",   "slideV",    270, YOFF + 60 ],
-    "OP3:SLevel" :   [ "S Level",   "slideV",    340, YOFF + 60 ],
-    "OP3:RLevel" :   [ "R Level",   "slideV",    410, YOFF + 60 ],
+    "OP3:ALevel" :   [ "A Level",   "slideV",    210, YOFF + 60 ],
+    "OP3:DLevel" :   [ "D Level",   "slideV",    280, YOFF + 60 ],
+    "OP3:SLevel" :   [ "S Level",   "slideV",    350, YOFF + 60 ],
+    "OP3:RLevel" :   [ "R Level",   "slideV",    420, YOFF + 60 ],
     "OP3:Ratio" :    [ "Ratio",     "0to127",    500, YOFF + 10 ],
     "OP3:Detune" :   [ "Detune",    "_63to63",   590, YOFF + 10 ],
     "OP3:Time" :     [ "TimeScale", "0to127",    500, YOFF + 100 ],
@@ -283,10 +344,10 @@ controls = {
 
     "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 10 ],
     "OP4:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, YOFF + 100 ],
-    "OP4:Lgain" :    [ "L Curve",    "on_off",   XOFF + 200, YOFF + 10 ],
-    "OP4:Rgain" :    [ "R Curve",    "on_off",   XOFF + 270, YOFF + 10 ],
-    "OP4:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 340, YOFF + 10 ],
-    "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 410, YOFF + 10 ],
+    "OP4:Lgain" :    [ "L Curve",   "line_exp",  XOFF + 210, YOFF + 10 ],
+    "OP4:Rgain" :    [ "R Curve",   "line_exp",  XOFF + 280, YOFF + 10 ],
+    "OP4:Peq" :      [ "Pitch EQ",  "on_off",    XOFF + 350, YOFF + 10 ],
+    "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, YOFF + 10 ],
     "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, YOFF + 100 ],
     "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 10, YOFF + 190 ],
     "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, YOFF + 190 ],
@@ -296,10 +357,10 @@ controls = {
     "OP4:Dtime" :    [ "D Time",    "slideH",    XOFF + 180, YOFF + 380 ],
     "OP4:Stime" :    [ "S Time",    "slideH",    XOFF + 350, YOFF + 380 ],
     "OP4:Rtime" :    [ "R Time",    "slideH",    XOFF + 520, YOFF + 380 ],
-    "OP4:ALevel" :   [ "A Level",   "slideV",    XOFF + 200, YOFF + 60 ],
-    "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 270, YOFF + 60 ],
-    "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 340, YOFF + 60 ],
-    "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 410, YOFF + 60 ],
+    "OP4:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, YOFF + 60 ],
+    "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, YOFF + 60 ],
+    "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, YOFF + 60 ],
+    "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, YOFF + 60 ],
     "OP4:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, YOFF + 10 ],
     "OP4:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, YOFF + 10 ],
     "OP4:Time" :     [ "TimeScale", "0to127",    XOFF + 500, YOFF + 100 ],
@@ -314,10 +375,10 @@ controls = {
     "Name:chr1" :    [ "",          "chars",   1430 + 64 - 11, 10 ],
     "Name:chr2" :    [ "",          "chars",   1430 + ((64 - 11) * 2), 10 ],
     "Name:chr3":     [ "",          "chars",   1430 + ((64 - 11) * 3), 10 ],
-    "Pitch:Atime" :  [ "A Time",    "slideH",    1400, 410 ],
-    "Pitch:Dtime" :  [ "D Time",    "slideH",    1400, 460 ],
-    "Pitch:Stime" :  [ "S Time",    "slideH",    1400, 510 ],
-    "Pitch:Rtime" :  [ "R Time",    "slideH",    1400, 560 ],
+    "Pitch:Atime" :  [ "A Time",    "slideH",    1410, 410 ],
+    "Pitch:Dtime" :  [ "D Time",    "slideH",    1410, 460 ],
+    "Pitch:Stime" :  [ "S Time",    "slideH",    1410, 510 ],
+    "Pitch:Rtime" :  [ "R Time",    "slideH",    1410, 560 ],
     "Pitch:ALevel" : [ "A Level",   "slideV",    1410, 90 ],
     "Pitch:DLevel" : [ "D Level",   "slideV",    1480, 90 ],
     "Pitch:SLevel" : [ "S Level",   "slideV",    1550, 90 ],
@@ -325,13 +386,13 @@ controls = {
     "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 500 ],
 }
 
+# For all the above controls simply create their anm objects but don't draw until inits set
 controllist = {}
 for key in controls:
     thisanim = Anim(key, controls[key][0], controls[key][1], controls[key][2], controls[key][3])
-    #print(key, thisanim)
     controllist.update({key : [thisanim]})
-    #thisanim.draw()
 
+# set all the non-0 init values into controls as if an "init" patch
 controllist["OP1:ALevel"][0].setIndex(127)
 controllist["OP1:DLevel"][0].setIndex(127)
 controllist["OP1:SLevel"][0].setIndex(127)
@@ -395,10 +456,8 @@ controllist["OP2:RGain"][0].setIndex(63)
 controllist["OP3:RGain"][0].setIndex(63)
 controllist["OP4:RGain"][0].setIndex(63)
 
+# Now init values are set run throught the list and draw all animated controls
 for entry in controllist:
     controllist[entry][0].draw()
-    
-#for a in controllist:
-#    print(controllist[a][0].getInfo())
 
 window.mainloop()
