@@ -57,7 +57,7 @@
 56:
 57: 4:Fixed
 58: <'0' 30> 4:Fixed (L)
-59: part of 1:Ratio (upper bit of L << 4?)
+59: part of 1:Ratio (10 = 1:upper, 01=2:upper)
 5A: 11 4:Fixed (H)
 5B:
 5C: 64 (100) -> 68 (104) 1:Ratio (L) 1/100ths
