@@ -2,6 +2,39 @@ import tkinter as tk
 from tkinter import *
 from PIL import Image, ImageTk
 
+class Adsr:
+    def __init__(self, key, xpos, ypos):
+        self.xpos = xpos
+        self.ypos = ypos
+        self.canvas = Canvas(window, width=256, height=128, bg='#707070')
+        self.canvas.place(x = xpos, y = ypos)
+    
+    def update(self, at, al, dt, dl, st, sl, rt, rl):
+        #print(activecanvas, at, al, dt, dl, st, sl, rt, rl)
+        self.canvas.delete("all")
+        ax = at
+        ay = 128 - al
+
+        dx = dt + ax
+        dy = 128 - dl
+
+        sx = st + dx
+        sy = 128 - sl
+
+        rx = rt + sx
+        ry = 128 - rl
+
+        padding = 256 - (at + dt + st + rt)
+
+        self.canvas.create_line(0, 128, ax, ay, width=3, fill='#000CFF')
+        self.canvas.create_line(ax, ay, dx, dy, width=3, fill='#000CFF')
+        self.canvas.create_line(dx, dy, sx, sy, width=3, fill='#000CFF')
+        self.canvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1), fill='#000CFF')
+        self.canvas.create_line(sx + padding, sy, 256, ry, width=3, fill='#000CFF')
+
+    def init(self):
+        self.update(0, 127, 0, 127, 0, 127, 0, 0)
+
 class Anim:
     def __init__(self, keyname, title, ctrl, xpos, ypos):
         self.keyname = keyname
@@ -88,17 +121,7 @@ class Anim:
                 sl = controllist[key][0].getIndex()
                 key = op + "RLevel"
                 rl = controllist[key][0].getIndex()
-                #print(op, at, al, dt, dl, st, sl, rt, rl)
-                if op == "OP1:":
-                    updateADSR(adsr1, at, al, dt, dl, st, sl, rt, rl)
-                if op == "OP2:":
-                    updateADSR(adsr2, at, al, dt, dl, st, sl, rt, rl)
-                if op == "OP3:":
-                    updateADSR(adsr3, at, al, dt, dl, st, sl, rt, rl)
-                if op == "OP4:":
-                    updateADSR(adsr4, at, al, dt, dl, st, sl, rt, rl)
-                if op == "Pitch:":
-                    updateADSR(adsrP, at, al, dt, dl, st, sl, rt, rl)
+                adsrs[op].update(at, al, dt, dl, st, sl, rt, rl)
 
         self.prevy = event.y
         self.prevx = event.x
@@ -114,28 +137,6 @@ class Anim:
                 self.index = (self.numFrames - 1)
         self.draw()
 
-def updateADSR(activecanvas, at, al, dt, dl, st, sl, rt, rl):
-    #print(activecanvas, at, al, dt, dl, st, sl, rt, rl)
-    activecanvas.delete("all")
-    ax = at
-    ay = 128 - al
-
-    dx = dt + ax
-    dy = 128 - dl
-
-    sx = st + dx
-    sy = 128 - sl
-
-    rx = rt + sx
-    ry = 128 - rl
-
-    padding = 256 - (at + dt + st + rt)
-
-    activecanvas.create_line(0, 128, ax, ay, width=3, fill='#000CFF')
-    activecanvas.create_line(ax, ay, dx, dy, width=3, fill='#000CFF')
-    activecanvas.create_line(dx, dy, sx, sy, width=3, fill='#000CFF')
-    activecanvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1), fill='#000CFF')
-    activecanvas.create_line(sx + padding, sy, 256, ry, width=3, fill='#000CFF')
 
 #============================= THE start ================================
 window = Tk()
@@ -208,17 +209,13 @@ op4logo = ImageTk.PhotoImage(rawlogo.crop(tup))
 back4.create_image(0, 8, anchor=tk.NW, image = op4logo)
 
 
+adsrs = {}
 # The five grey ADSR canvases
-adsr1 = Canvas(window, width=256, height=128, bg='#707070')
-adsr1.place(x=210, y=240)
-adsr2 = Canvas(window, width=256, height=128, bg='#707070')
-adsr2.place(x=890, y=240)
-adsr3 = Canvas(window, width=256, height=128, bg='#707070')
-adsr3.place(x=210, y=680)
-adsr4 = Canvas(window, width=256, height=128, bg='#707070')
-adsr4.place(x=890, y=680)
-adsrP = Canvas(window, width=256, height=128, bg='#707070')
-adsrP.place(x=1410, y=270)
+adsrs["OP1:"] = Adsr("OP1", 210, 240)
+adsrs["OP2:"] = Adsr("OP2", 890, 240)
+adsrs["OP3:"] = Adsr("OP3", 210, 680)
+adsrs["OP4:"] = Adsr("OP4", 890, 680)
+adsrs["Pitch:"] = Adsr("Pitch", 1410, 270)
 
 XOFF = 690
 YOFF = 440
@@ -396,23 +393,23 @@ for key in controls:
 controllist["OP1:ALevel"][0].setIndex(127)
 controllist["OP1:DLevel"][0].setIndex(127)
 controllist["OP1:SLevel"][0].setIndex(127)
-updateADSR(adsr1, 0, 127, 0, 127, 0, 127, 0, 0)
+adsrs["OP1:"].init()
 controllist["OP2:ALevel"][0].setIndex(127)
 controllist["OP2:DLevel"][0].setIndex(127)
 controllist["OP2:SLevel"][0].setIndex(127)
-updateADSR(adsr2, 0, 127, 0, 127, 0, 127, 0, 0)
+adsrs["OP2:"].init()
 controllist["OP3:ALevel"][0].setIndex(127)
 controllist["OP3:DLevel"][0].setIndex(127)
 controllist["OP3:SLevel"][0].setIndex(127)
-updateADSR(adsr3, 0, 127, 0, 127, 0, 127, 0, 0)
+adsrs["OP3:"].init()
 controllist["OP4:ALevel"][0].setIndex(127)
 controllist["OP4:DLevel"][0].setIndex(127)
 controllist["OP4:SLevel"][0].setIndex(127)
-updateADSR(adsr4, 0, 127, 0, 127, 0, 127, 0, 0)
+adsrs["OP4:"].init()
 controllist["Pitch:ALevel"][0].setIndex(127)
 controllist["Pitch:DLevel"][0].setIndex(127)
 controllist["Pitch:SLevel"][0].setIndex(127)
-updateADSR(adsrP, 0, 127, 0, 127, 0, 127, 0, 0)
+adsrs["Pitch:"].init()
 controllist["OP1:Output"][0].setIndex(127)
 controllist["OP1:Level"][0].setIndex(63)
 controllist["OP2:Level"][0].setIndex(63)
