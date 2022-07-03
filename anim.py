@@ -222,15 +222,15 @@ YOFF = 440
 
 # There are only so many different types of control and each has an animated PNG
 anims = {
-    "0to127" :  [ "possible2_0_127.png", 128 ],
-    "_63to64" : [ "possible2-63.0_64.0.png", 128 ],
-    "on_off" :  [ "on_off3.png", 2 ],
-    "line_exp" :[ "Line_exp.png", 2 ],
-    "_18to18" : [ "possible2-18_18.png", 37 ],
-    "slideH" :  [ "slide_back_h.png", 128],
-    "slideV" :  [ "slide_back_v.png", 128],
-    "_63to63" : [ "possible2-63_63.png", 127 ],
-    "C1toC7" :  [ "possible2_C1_C7.png", 7 ],
+    "0to127" :  [ "ctrl_0_127.png", 128 ],
+    "_63to64" : [ "ctrl_-63.0_64.0.png", 128 ],
+    "on_off" :  [ "ctrl_on_off.png", 2 ],
+    "line_exp" :[ "ctrl_line_exp.png", 2 ],
+    "_18to18" : [ "ctrl_-18_18.png", 37 ],
+    "slideH" :  [ "ctrl_slide_H.png", 128],
+    "slideV" :  [ "ctrl_slide_V.png", 128],
+    "_63to63" : [ "ctrl_-63_63.png", 127 ],
+    "C1toC7" :  [ "ctrl_C1_C7.png", 7 ],
     "chars" :   [ "lcd_chars.png", 36 ]
 }
 
