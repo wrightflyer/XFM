@@ -35,7 +35,7 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['OP3In'] = bytes[0xB0]
     patch["OP1"]['OP4In'] = bytes[0xB2]
     patch["OP1"]['Output'] = bytes[0xC0]
-    patch["OP1"]['PEQ'] = bytes[0xCE]
+    patch["OP1"]['PitchEnv'] = bytes[0xCE]
     patch["OP1"]['Fixed'] = bytes[0x4A]
     ratio = ((bytes[0x5D] * 256) + bytes[0x5C] )
     patch["OP1"]['Ratio'] = ratio
@@ -64,7 +64,7 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['OP3In'] = bytes[0xB5]
     patch["OP2"]['OP4In'] = bytes[0xB6]
     patch["OP2"]['Output'] = bytes[0xC2]
-    patch["OP2"]['PEQ'] = bytes[0xCF]
+    patch["OP2"]['PitchEnv'] = bytes[0xCF]
     patch["OP2"]['Fixed'] = bytes[0x4E]
     ratio = ((bytes[0x61] * 256) + bytes[0x60] )
     patch["OP2"]['Ratio'] = ratio
@@ -93,7 +93,7 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['OP2In'] = bytes[0xB8]
     patch["OP3"]['OP4In'] = bytes[0xBB]
     patch["OP3"]['Output'] = bytes[0xC3]
-    patch["OP3"]['PEQ'] = bytes[0xD0]
+    patch["OP3"]['PitchEnv'] = bytes[0xD0]
     patch["OP3"]['Fixed'] = bytes[0x53]
     ratio = ((bytes[0x66] * 256) + bytes[0x65] )
     patch["OP3"]['Ratio'] = ratio
@@ -122,7 +122,7 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['OP2In'] = bytes[0xBD]
     patch["OP4"]['OP3In'] = bytes[0xBE]
     patch["OP4"]['Output'] = bytes[0xC4]
-    patch["OP4"]['PEQ'] = bytes[0xD2]
+    patch["OP4"]['PitchEnv'] = bytes[0xD2]
     patch["OP4"]['Fixed'] = bytes[0x57]
     ratio = ((bytes[0x6B] * 256) + bytes[0x6A] )
     patch["OP4"]['Ratio'] = ratio
@@ -168,7 +168,7 @@ def encode_bytes(patch, bytes):
     bytes[0xB0] = patch["OP1"]['OP3In']
     bytes[0xB2] = patch["OP1"]['OP4In']
     bytes[0xC0] = patch["OP1"]['Output']                   # 0..127 (+1)
-    bytes[0xCE] = patch["OP1"]['PEQ']                      # OFF / ON
+    bytes[0xCE] = patch["OP1"]['PitchEnv']                      # OFF / ON
     bytes[0x4A] = patch["OP1"]['Fixed']                    # OFF / ON
     bytes[0x5C] = (patch["OP1"]['Ratio']) & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
     bytes[0x5D] = int((patch["OP1"]['Ratio']) / 256)
@@ -197,7 +197,7 @@ def encode_bytes(patch, bytes):
     bytes[0xB5] = patch["OP2"]['OP3In']
     bytes[0xB6] = patch["OP2"]['OP4In']
     bytes[0xC2] = patch["OP2"]['Output']
-    bytes[0xCF] = patch["OP2"]['PEQ']
+    bytes[0xCF] = patch["OP2"]['PitchEnv']
     bytes[0x4E] = patch["OP2"]['Fixed']
     bytes[0x60] = (patch["OP2"]['Ratio']) & 0xFF
     bytes[0x61] = int((patch["OP2"]['Ratio']) / 256)
@@ -226,7 +226,7 @@ def encode_bytes(patch, bytes):
     bytes[0xB8] = patch["OP3"]['OP2In']
     bytes[0xBB] = patch["OP3"]['OP4Input']
     bytes[0xC3] = patch["OP3"]['Output']
-    bytes[0xD0] = patch["OP3"]['PEQ']
+    bytes[0xD0] = patch["OP3"]['PitchEnv']
     bytes[0x53] = patch["OP3"]['Fixed']
     bytes[0x65] = (patch["OP3"]['Ratio']) & 0xFF
     bytes[0x66] = int((patch["OP3"]['Ratio']) / 256)
@@ -255,7 +255,7 @@ def encode_bytes(patch, bytes):
     bytes[0xBD] = patch["OP4"]['OP2In']
     bytes[0xBE] = patch["OP4"]['OP3In']
     bytes[0xC4] = patch["OP4"]['Output']
-    bytes[0xD2] = patch["OP4"]['PEQ']
+    bytes[0xD2] = patch["OP4"]['PitchEnv']
     bytes[0x57] = patch["OP4"]['Fixed']
     bytes[0x6A] = (patch["OP4"]['Ratio']) & 0xFF
     bytes[0x6B] = int((patch["OP4"]['Ratio']) / 256)

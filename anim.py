@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import *
 from PIL import Image, ImageTk
+import json
 
 class Adsr:
     def __init__(self, key, xpos, ypos):
+        self.key = key
         self.xpos = xpos
         self.ypos = ypos
         self.canvas = Canvas(window, width=256, height=128, bg='#707070')
@@ -34,6 +36,28 @@ class Adsr:
 
     def init(self):
         self.update(0, 127, 0, 127, 0, 127, 0, 0)
+
+    def draw(self):
+        op = self.key
+        key = op + "ATime"
+        at = controllist[key][0].getIndex()
+        key = op + "DTime"
+        dt = controllist[key][0].getIndex()
+        key = op + "STime"
+        st = controllist[key][0].getIndex()
+        key = op + "RTime"
+        rt = controllist[key][0].getIndex()
+
+        key = op + "ALevel"
+        al = controllist[key][0].getIndex()
+        key = op + "DLevel"
+        dl = controllist[key][0].getIndex()
+        key = op + "SLevel"
+        sl = controllist[key][0].getIndex()
+        key = op + "RLevel"
+        rl = controllist[key][0].getIndex()
+        #print("draw ADSR ", op, "with ",at, al, dt, dl, st, sl, rt, rl)
+        self.update(at, al, dt, dl, st, sl, rt, rl)
 
 class Anim:
     def __init__(self, keyname, title, ctrl, xpos, ypos):
@@ -104,24 +128,7 @@ class Anim:
             ctrlType = ctrlimgs[self.ctrl]["type"]
             if ctrlType == "slideV" or ctrlType == "slideH":
                 op = self.keyname.split(':')[0] + ":"
-                key = op + "Atime"
-                at = controllist[key][0].getIndex()
-                key = op + "Dtime"
-                dt = controllist[key][0].getIndex()
-                key = op + "Stime"
-                st = controllist[key][0].getIndex()
-                key = op + "Rtime"
-                rt = controllist[key][0].getIndex()
-
-                key = op + "ALevel"
-                al = controllist[key][0].getIndex()
-                key = op + "DLevel"
-                dl = controllist[key][0].getIndex()
-                key = op + "SLevel"
-                sl = controllist[key][0].getIndex()
-                key = op + "RLevel"
-                rl = controllist[key][0].getIndex()
-                adsrs[op].update(at, al, dt, dl, st, sl, rt, rl)
+                adsrs[op].draw()
 
         self.prevy = event.y
         self.prevx = event.x
@@ -211,11 +218,11 @@ back4.create_image(0, 8, anchor=tk.NW, image = op4logo)
 
 adsrs = {}
 # The five grey ADSR canvases
-adsrs["OP1:"] = Adsr("OP1", 210, 240)
-adsrs["OP2:"] = Adsr("OP2", 890, 240)
-adsrs["OP3:"] = Adsr("OP3", 210, 680)
-adsrs["OP4:"] = Adsr("OP4", 890, 680)
-adsrs["Pitch:"] = Adsr("Pitch", 1410, 270)
+adsrs["OP1:"] = Adsr("OP1:", 210, 240)
+adsrs["OP2:"] = Adsr("OP2:", 890, 240)
+adsrs["OP3:"] = Adsr("OP3:", 210, 680)
+adsrs["OP4:"] = Adsr("OP4:", 890, 680)
+adsrs["Pitch:"] = Adsr("Pitch:", 1410, 270)
 
 XOFF = 690
 YOFF = 440
@@ -259,7 +266,7 @@ controls = {
     "OP1:Feedback" : [ "Feedback",  "_63to64",   10, 100 ],
     "OP1:LCurve" :   [ "L Curve",   "line_exp",  210, 10 ],
     "OP1:RCurve" :   [ "R Curve",   "line_exp",  280, 10 ],
-    "OP1:PEQ" :      [ "Pitch EQ",  "on_off",    350, 10 ],
+    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",    350, 10 ],
     "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 10 ],
     "OP1:OP2In" :    [ "OP2 Input", "0to127",    100, 100 ],
     "OP1:OP3In" :    [ "OP3 Input", "0to127",    10, 190 ],
@@ -287,7 +294,7 @@ controls = {
     "OP2:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, 100 ],
     "OP2:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, 10 ],
     "OP2:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, 10 ],
-    "OP2:PEQ" :      [ "Pitch EQ",  "on_off",    XOFF + 350, 10 ],
+    "OP2:PitchEnv" : [ "Pitch Env",  "on_off",    XOFF + 350, 10 ],
     "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, 10 ],
     "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, 100 ],
     "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, 190 ],
@@ -315,7 +322,7 @@ controls = {
     "OP3:Feedback" : [ "Feedback",  "_63to64",   10, YOFF + 100 ],
     "OP3:LCurve" :   [ "L Curve",   "line_exp",  210, YOFF + 10 ],
     "OP3:RCurve" :   [ "R Curve",   "line_exp",  280, YOFF + 10 ],
-    "OP3:PEQ" :      [ "Pitch EQ",  "on_off",    350, YOFF + 10 ],
+    "OP3:PitchEnv" : [ "Pitch Env",  "on_off",    350, YOFF + 10 ],
     "OP3:Fixed" :    [ "Fixed",     "on_off",    420, YOFF + 10 ],
     "OP3:OP1In" :    [ "OP1 Input", "0to127",    100, YOFF + 100 ],
     "OP3:OP2In" :    [ "OP2 Input", "0to127",    10, YOFF + 190 ],
@@ -343,7 +350,7 @@ controls = {
     "OP4:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, YOFF + 100 ],
     "OP4:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, YOFF + 10 ],
     "OP4:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, YOFF + 10 ],
-    "OP4:PEQ" :      [ "Pitch EQ",  "on_off",    XOFF + 350, YOFF + 10 ],
+    "OP4:PitchEnv" : [ "Pitch Env",  "on_off",    XOFF + 350, YOFF + 10 ],
     "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, YOFF + 10 ],
     "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, YOFF + 100 ],
     "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 10, YOFF + 190 ],
@@ -388,6 +395,34 @@ controllist = {}
 for key in controls:
     thisanim = Anim(key, controls[key][0], controls[key][1], controls[key][2], controls[key][3])
     controllist.update({key : [thisanim]})
+
+def loadJSON(event):
+    with open("mypatch.json") as f:
+        data = json.load(f)
+
+        for i in data:
+            print("=====", i, "=====")
+            if (i != "Name"):
+                for j in data[i]:
+                    key = f'{i}:{j}'
+                    print(f'{key} = ', data[i][j])
+                    controllist[key][0].setIndex(data[i][j])
+                    controllist[key][0].draw()
+            else:
+                for n in range(4):
+                    key = f'{i}:chr{n}'
+                    print(f'{key} = ', data[i][n])
+                    controllist[key][0].setIndex(ord(data[i][n]))
+                    controllist[key][0].draw()
+            for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
+                adsrs[j].draw()
+
+load = Canvas(width=32, height=32, highlightthickness=0)
+load.place(x=1650, y=450)
+load.create_rectangle(0,0, 31, 31, fill='#C00000')
+load.create_text(0, 0, anchor=tk.NW, text="JSON\ntest", fill='#FFFFFF')
+load.bind('<Button>', loadJSON)
+
 
 # set all the non-0 init values into controls as if an "init" patch
 controllist["OP1:ALevel"][0].setIndex(127)
