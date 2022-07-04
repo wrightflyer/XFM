@@ -28,7 +28,7 @@ def decode_bytes(bytes, patch):
     txt += chr(bytes[0x2F])
     txt += chr(bytes[0x30])
     txt += chr(bytes[0x32])
-    patch['name'] = txt
+    patch['Name'] = txt
 
     patch["OP1"]['Feedback'] = bytes[0x45]
     patch["OP1"]['OP2In'] = bytes[0xAF]
@@ -158,10 +158,10 @@ def decode_bytes(bytes, patch):
     patch["Mixer"]['Level'] = bytes[0xDC]
 
 def encode_bytes(patch, bytes):
-    bytes[0x2E] = ord(patch['name'][0])
-    bytes[0x2F] = ord(patch['name'][1])
-    bytes[0x30] = ord(patch['name'][2])
-    bytes[0x32] = ord(patch['name'][3])
+    bytes[0x2E] = ord(patch['Name'][0])
+    bytes[0x2F] = ord(patch['Name'][1])
+    bytes[0x30] = ord(patch['Name'][2])
+    bytes[0x32] = ord(patch['Name'][3])
 
     bytes[0x45] = patch["OP1"]['Feedback']                 # -63.0 .. +64.0 (+1.0)
     bytes[0xAF] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
@@ -294,7 +294,7 @@ def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
     if msg.type == 'sysex' and msg.bytes()[8] == 2:
-        patch = { "name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
+        patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
         bytes = msg.bytes()
 
         print_dump(bytes)
@@ -315,7 +315,7 @@ else:
     for n in range(len(bytes)):
         if bytes[n] > 127:
             bytes[n] = bytes[n] & 0x7F
-    patch = { "name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
+    patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
     print_dump(bytes)
     decode_bytes(bytes, patch)
     with open("mypatch.json", 'w') as f:
