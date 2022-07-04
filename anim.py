@@ -12,7 +12,12 @@ class Adsr:
         self.canvas.place(x = xpos, y = ypos)
     
     def update(self, at, al, dt, dl, st, sl, rt, rl):
-        #print(activecanvas, at, al, dt, dl, st, sl, rt, rl)
+        # horizontally 128+128+128+128 is 512 but the window is only 256 wide
+        # so start by halving all the horizontal values (but just for display)
+        at = at /2
+        dt = dt / 2
+        st = st / 2
+        rt = rt / 2
         self.canvas.delete("all")
         ax = at
         ay = 128 - al
@@ -145,6 +150,18 @@ class Anim:
         self.draw()
 
 
+class Backdrop:
+    def __init__(self, id, xpos, ypos, width, height, img, logo, xlog, ylog):
+        self.id = id
+        self.width = width
+        self.height = height
+        self.xpos = xpos
+        self.ypos = ypos
+        self.canvas = Canvas(width = width, height = height)
+        self.canvas.place(x = xpos, y = ypos)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image = img)
+        self.canvas.create_image(xlog, ylog, anchor=tk.NW, image = logo)
+
 #============================= THE start ================================
 window = Tk()
 window.geometry("1720x890")
@@ -154,67 +171,31 @@ window.resizable(False, False)
 
 # Textured grey used as background for all 5 sub-windows
 rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
-#rawback = rawback.resize((680, 440), Image.Resampling.LANCZOS)
 opback = rawback.resize((685, 440))
 backimg = ImageTk.PhotoImage(opback)
 
-# Background for OP1 edit top left
-back1 = Canvas(width = 684, height = 440)
-back1.place(x=0, y=0)
-back1.create_image(0, 0, anchor=tk.NW, image = backimg)
-
-# Background for OP2 edit top mid
-back2 = Canvas(width = 684, height = 440)
-back2.place(x=688, y=0)
-back2.create_image(0, 0, anchor=tk.NW, image = backimg)
-
-# Background for OP3 edit bot left
-back3 = Canvas(width = 684, height = 440)
-back3.place(x=0, y=442)
-back3.create_image(0, 0, anchor=tk.NW, image = backimg)
-
-# Background for OP4 edit bot mid
-back4 = Canvas(width = 684, height = 440)
-back4.place(x=688, y=442)
-back4.create_image(0, 0, anchor=tk.NW, image = backimg)
-
-# Background for pitch/master edit right
-mstrback=rawback.resize((340, 882))
+# Background for pitch/master edit right - same image just resized
+mstrback = rawback.resize((340, 882))
 mstrimg = ImageTk.PhotoImage(mstrback)
-backm = Canvas(width = 340, height = 882)
-backm.place(x=1375, y=0)
-backm.create_image(0, 0, anchor=tk.NW, image = mstrimg)
-
-# "Quick Edit for Sonicware Liven XFM logo"
-rawlogo = Image.open("logo.png")
-logo = ImageTk.PhotoImage(rawlogo)
-backm.create_image(30, 630, anchor=tk.NW, image = logo)
 
 # The OP1..OP4 logos all packed into one 4 frame PNG
 rawlogo = Image.open("op_logo.png")
 logwidth = rawlogo.size[0]
 frameH = rawlogo.size[1] / 4
+oplogo = []
+for logframe in range(4):
+    tup = (0, logframe * frameH, logwidth, (logframe + 1) *frameH)
+    oplogo.append( ImageTk.PhotoImage(rawlogo.crop(tup)) )
 
-# Place "OP1" top left
-tup = (0, 0, logwidth, frameH)
-op1logo = ImageTk.PhotoImage(rawlogo.crop(tup))
-back1.create_image(0, 8, anchor=tk.NW, image = op1logo)
+# "Quick Edit for Sonicware Liven XFM logo"
+rawlogo = Image.open("logo.png")
+mainlogo = ImageTk.PhotoImage(rawlogo)
 
-# Place "OP2" top mid
-tup = (0, frameH, logwidth, frameH * 2)
-op2logo = ImageTk.PhotoImage(rawlogo.crop(tup))
-back2.create_image(0, 8, anchor=tk.NW, image = op2logo)
-
-# Place "OP3" bot left
-tup = (0, frameH * 2, logwidth, frameH * 3)
-op3logo = ImageTk.PhotoImage(rawlogo.crop(tup))
-back3.create_image(0, 8, anchor=tk.NW, image = op3logo)
-
-# Place "OP4" bot mid
-tup = (0, frameH * 3, logwidth, frameH * 4)
-op4logo = ImageTk.PhotoImage(rawlogo.crop(tup))
-back4.create_image(0, 8, anchor=tk.NW, image = op4logo)
-
+Backdrop("OP1", 0, 0, 684, 440, backimg, oplogo[0], 0, 8)
+Backdrop("OP2", 688, 0, 684, 440, backimg, oplogo[1], 0, 8)
+Backdrop("OP3", 0, 442, 684, 440, backimg, oplogo[2], 0, 8)
+Backdrop("OP4", 688, 442, 684, 440, backimg, oplogo[3], 0, 8)
+Backdrop("Master", 1375, 0, 340, 882, mstrimg, mainlogo, 30, 630)
 
 adsrs = {}
 # The five grey ADSR canvases
@@ -228,6 +209,7 @@ XOFF = 690
 YOFF = 440
 
 # There are only so many different types of control and each has an animated PNG
+# The entries are filename and number of frames (so frame height is overall height / num frames)
 anims = {
     "0to127" :  [ "ctrl_0_127.png", 128 ],
     "_63to64" : [ "ctrl_-63.0_64.0.png", 128 ],
@@ -248,7 +230,7 @@ for anim in anims:
     numFrame = anims[anim][1]
     img = Image.open(fname)
     width = img.size[0]
-    # followin is total height so if 7 frame anim and each frame is 32px high this is 224 e.g.
+    # following is total height so if 7 frame anim and each frame is 32px high this is 224 e.g.
     height = img.size[1]
     # while this is the height of each frame (so 32 in this example)
     frameH = int(height / numFrame)
@@ -260,7 +242,7 @@ for anim in anims:
         # having cropped each frame from PNG store it separatelt in "frames" list
         ctrlimgs[anim]["frames"].append(frame)
 
-# following is list of all anumated controls - a key name, a label, an anim to use and X/Y
+# following is list of all animated controls - a key name, a label, an anim to use and X/Y
 controls = {
     "OP1:Output" :   [ "Output",    "0to127",    100, 10 ],
     "OP1:Feedback" : [ "Feedback",  "_63to64",   10, 100 ],
@@ -393,9 +375,12 @@ controls = {
 # For all the above controls simply create their anm objects but don't draw until inits set
 controllist = {}
 for key in controls:
-    thisanim = Anim(key, controls[key][0], controls[key][1], controls[key][2], controls[key][3])
+    entry = controls[key]
+    thisanim = Anim(key, title = entry[0], ctrl = entry[1], xpos = entry[2], ypos = entry[3])
     controllist.update({key : [thisanim]})
 
+# following is a JSON experiment to load a file (when a canvas is clicked) and load all the
+# values into the controls
 def loadJSON(event):
     with open("mypatch.json") as f:
         data = json.load(f)
