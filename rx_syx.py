@@ -234,7 +234,7 @@ def encode_bytes(patch, bytes):
     bytes[0x47] = patch["OP3"]['Feedback']
     bytes[0xB7] = patch["OP3"]['OP1In']
     bytes[0xB8] = patch["OP3"]['OP2In']
-    bytes[0xBB] = patch["OP3"]['OP4Input']
+    bytes[0xBB] = patch["OP3"]['OP4In']
     bytes[0xC3] = patch["OP3"]['Output']
     bytes[0xD0] = patch["OP3"]['PitchEnv']
     bytes[0x53] = patch["OP3"]['Fixed']
