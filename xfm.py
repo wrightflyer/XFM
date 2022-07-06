@@ -223,6 +223,9 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['PitchEnv'] = bytes[0xCE]
     patch["OP1"]['Fixed'] = bytes[0x4A]
     ratio = ((bytes[0x5D] * 256) + bytes[0x5C] )
+    if bytes[0x59] & 0x10:
+        # bit 7 of low byte held separately...
+        ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
     patch["OP1"]['Detune'] = make_signed(bytes[0x5F])
     patch["OP1"]['Level'] = bytes[0x5E]
@@ -252,6 +255,9 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['PitchEnv'] = bytes[0xCF]
     patch["OP2"]['Fixed'] = bytes[0x4E]
     ratio = ((bytes[0x61] * 256) + bytes[0x60] )
+    if bytes[0x59] & 0x01:
+        # bit 7 of low byte held separately...
+        ratio = ratio + 128
     patch["OP2"]['Ratio'] = ratio
     patch["OP2"]['Detune'] = make_signed(bytes[0x64])
     patch["OP2"]['Level'] = bytes[0x63]
@@ -281,6 +287,9 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['PitchEnv'] = bytes[0xD0]
     patch["OP3"]['Fixed'] = bytes[0x53]
     ratio = ((bytes[0x66] * 256) + bytes[0x65] )
+    if bytes[0x61] != 0:
+        # bit 7 of low byte held separately...
+        ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
     patch["OP3"]['Detune'] = make_signed(bytes[0x68])
     patch["OP3"]['Level'] = bytes[0x67]
@@ -310,6 +319,9 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['PitchEnv'] = bytes[0xD2]
     patch["OP4"]['Fixed'] = bytes[0x57]
     ratio = ((bytes[0x6B] * 256) + bytes[0x6A] )
+    if bytes[0x69] != 0:
+        # bit 7 of low byte held separately...
+        ratio = ratio + 128
     patch["OP4"]['Ratio'] = ratio
     patch["OP4"]['Detune'] = make_signed(bytes[0x6D])
     patch["OP4"]['Level'] = bytes[0x6C]
