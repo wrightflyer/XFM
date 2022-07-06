@@ -88,6 +88,8 @@ class Anim:
         self.frameHeight = ctrlimgs[ctrl]["frameH"]
         self.numFrames = numFrames
         self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0)
+        if keyname == "OP1:Ratio":
+            print(self.width, self.frameHeight + 10)
         #self.canvas.attributes("-alpha", 0.5)
         self.canvas.place(x=self.xpos, y=self.ypos)
         self.canvas.bind('<B1-Motion>', self.motion)
@@ -134,6 +136,16 @@ class Anim:
         #print("draw", self.keyname, "index=", self.index)
         self.canvas.delete(self.keyname)
         self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
+        op = self.keyname.split(':')[0]
+        ctrl = self.keyname.split(':')[1]
+        if op == "OP1" and ctrl == "Fixed":
+            if self.index == 0:
+                #print(controllist[op + ":Ratio"], controllist[op + ":Ratio"][0].keyname)
+                controllist[op + ":Freq"][0].canvas.config(width=0, height=0)
+                controllist[op + ":Ratio"][0].canvas.config(width=76, height=86)
+            else:
+                controllist[op + ":Freq"][0].canvas.config(width = 76, height = 86)
+                controllist[op + ":Ratio"][0].canvas.config(width=0, height=0)
 
     def motion(self, event):
         newFrame = False
@@ -500,7 +512,9 @@ controls = {
     "OP1:DLevel" :   [ "D Level",   "slideV",    280, 60 ],
     "OP1:SLevel" :   [ "S Level",   "slideV",    350, 60 ],
     "OP1:RLevel" :   [ "R Level",   "slideV",    420, 60 ],
+    # two controls - one location - what's displayed depends on Fixed On/Off
     "OP1:Ratio" :    [ "Ratio",     "0to127",    500, 10 ],#not 0to127 !
+    "OP1:Freq" :     [ "Freq",     "0to127",     500, 10 ],#not 0to127 !
     "OP1:Detune" :   [ "Detune",    "_63to63",   590, 10, -63 ],
     "OP1:Time" :     [ "TimeScale", "0to127",    500, 100 ],
     "OP1:UpCurve" :  [ "Up Curve",  "_18to18",   590, 100, -18 ],
