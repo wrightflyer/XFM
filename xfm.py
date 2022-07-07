@@ -79,6 +79,7 @@ class Anim:
         self.keyname = keyname
         self.ctrl = ctrl
         self.index = 0
+        self.fraction = 0
         self.xpos = xpos
         self.ypos = ypos
         self.offset = offset # difference between 0 frame and lowest value (maybe -63 or -48 etc)
@@ -88,9 +89,6 @@ class Anim:
         self.frameHeight = ctrlimgs[ctrl]["frameH"]
         self.numFrames = numFrames
         self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0)
-        if keyname == "OP1:Ratio":
-            print(self.width, self.frameHeight + 10)
-        #self.canvas.attributes("-alpha", 0.5)
         self.canvas.place(x=self.xpos, y=self.ypos)
         self.canvas.bind('<B1-Motion>', self.motion)
         self.canvas.bind('<Button>', self.button_click)
@@ -133,30 +131,53 @@ class Anim:
             self.index = self.index - 1
 
     def draw(self):
-        #print("draw", self.keyname, "index=", self.index)
         self.canvas.delete(self.keyname)
+        self.canvas.delete("digits")
         self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
         op = self.keyname.split(':')[0]
         ctrl = self.keyname.split(':')[1]
-        if op == "OP1" and ctrl == "Fixed":
+        if ctrl == "Fixed":
+            ctrl_w = controllist[op + ":Freq"][0].width
+            ctrl_h = controllist[op + ":Freq"][0].frameHeight + 10 # +10 for the label above
             if self.index == 0:
-                #print(controllist[op + ":Ratio"], controllist[op + ":Ratio"][0].keyname)
                 controllist[op + ":Freq"][0].canvas.config(width=0, height=0)
-                controllist[op + ":Ratio"][0].canvas.config(width=76, height=86)
+                controllist[op + ":Ratio"][0].canvas.config(width = ctrl_w, height = ctrl_h)
             else:
-                controllist[op + ":Freq"][0].canvas.config(width = 76, height = 86)
+                controllist[op + ":Freq"][0].canvas.config(width = ctrl_w, height = ctrl_h)
                 controllist[op + ":Ratio"][0].canvas.config(width=0, height=0)
+        if self.ctrl[0:3] == "blk":
+            # control is blank because not enough frames for digits, so draw some now..
+            self.canvas.create_image(9, 60, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getIndex()], tag = "digits")
+            self.canvas.create_image(28, 60, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
 
     def motion(self, event):
         newFrame = False
 
-        if event.y < self.prevy or event.x > self.prevx:
+        if event.y < self.prevy:
             self.inc()
             newFrame = True
 
-        if event.y > self.prevy or event.x < self.prevx:
+        if event.y > self.prevy:
             self.dec()
             newFrame = True
+
+        if event.x > self.prevx:
+            if self.ctrl[0:3] == "blk":
+                if self.fraction < 99:
+                    self.fraction = self.fraction + 1
+                    newFrame = True
+            else:
+                self.inc()
+                newFrame = True
+
+        if event.x < self.prevx:
+            if self.ctrl[0:3] == "blk":
+                if self.fraction > 0:
+                    self.fraction = self.fraction - 1
+                    newFrame = True
+            else:
+                self.dec()
+                newFrame = True
 
         if newFrame == True:
             self.draw()
@@ -187,7 +208,7 @@ class Backdrop:
         self.height = height
         self.xpos = xpos
         self.ypos = ypos
-        self.canvas = Canvas(width = width, height = height)
+        self.canvas = Canvas(width = width, height = height, bg='#202020')
         self.canvas.place(x = xpos, y = ypos)
         self.canvas.create_image(0, 0, anchor=tk.NW, image = img)
         self.canvas.create_image(xlog, ylog, anchor=tk.NW, image = logo)
@@ -417,50 +438,10 @@ window.title("Quick Edit for Liven XFM")
 window.configure(bg='#313131')
 window.resizable(False, False)
 
-# Textured grey used as background for all 5 sub-windows
-rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
-opback = rawback.resize((685, 440))
-backimg = ImageTk.PhotoImage(opback)
-
-# Background for pitch/master edit right - same image just resized
-mstrback = rawback.resize((340, 882))
-mstrimg = ImageTk.PhotoImage(mstrback)
-
-# The OP1..OP4 logos all packed into one 4 frame PNG
-rawlogo = Image.open("op_logo.png")
-logwidth = rawlogo.size[0]
-frameH = rawlogo.size[1] / 4
-oplogo = []
-for logframe in range(4):
-    tup = (0, logframe * frameH, logwidth, (logframe + 1) *frameH)
-    oplogo.append( ImageTk.PhotoImage(rawlogo.crop(tup)) )
-
-# "Quick Edit for Sonicware Liven XFM logo"
-rawlogo = Image.open("logo.png")
-mainlogo = ImageTk.PhotoImage(rawlogo)
-
-Backdrop("OP1", 0, 0, 684, 440, backimg, oplogo[0], 0, 8)
-Backdrop("OP2", 688, 0, 684, 440, backimg, oplogo[1], 0, 8)
-Backdrop("OP3", 0, 442, 684, 440, backimg, oplogo[2], 0, 8)
-Backdrop("OP4", 688, 442, 684, 440, backimg, oplogo[3], 0, 8)
-Backdrop("Master", 1375, 0, 340, 882, mstrimg, mainlogo, 30, 630)
-
-adsrs = {}
-# The five grey ADSR canvases
-adsrs["OP1:"] = Adsr("OP1:", 210, 240)
-adsrs["OP2:"] = Adsr("OP2:", 890, 240)
-adsrs["OP3:"] = Adsr("OP3:", 210, 680)
-adsrs["OP4:"] = Adsr("OP4:", 890, 680)
-adsrs["Pitch:"] = Adsr("Pitch:", 1410, 270)
-
-XOFF = 690
-YOFF = 440
-
 # There are only so many different types of control and each has an animated PNG
 # The entries are filename and number of frames (so frame height is overall height / num frames)
 anims = {
     "0to127" :  [ "ctrl_0_127.png", 128 ],
-    "_63to64" : [ "ctrl_-63.0_64.0.png", 128 ],
     "on_off" :  [ "ctrl_on_off.png", 2 ],
     "line_exp" :[ "ctrl_line_exp.png", 2 ],
     "_18to18" : [ "ctrl_-18_18.png", 37 ],
@@ -469,7 +450,14 @@ anims = {
     "slideVbi" :[ "ctrl_slide_V-48_48.png", 97],
     "_63to63" : [ "ctrl_-63_63.png", 127 ],
     "C1toC7" :  [ "ctrl_C1_C7.png", 7 ],
-    "chars" :   [ "lcd_chars.png", 36 ]
+    "chars" :   [ "lcd_chars.png", 36 ],
+    "blk128" :  [ "ctrl_blank_128.png", 128 ],
+    "blk33" :   [ "ctrl_blank_33.png", 33 ],
+    "blk97" :   [ "ctrl_blank_97.png", 97 ],
+    "op1_4" :   [ "op_logo.png", 4 ],
+    "dig_d_99" :[ "digits_dot_0_99.png", 100 ],
+    "dig_d_9" : [ "digits_dot_0_9.png", 10 ],
+    "digits" :  [ "digits_0_127.png", 128 ],
 }
 
 # Given the above list open each PNG in turn and break them into N separate anim frames
@@ -491,17 +479,47 @@ for anim in anims:
         # having cropped each frame from PNG store it separatelt in "frames" list
         ctrlimgs[anim]["frames"].append(frame)
 
+# Textured grey used as background for all 5 sub-windows
+rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
+opback = rawback.resize((685, 440))
+backimg = ImageTk.PhotoImage(opback)
+
+# Background for pitch/master edit right - same image just resized
+mstrback = rawback.resize((340, 882))
+mstrimg = ImageTk.PhotoImage(mstrback)
+
+# "Quick Edit for Sonicware Liven XFM logo"
+rawlogo = Image.open("logo.png")
+mainlogo = ImageTk.PhotoImage(rawlogo)
+
+Backdrop("OP1", 0, 0, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][0], 0, 8)
+Backdrop("OP2", 688, 0, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][1], 0, 8)
+Backdrop("OP3", 0, 442, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][2], 0, 8)
+Backdrop("OP4", 688, 442, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][3], 0, 8)
+Backdrop("Master", 1375, 0, 340, 882, mstrimg, mainlogo, 30, 630)
+
+adsrs = {}
+# The five grey ADSR canvases
+adsrs["OP1:"] = Adsr("OP1:", 210, 240)
+adsrs["OP2:"] = Adsr("OP2:", 890, 240)
+adsrs["OP3:"] = Adsr("OP3:", 210, 680)
+adsrs["OP4:"] = Adsr("OP4:", 890, 680)
+adsrs["Pitch:"] = Adsr("Pitch:", 1410, 270)
+
+XOFF = 690
+YOFF = 440
+
 # following is list of all animated controls - a key name, a label, an anim to use and X/Y
 controls = {
-    "OP1:Output" :   [ "Output",    "0to127",    100, 10 ],
-    "OP1:Feedback" : [ "Feedback",  "_63to64",   10, 100, -63 ],
+    "OP1:Output" :   [ "Output",    "0to127",    100, 190 ],
+    "OP1:Feedback" : [ "Feedback",  "blk128",    100, 10, -63 ],
     "OP1:LCurve" :   [ "L Curve",   "line_exp",  210, 10 ],
     "OP1:RCurve" :   [ "R Curve",   "line_exp",  280, 10 ],
-    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",    350, 10 ],
+    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",   350, 10 ],
     "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 10 ],
-    "OP1:OP2In" :    [ "OP2 Input", "0to127",    100, 100 ],
-    "OP1:OP3In" :    [ "OP3 Input", "0to127",    10, 190 ],
-    "OP1:OP4In" :    [ "OP4 Input", "0to127",    100, 190 ],
+    "OP1:OP2In" :    [ "OP2 Input", "0to127",    10, 100 ],
+    "OP1:OP3In" :    [ "OP3 Input", "0to127",    100, 100 ],
+    "OP1:OP4In" :    [ "OP4 Input", "0to127",    10, 190 ],
     "OP1:Level" :    [ "Level",     "0to127",    10, 280 ],
     "OP1:VelSens" :  [ "Velo Sens", "0to127",    100, 280 ],
     "OP1:ATime" :    [ "A Time",    "slideH",    10, 380 ],
@@ -513,8 +531,8 @@ controls = {
     "OP1:SLevel" :   [ "S Level",   "slideV",    350, 60 ],
     "OP1:RLevel" :   [ "R Level",   "slideV",    420, 60 ],
     # two controls - one location - what's displayed depends on Fixed On/Off
-    "OP1:Ratio" :    [ "Ratio",     "0to127",    500, 10 ],#not 0to127 !
-    "OP1:Freq" :     [ "Freq",     "0to127",     500, 10 ],#not 0to127 !
+    "OP1:Ratio" :    [ "Ratio",     "blk33",     500, 10 ],#not 0to127 !
+    "OP1:Freq" :     [ "Frequency", "blk97",     500, 10 ],#not 0to127 !
     "OP1:Detune" :   [ "Detune",    "_63to63",   590, 10, -63 ],
     "OP1:Time" :     [ "TimeScale", "0to127",    500, 100 ],
     "OP1:UpCurve" :  [ "Up Curve",  "_18to18",   590, 100, -18 ],
@@ -523,15 +541,15 @@ controls = {
     "OP1:LGain" :    [ "L Gain",    "_63to63",   500, 280, -63 ],
     "OP1:RGain" :    [ "R Gain",    "_63to63",   590, 280, -63 ],
 
-    "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 10 ],
-    "OP2:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, 100, -63 ],
+    "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 190 ],
+    "OP2:Feedback" : [ "Feedback",  "blk128",    XOFF + 100, 10, -63 ],
     "OP2:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, 10 ],
     "OP2:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, 10 ],
-    "OP2:PitchEnv" : [ "Pitch Env",  "on_off",    XOFF + 350, 10 ],
+    "OP2:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, 10 ],
     "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, 10 ],
-    "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, 100 ],
-    "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, 190 ],
-    "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 100, 190 ],
+    "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, 100 ],
+    "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, 100 ],
+    "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 10, 190 ],
     "OP2:Level" :    [ "Level",     "0to127",    XOFF + 10, 280 ],
     "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, 280 ],
     "OP2:ATime" :    [ "A Time",    "slideH",    XOFF + 10, 380 ],
@@ -542,7 +560,8 @@ controls = {
     "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, 60 ],
     "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, 60 ],
     "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, 60 ],
-    "OP2:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, 10 ],
+    "OP2:Ratio" :    [ "Ratio",     "blk33",     XOFF + 500, 10 ],
+    "OP2:Freq" :     [ "Frequency", "blk97",     XOFF + 500, 10 ],
     "OP2:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, 10, -63 ],
     "OP2:Time" :     [ "TimeScale", "0to127",    XOFF + 500, 100 ],
     "OP2:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, 100, -18 ],
@@ -551,15 +570,15 @@ controls = {
     "OP2:LGain" :    [ "L Gain",    "_63to63",   XOFF + 500, 280, -63 ],
     "OP2:RGain" :    [ "R Gain",    "_63to63",   XOFF + 590, 280, -63 ],
 
-    "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 10 ],
-    "OP3:Feedback" : [ "Feedback",  "_63to64",   10, YOFF + 100, -63 ],
+    "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 190 ],
+    "OP3:Feedback" : [ "Feedback",  "blk128",    100, YOFF + 10, -63 ],
     "OP3:LCurve" :   [ "L Curve",   "line_exp",  210, YOFF + 10 ],
     "OP3:RCurve" :   [ "R Curve",   "line_exp",  280, YOFF + 10 ],
-    "OP3:PitchEnv" : [ "Pitch Env",  "on_off",    350, YOFF + 10 ],
+    "OP3:PitchEnv" : [ "Pitch Env",  "on_off",   350, YOFF + 10 ],
     "OP3:Fixed" :    [ "Fixed",     "on_off",    420, YOFF + 10 ],
-    "OP3:OP1In" :    [ "OP1 Input", "0to127",    100, YOFF + 100 ],
-    "OP3:OP2In" :    [ "OP2 Input", "0to127",    10, YOFF + 190 ],
-    "OP3:OP4In" :    [ "OP4 Input", "0to127",    100, YOFF + 190 ],
+    "OP3:OP1In" :    [ "OP1 Input", "0to127",    10, YOFF + 100 ],
+    "OP3:OP2In" :    [ "OP2 Input", "0to127",    100, YOFF + 100 ],
+    "OP3:OP4In" :    [ "OP4 Input", "0to127",    10, YOFF + 190 ],
     "OP3:Level" :    [ "Level",     "0to127",    10, YOFF + 280 ],
     "OP3:VelSens" :  [ "Velo Sens", "0to127",    100, YOFF + 280 ],
     "OP3:ATime" :    [ "A Time",    "slideH",    10, YOFF + 380 ],
@@ -570,7 +589,8 @@ controls = {
     "OP3:DLevel" :   [ "D Level",   "slideV",    280, YOFF + 60 ],
     "OP3:SLevel" :   [ "S Level",   "slideV",    350, YOFF + 60 ],
     "OP3:RLevel" :   [ "R Level",   "slideV",    420, YOFF + 60 ],
-    "OP3:Ratio" :    [ "Ratio",     "0to127",    500, YOFF + 10 ],
+    "OP3:Ratio" :    [ "Ratio",     "blk33",     500, YOFF + 10 ],
+    "OP3:Freq" :     [ "Frequency", "blk97",     500, YOFF + 10 ],
     "OP3:Detune" :   [ "Detune",    "_63to63",   590, YOFF + 10, -63 ],
     "OP3:Time" :     [ "TimeScale", "0to127",    500, YOFF + 100 ],
     "OP3:UpCurve" :  [ "Up Curve",  "_18to18",   590, YOFF + 100, -18 ],
@@ -579,15 +599,15 @@ controls = {
     "OP3:LGain" :    [ "L Gain",    "_63to63",   500, YOFF + 280, -63 ],
     "OP3:RGain" :    [ "R Gain",    "_63to63",   590, YOFF + 280, -63 ],
 
-    "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 10 ],
-    "OP4:Feedback" : [ "Feedback",  "_63to64",   XOFF + 10, YOFF + 100, -63 ],
+    "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 190 ],
+    "OP4:Feedback" : [ "Feedback",  "blk128",    XOFF + 100, YOFF + 10, -63 ],
     "OP4:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, YOFF + 10 ],
     "OP4:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, YOFF + 10 ],
-    "OP4:PitchEnv" : [ "Pitch Env",  "on_off",    XOFF + 350, YOFF + 10 ],
+    "OP4:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, YOFF + 10 ],
     "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, YOFF + 10 ],
-    "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 100, YOFF + 100 ],
-    "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 10, YOFF + 190 ],
-    "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, YOFF + 190 ],
+    "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, YOFF + 100 ],
+    "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 100, YOFF + 100 ],
+    "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, YOFF + 190 ],
     "OP4:Level" :    [ "Level",     "0to127",    XOFF + 10, YOFF + 280 ],
     "OP4:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, YOFF + 280 ],
     "OP4:ATime" :    [ "A Time",    "slideH",    XOFF + 10, YOFF + 380 ],
@@ -598,7 +618,8 @@ controls = {
     "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, YOFF + 60 ],
     "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, YOFF + 60 ],
     "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, YOFF + 60 ],
-    "OP4:Ratio" :    [ "Ratio",     "0to127",    XOFF + 500, YOFF + 10 ],
+    "OP4:Ratio" :    [ "Ratio",     "blk33",     XOFF + 500, YOFF + 10 ],
+    "OP4:Freq" :     [ "Frequency", "blk97",     XOFF + 500, YOFF + 10 ],
     "OP4:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, YOFF + 10, -63 ],
     "OP4:Time" :     [ "TimeScale", "0to127",    XOFF + 500, YOFF + 100 ],
     "OP4:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, YOFF + 100, -18 ],
@@ -733,7 +754,8 @@ for entry in controllist:
     controllist[entry][0].draw()
 
 inports = mido.get_input_names()
-print(inports)
+if len(inports):
+    print("MIDI ports:", inports)
 
 if (len(inports) > 1):
     port = mido.open_input(inports[1], callback=rxmsg)
