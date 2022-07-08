@@ -147,8 +147,8 @@ class Anim:
                 controllist[op + ":Ratio"][0].canvas.config(width=0, height=0)
         if self.ctrl[0:3] == "blk":
             # control is blank because not enough frames for digits, so draw some now..
-            self.canvas.create_image(9, 60, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getIndex()], tag = "digits")
-            self.canvas.create_image(28, 60, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
+            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getIndex()], tag = "digits")
+            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
 
     def motion(self, event):
         newFrame = False
@@ -511,14 +511,14 @@ YOFF = 440
 
 # following is list of all animated controls - a key name, a label, an anim to use and X/Y
 controls = {
-    "OP1:Output" :   [ "Output",    "0to127",    100, 190 ],
+    "OP1:Output" :   [ "Output",    "0to127",    100, 210 ],
     "OP1:Feedback" : [ "Feedback",  "blk128",    100, 10, -63 ],
     "OP1:LCurve" :   [ "L Curve",   "line_exp",  210, 10 ],
     "OP1:RCurve" :   [ "R Curve",   "line_exp",  280, 10 ],
     "OP1:PitchEnv" : [ "Pitch Env",  "on_off",   350, 10 ],
     "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 10 ],
     "OP1:OP2In" :    [ "OP2 Input", "0to127",    10, 100 ],
-    "OP1:OP3In" :    [ "OP3 Input", "0to127",    100, 100 ],
+    "OP1:OP3In" :    [ "OP3 Input", "0to127",    100, 120 ],
     "OP1:OP4In" :    [ "OP4 Input", "0to127",    10, 190 ],
     "OP1:Level" :    [ "Level",     "0to127",    10, 280 ],
     "OP1:VelSens" :  [ "Velo Sens", "0to127",    100, 280 ],
