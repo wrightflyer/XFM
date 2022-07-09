@@ -145,10 +145,16 @@ class Anim:
             else:
                 controllist[op + ":Freq"][0].canvas.config(width = ctrl_w, height = ctrl_h)
                 controllist[op + ":Ratio"][0].canvas.config(width=0, height=0)
-        if self.ctrl[0:3] == "blk":
+        if ctrl == "Feedback":
             # control is blank because not enough frames for digits, so draw some now..
-            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getIndex()], tag = "digits")
-            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
+            if (self.getValue() < 0):
+                # a leading negative sign
+                self.canvas.create_image(1, 80, anchor=tk.NW, image = ctrlimgs["neg"]["frames"][0], tag = "digits")
+            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][abs(self.getValue())], tag = "digits")
+            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["dig_d_9"]["frames"][self.fraction], tag = "digits")
+        if ctrl == "Freq":
+            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
+            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.fraction], tag = "digits")
 
     def motion(self, event):
         newFrame = False
@@ -162,7 +168,11 @@ class Anim:
             newFrame = True
 
         if event.x > self.prevx:
-            if self.ctrl[0:3] == "blk":
+            if self.keyname[4:] == "Feedback":
+                if self.fraction < 9:
+                    self.fraction = self.fraction + 1
+                    newFrame = True
+            elif self.keyname[4:] == "Freq":
                 if self.fraction < 99:
                     self.fraction = self.fraction + 1
                     newFrame = True
@@ -171,7 +181,14 @@ class Anim:
                 newFrame = True
 
         if event.x < self.prevx:
-            if self.ctrl[0:3] == "blk":
+            if self.keyname[4:] == "Feedback":
+                lowLimit = 0
+                if self.index == 0:
+                    lowLimit = 50
+                if self.fraction > lowLimit:
+                    self.fraction = self.fraction - 1
+                    newFrame = True
+            elif self.keyname[4:] == "Freq":
                 if self.fraction > 0:
                     self.fraction = self.fraction - 1
                     newFrame = True
@@ -208,7 +225,7 @@ class Backdrop:
         self.height = height
         self.xpos = xpos
         self.ypos = ypos
-        self.canvas = Canvas(width = width, height = height, bg='#202020')
+        self.canvas = Canvas(width = width, height = height, bg='#202020', highlightbackground = 'black')
         self.canvas.place(x = xpos, y = ypos)
         self.canvas.create_image(0, 0, anchor=tk.NW, image = img)
         self.canvas.create_image(xlog, ylog, anchor=tk.NW, image = logo)
@@ -433,7 +450,7 @@ def loadJson():
 
 #============================= THE start ================================
 window = Tk()
-window.geometry("1720x890")
+window.geometry("1720x930")
 window.title("Quick Edit for Liven XFM")
 window.configure(bg='#313131')
 window.resizable(False, False)
@@ -458,6 +475,7 @@ anims = {
     "dig_d_99" :[ "digits_dot_0_99.png", 100 ],
     "dig_d_9" : [ "digits_dot_0_9.png", 10 ],
     "digits" :  [ "digits_0_127.png", 128 ],
+    "neg"    :  [ "digit_neg.png", 1]
 }
 
 # Given the above list open each PNG in turn and break them into N separate anim frames
@@ -481,7 +499,7 @@ for anim in anims:
 
 # Textured grey used as background for all 5 sub-windows
 rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
-opback = rawback.resize((685, 440))
+opback = rawback.resize((685, 460))
 backimg = ImageTk.PhotoImage(opback)
 
 # Background for pitch/master edit right - same image just resized
@@ -492,141 +510,141 @@ mstrimg = ImageTk.PhotoImage(mstrback)
 rawlogo = Image.open("logo.png")
 mainlogo = ImageTk.PhotoImage(rawlogo)
 
-Backdrop("OP1", 0, 0, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][0], 0, 8)
-Backdrop("OP2", 688, 0, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][1], 0, 8)
-Backdrop("OP3", 0, 442, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][2], 0, 8)
-Backdrop("OP4", 688, 442, 684, 440, backimg, ctrlimgs["op1_4"]["frames"][3], 0, 8)
-Backdrop("Master", 1375, 0, 340, 882, mstrimg, mainlogo, 30, 630)
+Backdrop("OP1", 0, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][0], 0, 8)
+Backdrop("OP2", 688, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][1], 0, 8)
+Backdrop("OP3", 0, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][2], 0, 8)
+Backdrop("OP4", 688, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][3], 0, 8)
+Backdrop("Master", 1375, 0, 340, 922, mstrimg, mainlogo, 30, 630)
 
 adsrs = {}
 # The five grey ADSR canvases
-adsrs["OP1:"] = Adsr("OP1:", 210, 240)
-adsrs["OP2:"] = Adsr("OP2:", 890, 240)
-adsrs["OP3:"] = Adsr("OP3:", 210, 680)
-adsrs["OP4:"] = Adsr("OP4:", 890, 680)
+adsrs["OP1:"] = Adsr("OP1:", 210, 250)
+adsrs["OP2:"] = Adsr("OP2:", 890, 250)
+adsrs["OP3:"] = Adsr("OP3:", 210, 710)
+adsrs["OP4:"] = Adsr("OP4:", 890, 710)
 adsrs["Pitch:"] = Adsr("Pitch:", 1410, 270)
 
 XOFF = 690
-YOFF = 440
+YOFF = 460
 
 # following is list of all animated controls - a key name, a label, an anim to use and X/Y
 controls = {
-    "OP1:Output" :   [ "Output",    "0to127",    100, 210 ],
+    "OP1:Output" :   [ "Output",    "0to127",    100, 220 ],
     "OP1:Feedback" : [ "Feedback",  "blk128",    100, 10, -63 ],
-    "OP1:LCurve" :   [ "L Curve",   "line_exp",  210, 10 ],
-    "OP1:RCurve" :   [ "R Curve",   "line_exp",  280, 10 ],
-    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",   350, 10 ],
-    "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 10 ],
-    "OP1:OP2In" :    [ "OP2 Input", "0to127",    10, 100 ],
-    "OP1:OP3In" :    [ "OP3 Input", "0to127",    100, 120 ],
-    "OP1:OP4In" :    [ "OP4 Input", "0to127",    10, 190 ],
-    "OP1:Level" :    [ "Level",     "0to127",    10, 280 ],
-    "OP1:VelSens" :  [ "Velo Sens", "0to127",    100, 280 ],
-    "OP1:ATime" :    [ "A Time",    "slideH",    10, 380 ],
-    "OP1:DTime" :    [ "D Time",    "slideH",    180, 380 ],
-    "OP1:STime" :    [ "S Time",    "slideH",    350, 380 ],
-    "OP1:RTime" :    [ "R Time",    "slideH",    520, 380 ],
-    "OP1:ALevel" :   [ "A Level",   "slideV",    210, 60 ],
-    "OP1:DLevel" :   [ "D Level",   "slideV",    280, 60 ],
-    "OP1:SLevel" :   [ "S Level",   "slideV",    350, 60 ],
-    "OP1:RLevel" :   [ "R Level",   "slideV",    420, 60 ],
+    "OP1:LCurve" :   [ "L Curve",   "line_exp",  210, 20 ],
+    "OP1:RCurve" :   [ "R Curve",   "line_exp",  280, 20 ],
+    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",   350, 20 ],
+    "OP1:Fixed" :    [ "Fixed",     "on_off",    420, 20 ],
+    "OP1:OP2In" :    [ "OP2 Input", "0to127",    10, 130 ],
+    "OP1:OP3In" :    [ "OP3 Input", "0to127",    100, 130 ],
+    "OP1:OP4In" :    [ "OP4 Input", "0to127",    10, 220 ],
+    "OP1:Level" :    [ "Level",     "0to127",    10, 310 ],
+    "OP1:VelSens" :  [ "Velo Sens", "0to127",    100, 310 ],
+    "OP1:ATime" :    [ "A Time",    "slideH",    10, 400 ],
+    "OP1:DTime" :    [ "D Time",    "slideH",    180, 400 ],
+    "OP1:STime" :    [ "S Time",    "slideH",    350, 400 ],
+    "OP1:RTime" :    [ "R Time",    "slideH",    520, 400 ],
+    "OP1:ALevel" :   [ "A Level",   "slideV",    210, 70 ],
+    "OP1:DLevel" :   [ "D Level",   "slideV",    280, 70 ],
+    "OP1:SLevel" :   [ "S Level",   "slideV",    350, 70 ],
+    "OP1:RLevel" :   [ "R Level",   "slideV",    420, 70 ],
     # two controls - one location - what's displayed depends on Fixed On/Off
     "OP1:Ratio" :    [ "Ratio",     "blk33",     500, 10 ],#not 0to127 !
     "OP1:Freq" :     [ "Frequency", "blk97",     500, 10 ],#not 0to127 !
-    "OP1:Detune" :   [ "Detune",    "_63to63",   590, 10, -63 ],
-    "OP1:Time" :     [ "TimeScale", "0to127",    500, 100 ],
-    "OP1:UpCurve" :  [ "Up Curve",  "_18to18",   590, 100, -18 ],
-    "OP1:Scale" :    [ "Scale Pos", "C1toC7",    500, 190 ],
-    "OP1:DnCurve" :  [ "Down Curve","_18to18",   590, 190, -18 ],
-    "OP1:LGain" :    [ "L Gain",    "_63to63",   500, 280, -63 ],
-    "OP1:RGain" :    [ "R Gain",    "_63to63",   590, 280, -63 ],
+    "OP1:Detune" :   [ "Detune",    "_63to63",   590, 25, -63 ],
+    "OP1:Time" :     [ "TimeScale", "0to127",    500, 130 ],
+    "OP1:UpCurve" :  [ "Up Curve",  "_18to18",   590, 130, -18 ],
+    "OP1:Scale" :    [ "Scale Pos", "C1toC7",    500, 220 ],
+    "OP1:DnCurve" :  [ "Down Curve","_18to18",   590, 220, -18 ],
+    "OP1:LGain" :    [ "L Gain",    "_63to63",   500, 310, -63 ],
+    "OP1:RGain" :    [ "R Gain",    "_63to63",   590, 310, -63 ],
 
-    "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 190 ],
+    "OP2:Output" :   [ "Output",    "0to127",    XOFF + 100, 200 ],
     "OP2:Feedback" : [ "Feedback",  "blk128",    XOFF + 100, 10, -63 ],
-    "OP2:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, 10 ],
-    "OP2:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, 10 ],
-    "OP2:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, 10 ],
-    "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, 10 ],
-    "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, 100 ],
-    "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, 100 ],
-    "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 10, 190 ],
-    "OP2:Level" :    [ "Level",     "0to127",    XOFF + 10, 280 ],
-    "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, 280 ],
-    "OP2:ATime" :    [ "A Time",    "slideH",    XOFF + 10, 380 ],
-    "OP2:DTime" :    [ "D Time",    "slideH",    XOFF + 180, 380 ],
-    "OP2:STime" :    [ "S Time",    "slideH",    XOFF + 350, 380 ],
-    "OP2:RTime" :    [ "R Time",    "slideH",    XOFF + 520, 380 ],
-    "OP2:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, 60 ],
-    "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, 60 ],
-    "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, 60 ],
-    "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, 60 ],
+    "OP2:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, 20 ],
+    "OP2:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, 20 ],
+    "OP2:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, 20 ],
+    "OP2:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, 20 ],
+    "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, 130 ],
+    "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 100, 130 ],
+    "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + 10, 220 ],
+    "OP2:Level" :    [ "Level",     "0to127",    XOFF + 10, 310 ],
+    "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, 310 ],
+    "OP2:ATime" :    [ "A Time",    "slideH",    XOFF + 10, 400 ],
+    "OP2:DTime" :    [ "D Time",    "slideH",    XOFF + 180, 400 ],
+    "OP2:STime" :    [ "S Time",    "slideH",    XOFF + 350, 400 ],
+    "OP2:RTime" :    [ "R Time",    "slideH",    XOFF + 520, 400 ],
+    "OP2:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, 70 ],
+    "OP2:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, 70 ],
+    "OP2:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, 70 ],
+    "OP2:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, 70 ],
     "OP2:Ratio" :    [ "Ratio",     "blk33",     XOFF + 500, 10 ],
     "OP2:Freq" :     [ "Frequency", "blk97",     XOFF + 500, 10 ],
-    "OP2:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, 10, -63 ],
-    "OP2:Time" :     [ "TimeScale", "0to127",    XOFF + 500, 100 ],
-    "OP2:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, 100, -18 ],
-    "OP2:Scale" :    [ "Scale Pos", "C1toC7",    XOFF + 500, 190 ],
-    "OP2:DnCurve" :  [ "Down Curve","_18to18",   XOFF + 590, 190, -18 ],
-    "OP2:LGain" :    [ "L Gain",    "_63to63",   XOFF + 500, 280, -63 ],
-    "OP2:RGain" :    [ "R Gain",    "_63to63",   XOFF + 590, 280, -63 ],
+    "OP2:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, 25, -63 ],
+    "OP2:Time" :     [ "TimeScale", "0to127",    XOFF + 500, 130 ],
+    "OP2:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, 130, -18 ],
+    "OP2:Scale" :    [ "Scale Pos", "C1toC7",    XOFF + 500, 220 ],
+    "OP2:DnCurve" :  [ "Down Curve","_18to18",   XOFF + 590, 220, -18 ],
+    "OP2:LGain" :    [ "L Gain",    "_63to63",   XOFF + 500, 310, -63 ],
+    "OP2:RGain" :    [ "R Gain",    "_63to63",   XOFF + 590, 310, -63 ],
 
-    "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 190 ],
+    "OP3:Output" :   [ "Output",    "0to127",    100, YOFF + 220 ],
     "OP3:Feedback" : [ "Feedback",  "blk128",    100, YOFF + 10, -63 ],
-    "OP3:LCurve" :   [ "L Curve",   "line_exp",  210, YOFF + 10 ],
-    "OP3:RCurve" :   [ "R Curve",   "line_exp",  280, YOFF + 10 ],
-    "OP3:PitchEnv" : [ "Pitch Env",  "on_off",   350, YOFF + 10 ],
-    "OP3:Fixed" :    [ "Fixed",     "on_off",    420, YOFF + 10 ],
-    "OP3:OP1In" :    [ "OP1 Input", "0to127",    10, YOFF + 100 ],
-    "OP3:OP2In" :    [ "OP2 Input", "0to127",    100, YOFF + 100 ],
-    "OP3:OP4In" :    [ "OP4 Input", "0to127",    10, YOFF + 190 ],
-    "OP3:Level" :    [ "Level",     "0to127",    10, YOFF + 280 ],
-    "OP3:VelSens" :  [ "Velo Sens", "0to127",    100, YOFF + 280 ],
-    "OP3:ATime" :    [ "A Time",    "slideH",    10, YOFF + 380 ],
-    "OP3:DTime" :    [ "D Time",    "slideH",    180, YOFF + 380 ],
-    "OP3:STime" :    [ "S Time",    "slideH",    350, YOFF + 380 ],
-    "OP3:RTime" :    [ "R Time",    "slideH",    520, YOFF + 380 ],
-    "OP3:ALevel" :   [ "A Level",   "slideV",    210, YOFF + 60 ],
-    "OP3:DLevel" :   [ "D Level",   "slideV",    280, YOFF + 60 ],
-    "OP3:SLevel" :   [ "S Level",   "slideV",    350, YOFF + 60 ],
-    "OP3:RLevel" :   [ "R Level",   "slideV",    420, YOFF + 60 ],
+    "OP3:LCurve" :   [ "L Curve",   "line_exp",  210, YOFF + 20 ],
+    "OP3:RCurve" :   [ "R Curve",   "line_exp",  280, YOFF + 20 ],
+    "OP3:PitchEnv" : [ "Pitch Env",  "on_off",   350, YOFF + 20 ],
+    "OP3:Fixed" :    [ "Fixed",     "on_off",    420, YOFF + 20 ],
+    "OP3:OP1In" :    [ "OP1 Input", "0to127",    10, YOFF + 130 ],
+    "OP3:OP2In" :    [ "OP2 Input", "0to127",    100, YOFF + 130 ],
+    "OP3:OP4In" :    [ "OP4 Input", "0to127",    10, YOFF + 220 ],
+    "OP3:Level" :    [ "Level",     "0to127",    10, YOFF + 310 ],
+    "OP3:VelSens" :  [ "Velo Sens", "0to127",    100, YOFF + 310 ],
+    "OP3:ATime" :    [ "A Time",    "slideH",    10, YOFF + 400 ],
+    "OP3:DTime" :    [ "D Time",    "slideH",    180, YOFF + 400 ],
+    "OP3:STime" :    [ "S Time",    "slideH",    350, YOFF + 400 ],
+    "OP3:RTime" :    [ "R Time",    "slideH",    520, YOFF + 400 ],
+    "OP3:ALevel" :   [ "A Level",   "slideV",    210, YOFF + 70 ],
+    "OP3:DLevel" :   [ "D Level",   "slideV",    280, YOFF + 70 ],
+    "OP3:SLevel" :   [ "S Level",   "slideV",    350, YOFF + 70 ],
+    "OP3:RLevel" :   [ "R Level",   "slideV",    420, YOFF + 70 ],
     "OP3:Ratio" :    [ "Ratio",     "blk33",     500, YOFF + 10 ],
     "OP3:Freq" :     [ "Frequency", "blk97",     500, YOFF + 10 ],
-    "OP3:Detune" :   [ "Detune",    "_63to63",   590, YOFF + 10, -63 ],
-    "OP3:Time" :     [ "TimeScale", "0to127",    500, YOFF + 100 ],
-    "OP3:UpCurve" :  [ "Up Curve",  "_18to18",   590, YOFF + 100, -18 ],
-    "OP3:Scale" :    [ "Scale Pos", "C1toC7",    500, YOFF + 190 ],
-    "OP3:DnCurve" :  [ "Down Curve","_18to18",   590, YOFF + 190, -18 ],
-    "OP3:LGain" :    [ "L Gain",    "_63to63",   500, YOFF + 280, -63 ],
-    "OP3:RGain" :    [ "R Gain",    "_63to63",   590, YOFF + 280, -63 ],
+    "OP3:Detune" :   [ "Detune",    "_63to63",   590, YOFF + 25, -63 ],
+    "OP3:Time" :     [ "TimeScale", "0to127",    500, YOFF + 130 ],
+    "OP3:UpCurve" :  [ "Up Curve",  "_18to18",   590, YOFF + 130, -18 ],
+    "OP3:Scale" :    [ "Scale Pos", "C1toC7",    500, YOFF + 220 ],
+    "OP3:DnCurve" :  [ "Down Curve","_18to18",   590, YOFF + 220, -18 ],
+    "OP3:LGain" :    [ "L Gain",    "_63to63",   500, YOFF + 310, -63 ],
+    "OP3:RGain" :    [ "R Gain",    "_63to63",   590, YOFF + 310, -63 ],
 
-    "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 190 ],
+    "OP4:Output" :   [ "Output",    "0to127",    XOFF + 100, YOFF + 220 ],
     "OP4:Feedback" : [ "Feedback",  "blk128",    XOFF + 100, YOFF + 10, -63 ],
-    "OP4:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, YOFF + 10 ],
-    "OP4:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, YOFF + 10 ],
-    "OP4:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, YOFF + 10 ],
-    "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, YOFF + 10 ],
-    "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, YOFF + 100 ],
-    "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 100, YOFF + 100 ],
-    "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, YOFF + 190 ],
-    "OP4:Level" :    [ "Level",     "0to127",    XOFF + 10, YOFF + 280 ],
-    "OP4:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, YOFF + 280 ],
-    "OP4:ATime" :    [ "A Time",    "slideH",    XOFF + 10, YOFF + 380 ],
-    "OP4:DTime" :    [ "D Time",    "slideH",    XOFF + 180, YOFF + 380 ],
-    "OP4:STime" :    [ "S Time",    "slideH",    XOFF + 350, YOFF + 380 ],
-    "OP4:RTime" :    [ "R Time",    "slideH",    XOFF + 520, YOFF + 380 ],
-    "OP4:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, YOFF + 60 ],
-    "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, YOFF + 60 ],
-    "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, YOFF + 60 ],
-    "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, YOFF + 60 ],
+    "OP4:LCurve" :   [ "L Curve",   "line_exp",  XOFF + 210, YOFF + 20 ],
+    "OP4:RCurve" :   [ "R Curve",   "line_exp",  XOFF + 280, YOFF + 20 ],
+    "OP4:PitchEnv" : [ "Pitch Env",  "on_off",   XOFF + 350, YOFF + 20 ],
+    "OP4:Fixed" :    [ "Fixed",     "on_off",    XOFF + 420, YOFF + 20 ],
+    "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + 10, YOFF + 130 ],
+    "OP4:OP2In" :    [ "OP2 Input", "0to127",    XOFF + 100, YOFF + 130 ],
+    "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + 10, YOFF + 220 ],
+    "OP4:Level" :    [ "Level",     "0to127",    XOFF + 10, YOFF + 310 ],
+    "OP4:VelSens" :  [ "Velo Sens", "0to127",    XOFF + 100, YOFF + 310 ],
+    "OP4:ATime" :    [ "A Time",    "slideH",    XOFF + 10, YOFF + 400 ],
+    "OP4:DTime" :    [ "D Time",    "slideH",    XOFF + 180, YOFF + 400 ],
+    "OP4:STime" :    [ "S Time",    "slideH",    XOFF + 350, YOFF + 400 ],
+    "OP4:RTime" :    [ "R Time",    "slideH",    XOFF + 520, YOFF + 400 ],
+    "OP4:ALevel" :   [ "A Level",   "slideV",    XOFF + 210, YOFF + 70 ],
+    "OP4:DLevel" :   [ "D Level",   "slideV",    XOFF + 280, YOFF + 70 ],
+    "OP4:SLevel" :   [ "S Level",   "slideV",    XOFF + 350, YOFF + 70 ],
+    "OP4:RLevel" :   [ "R Level",   "slideV",    XOFF + 420, YOFF + 70 ],
     "OP4:Ratio" :    [ "Ratio",     "blk33",     XOFF + 500, YOFF + 10 ],
     "OP4:Freq" :     [ "Frequency", "blk97",     XOFF + 500, YOFF + 10 ],
-    "OP4:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, YOFF + 10, -63 ],
-    "OP4:Time" :     [ "TimeScale", "0to127",    XOFF + 500, YOFF + 100 ],
-    "OP4:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, YOFF + 100, -18 ],
-    "OP4:Scale" :    [ "Scale Pos", "C1toC7",    XOFF + 500, YOFF + 190 ],
-    "OP4:DnCurve" :  [ "Down Curve","_18to18",   XOFF + 590, YOFF + 190, -18 ],
-    "OP4:LGain" :    [ "L Gain",    "_63to63",   XOFF + 500, YOFF + 280, -63 ],
-    "OP4:RGain" :    [ "R Gain",    "_63to63",   XOFF + 590, YOFF + 280, -63 ],
+    "OP4:Detune" :   [ "Detune",    "_63to63",   XOFF + 590, YOFF + 25, -63 ],
+    "OP4:Time" :     [ "TimeScale", "0to127",    XOFF + 500, YOFF + 130 ],
+    "OP4:UpCurve" :  [ "Up Curve",  "_18to18",   XOFF + 590, YOFF + 130, -18 ],
+    "OP4:Scale" :    [ "Scale Pos", "C1toC7",    XOFF + 500, YOFF + 220 ],
+    "OP4:DnCurve" :  [ "Down Curve","_18to18",   XOFF + 590, YOFF + 220, -18 ],
+    "OP4:LGain" :    [ "L Gain",    "_63to63",   XOFF + 500, YOFF + 310, -63 ],
+    "OP4:RGain" :    [ "R Gain",    "_63to63",   XOFF + 590, YOFF + 310, -63 ],
 
 
     "Name:chr0" :    [ "",          "chars",   1430, 10 ],
