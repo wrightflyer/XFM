@@ -612,7 +612,7 @@ controls = {
     # Knobs
     "OP2:Feedback" : [ "Feedback",  "blk128",    XOFF + COL_FEEDBACK - 12, 10, -63 ],
     "OP2:OP3In" :    [ "OP3 Input", "0to127",    XOFF + COL_FEEDBACK, 130 ],
-    "OP2:Output" :   [ "Output",    "0to127",    XOFF + COL_FEEDBACK, 200 ],
+    "OP2:Output" :   [ "Output",    "0to127",    XOFF + COL_FEEDBACK, 220 ],
     "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + COL_FEEDBACK, 310 ],
     "OP2:Ratio" :    [ "Ratio",     "blk33",     XOFF + COL_RATIO - 12, 10 ],
     "OP2:Freq" :     [ "Frequency", "blk97",     XOFF + COL_RATIO - 12, 10 ],
