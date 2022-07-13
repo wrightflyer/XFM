@@ -105,6 +105,7 @@
         "Output": 0,
         "PitchEnv": 1,
         "Fixed": 1,
+        "Freq": 440,
         "Ratio": 100,
         "Detune": 0,
         "Level": 63,

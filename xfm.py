@@ -457,9 +457,11 @@ def rxmsg(msg):
         jsonpatch = json.dumps(patch, indent=4)
 
         print(jsonpatch)
+        # write the received patch to disk file
         with open("activepatch.json", 'w') as f:
-            f.write(json.dumps(patch, indent=4))
+            f.write(jsonpatch)
 
+        # then load from that disk file (really?)
         loadJson()
 
 def loadJson():
@@ -472,7 +474,14 @@ def loadJson():
                 for j in data[i]:
                     key = f'{i}:{j}'
                     print(f'{key} = ', data[i][j])
-                    controllist[key][0].setValue(data[i][j])
+                    if j == "Freq" or j == "Ratio":
+                        controllist[key][0].setValue(int(data[i][j] / 100))
+                        controllist[key][0].fraction = int(data[i][j] % 100)
+                    elif j == "Feedback":
+                        controllist[key][0].setValue(int(data[i][j] / 10))
+                        controllist[key][0].fraction = int(data[i][j] % 10)
+                    else:
+                        controllist[key][0].setValue(data[i][j])
                     controllist[key][0].draw()
             else:
                 for n in range(4):
@@ -738,25 +747,7 @@ for key in controls:
 # following is a JSON experiment to load a file (when a canvas is clicked) and load all the
 # values into the controls
 def loadJSON(event):
-    with open("mypatch.json") as f:
-        data = json.load(f)
-
-        for i in data:
-            print("=====", i, "=====")
-            if (i != "Name"):
-                for j in data[i]:
-                    key = f'{i}:{j}'
-                    print(f'{key} = ', data[i][j])
-                    controllist[key][0].setValue(data[i][j])
-                    controllist[key][0].draw()
-            else:
-                for n in range(4):
-                    key = f'{i}:chr{n}'
-                    print(f'{key} = ', data[i][n])
-                    controllist[key][0].setValue(ord(data[i][n]))
-                    controllist[key][0].draw()
-            for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
-                adsrs[j].draw()
+    loadJson()
 
 load = Canvas(width=32, height=32, highlightthickness=0)
 load.place(x=1650, y=450)
