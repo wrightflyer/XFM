@@ -140,14 +140,24 @@ class Anim:
             else:
                 value = value - self.fraction
             if value < -630:
-                self.index = 0
+                self.index = 0 # that is -63
+                self.fraction = 0
+            if value > 640:
                 self.fraction = 0
         if ctrl == "Ratio":
             value = self.getValue() * 100
             value = value + self.fraction
-        if ctrl == "Frequency":
+            if value < 50: # can't go lower than 0.50
+                self.fraction = 50;
+            if value > 3200: # can't go above 32.00
+                self.fraction = 0
+        if ctrl == "Freq":
             value = self.getValue() * 100
             value = value + self.fraction
+            if value > 9755:
+                self.fraction = 55
+            if value == 0:
+                self.fraction = 1
 
     def draw(self):
         self.canvas.delete(self.keyname)
@@ -196,7 +206,7 @@ class Anim:
                 if self.fraction < 9:
                     self.fraction = self.fraction + 1
                     newFrame = True
-            elif ctrl == "Freq":
+            elif ctrl == "Freq" or ctrl == "Ratio":
                 if self.fraction < 99:
                     self.fraction = self.fraction + 1
                     newFrame = True
@@ -209,31 +219,18 @@ class Anim:
                 newFrame = True
 
         if event.x < self.prevx:
-            if ctrl == "Feedback":
-                lowLimit = 0
-                if self.index == 0:
-                    lowLimit = 50
-                if self.fraction > lowLimit:
-                    self.fraction = self.fraction - 1
-                    newFrame = True
-            elif ctrl == "Freq":
-                if self.fraction > 0:
-                    self.fraction = self.fraction - 1
-                    newFrame = True
-            elif ctrl == "Ratio":
+            if ctrl == "Feedback" or ctrl == "Freq" or ctrl == "Ratio":
                 if self.fraction > 0:
                     self.fraction = self.fraction - 1
                     newFrame = True
             else:
                 self.dec()
-                if ctrl == "Feeback" and self.index == 0:
-                    if self.fraction < 50:
-                        self.fraction = 50
                 newFrame = True
 
         self.make_inbounds()
         if newFrame == True:
             self.draw()
+            # if a control just moved that would change ADSR then redraw the ADSR graph
             ctrlType = ctrlimgs[self.ctrl]["type"]
             if ctrlType == "slideV" or ctrlType == "slideH" or ctrlType == "slideVbi":
                 op = self.keyname.split(':')[0] + ":"
@@ -507,7 +504,7 @@ anims = {
     "chars" :   [ "lcd_chars.png", 36 ],
     "blk128" :  [ "ctrl_blank_128.png", 128 ],
     "blk33" :   [ "ctrl_blank_33.png", 33 ],
-    "blk97" :   [ "ctrl_blank_97.png", 97 ],
+    "blk98" :   [ "ctrl_blank_98.png", 98 ],
     "op1_4" :   [ "op_logo.png", 4 ],
     "dig_d_99" :[ "digits_dot_0_99.png", 100 ],
     "dig_d_9" : [ "digits_dot_0_9.png", 10 ],
@@ -583,7 +580,7 @@ controls = {
     "OP1:VelSens" :  [ "Velo Sens", "0to127",    COL_FEEDBACK, 310 ],
     # two controls - one location - what's displayed depends on Fixed On/Off
     "OP1:Ratio" :    [ "Ratio",     "blk33",     COL_RATIO - 12, 10 ],#not 0to127 !
-    "OP1:Freq" :     [ "Frequency", "blk97",     COL_RATIO - 12, 10 ],#not 0to127 !
+    "OP1:Freq" :     [ "Frequency", "blk98",     COL_RATIO - 12, 10 ],#not 0to127 !
     "OP1:OP2In" :    [ "OP2 Input", "0to127",    COL_RATIO, 130 ],
     "OP1:OP4In" :    [ "OP4 Input", "0to127",    COL_RATIO, 220 ],
     "OP1:Level" :    [ "Level",     "0to127",    COL_RATIO, 310 ],
@@ -615,7 +612,7 @@ controls = {
     "OP2:Output" :   [ "Output",    "0to127",    XOFF + COL_FEEDBACK, 220 ],
     "OP2:VelSens" :  [ "Velo Sens", "0to127",    XOFF + COL_FEEDBACK, 310 ],
     "OP2:Ratio" :    [ "Ratio",     "blk33",     XOFF + COL_RATIO - 12, 10 ],
-    "OP2:Freq" :     [ "Frequency", "blk97",     XOFF + COL_RATIO - 12, 10 ],
+    "OP2:Freq" :     [ "Frequency", "blk98",     XOFF + COL_RATIO - 12, 10 ],
     "OP2:OP1In" :    [ "OP1 Input", "0to127",    XOFF + COL_RATIO, 130 ],
     "OP2:OP4In" :    [ "OP4 Input", "0to127",    XOFF + COL_RATIO, 220 ],
     "OP2:Level" :    [ "Level",     "0to127",    XOFF + COL_RATIO, 310 ],
@@ -647,7 +644,7 @@ controls = {
     "OP3:Output" :   [ "Output",    "0to127",    COL_FEEDBACK, YOFF + 220 ],
     "OP3:VelSens" :  [ "Velo Sens", "0to127",    COL_FEEDBACK, YOFF + 310 ],
     "OP3:Ratio" :    [ "Ratio",     "blk33",     COL_RATIO - 12, YOFF + 10 ],
-    "OP3:Freq" :     [ "Frequency", "blk97",     COL_RATIO - 12, YOFF + 10 ],
+    "OP3:Freq" :     [ "Frequency", "blk98",     COL_RATIO - 12, YOFF + 10 ],
     "OP3:OP1In" :    [ "OP1 Input", "0to127",    COL_RATIO, YOFF + 130 ],
     "OP3:OP4In" :    [ "OP4 Input", "0to127",    COL_RATIO, YOFF + 220 ],
     "OP3:Level" :    [ "Level",     "0to127",    COL_RATIO, YOFF + 310 ],
@@ -679,7 +676,7 @@ controls = {
     "OP4:Output" :   [ "Output",    "0to127",    XOFF + COL_FEEDBACK, YOFF + 220 ],
     "OP4:VelSens" :  [ "Velo Sens", "0to127",    XOFF + COL_FEEDBACK, YOFF + 310 ],
     "OP4:Ratio" :    [ "Ratio",     "blk33",     XOFF + COL_RATIO - 12, YOFF + 10 ],
-    "OP4:Freq" :     [ "Frequency", "blk97",     XOFF + COL_RATIO - 12, YOFF + 10 ],
+    "OP4:Freq" :     [ "Frequency", "blk98",     XOFF + COL_RATIO - 12, YOFF + 10 ],
     "OP4:OP1In" :    [ "OP1 Input", "0to127",    XOFF + COL_RATIO, YOFF + 130 ],
     "OP4:OP3In" :    [ "OP3 Input", "0to127",    XOFF + COL_RATIO, YOFF + 220 ],
     "OP4:Level" :    [ "Level",     "0to127",    XOFF + COL_RATIO, YOFF + 310 ],
