@@ -160,6 +160,7 @@ class Anim:
                 self.fraction = 1
 
     def draw(self):
+        self.make_inbounds()
         self.canvas.delete(self.keyname)
         self.canvas.delete("digits")
         self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
@@ -177,17 +178,24 @@ class Anim:
 
         # following to handle "big knobs" that need their digits drawn separately...
         if ctrl == "Feedback":
-            if (self.getValue() < 0):
+            if self.getValue() < 0:
                 # a leading negative sign
                 self.canvas.create_image(1, 80, anchor=tk.NW, image = ctrlimgs["neg"]["frames"][0], tag = "digits")
             self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][abs(self.getValue())], tag = "digits")
             self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["dig_d_9"]["frames"][self.fraction], tag = "digits")
         if ctrl == "Freq":
-            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
-            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.fraction], tag = "digits")
+            # no leading 0 if only fraction
+            if self.getValue() != 0:
+                if self.getValue() < 10:
+                    self.canvas.create_image(20, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
+                else:
+                    self.canvas.create_image(16, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
+                self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["digits0"]["frames"][self.fraction], tag = "digits")
+            else:
+                self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.fraction], tag = "digits")
         if ctrl == "Ratio":
-            self.canvas.create_image(18, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
-            self.canvas.create_image(38, 80, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
+            self.canvas.create_image(17, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
+            self.canvas.create_image(39, 80, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
 
     def motion(self, event):
         newFrame = False
@@ -227,7 +235,6 @@ class Anim:
                 self.dec()
                 newFrame = True
 
-        self.make_inbounds()
         if newFrame == True:
             self.draw()
             # if a control just moved that would change ADSR then redraw the ADSR graph
@@ -248,7 +255,6 @@ class Anim:
             self.index = self.index - 1
             if self.index < 0:
                 self.index = (self.numFrames - 1)
-        self.make_inbounds()
         self.draw()
 
 
@@ -509,6 +515,7 @@ anims = {
     "dig_d_99" :[ "digits_dot_0_99.png", 100 ],
     "dig_d_9" : [ "digits_dot_0_9.png", 10 ],
     "digits" :  [ "digits_0_127.png", 128 ],
+    "digits0" : [ "digits_00_127.png", 128 ],
     "neg"    :  [ "digit_neg.png", 1],
     "litegrey" :[ "lightgrey.png", 1]
 }
