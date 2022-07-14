@@ -104,7 +104,6 @@ class Anim:
     def setIndex(self, n):
         #print(self.keyname, "set value=", n, "limit=", self.numFrames)
         if n >= 0 and n < self.numFrames:
-            #print("so settint it now")
             self.index = n
 
     def getIndex(self):
@@ -160,12 +159,20 @@ class Anim:
                 self.fraction = 1
 
     def draw(self):
+        op = self.keyname.split(':')[0]
+        ctrl = self.keyname.split(':')[1]
         self.make_inbounds()
         self.canvas.delete(self.keyname)
         self.canvas.delete("digits")
-        self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
-        op = self.keyname.split(':')[0]
-        ctrl = self.keyname.split(':')[1]
+        if ctrl[:3] != "chr":
+            self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
+        else:
+            # for the characters in name special handling because index>100 means char + dot overlay
+            if self.index < 100:
+                self.canvas.create_image(0, 11, anchor=tk.NW, image = self.getFrame(), tag=self.keyname)
+            else:
+                self.canvas.create_image(0, 11, anchor=tk.NW, image = ctrlimgs[self.ctrl]["frames"][self.index - 100], tag=self.keyname)
+                self.canvas.create_image(47, 60, anchor=tk.NW, image = ctrlimgs["dot"]["frames"][0], tag=self.keyname)
         if ctrl == "Fixed":
             ctrl_w = controllist[op + ":Freq"][0].width
             ctrl_h = controllist[op + ":Freq"][0].frameHeight + 10 # +10 for the label above
@@ -299,150 +306,162 @@ def make_signed(byte):
 
 def decode_bytes(bytes, patch):
     txt = ""
+    # 4 character name or are there dots?
     txt += chr(bytes[0x2E])
     txt += chr(bytes[0x2F])
     txt += chr(bytes[0x30])
     txt += chr(bytes[0x32])
+    #print("name len = ", bytes[0x2A])
+    if bytes[0x2A] == 4:
+        offset = 0
+    else:
+        if bytes[0x2A] >= 5:
+            txt += chr(bytes[0x33])
+        if bytes[0x2A] >= 6:
+            txt += chr(bytes[0x34])
+        if bytes[0x2A] == 7:
+            txt += chr(bytes[0x35])
+        offset = 5
     patch['Name'] = txt
 
-    patch["OP1"]['Feedback'] = make_signed(bytes[0x45])
-    patch["OP1"]['OP2In'] = bytes[0xAF]
-    patch["OP1"]['OP3In'] = bytes[0xB0]
-    patch["OP1"]['OP4In'] = bytes[0xB2]
-    patch["OP1"]['Output'] = bytes[0xC0]
-    patch["OP1"]['PitchEnv'] = bytes[0xCE]
-    patch["OP1"]['Fixed'] = bytes[0x4A]
-    ratio = ((bytes[0x5D] * 256) + bytes[0x5C] )
-    if bytes[0x59] & 0x10:
+    patch["OP1"]['Feedback'] = make_signed(bytes[offset + 0x45])
+    patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
+    patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
+    patch["OP1"]['OP4In'] = bytes[offset + 0xB2]
+    patch["OP1"]['Output'] = bytes[offset + 0xC0]
+    patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
+    patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
+    ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5C] )
+    if bytes[offset + 0x59] & 0x10:
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
-    patch["OP1"]['Detune'] = make_signed(bytes[0x5F])
-    patch["OP1"]['Level'] = bytes[0x5E]
-    patch["OP1"]['VelSens'] = bytes[0xC5]
-    patch["OP1"]['Time'] = bytes[0xCA]
-    patch["OP1"]['UpCurve'] = make_signed(bytes[0xD3])
-    patch["OP1"]['DnCurve'] = make_signed(bytes[0xD4])
-    patch["OP1"]['Scale'] = bytes[0x9F]
-    patch["OP1"]['ALevel'] = bytes[0x73]
-    patch["OP1"]['ATime'] = bytes[0x6E]
-    patch["OP1"]['DLevel'] = bytes[0x74]
-    patch["OP1"]['DTime'] = bytes[0x6F]
-    patch["OP1"]['SLevel'] = bytes[0x75]
-    patch["OP1"]['STime'] = bytes[0x70]
-    patch["OP1"]['RLevel'] = bytes[0x76]
-    patch["OP1"]['RTime'] = bytes[0x72]
-    patch["OP1"]['LGain'] = make_signed(bytes[0x9C])
-    patch["OP1"]['RGain'] = make_signed(bytes[0x9D])
-    patch["OP1"]['LCurve'] = bytes[0x9E] & 0x01
-    patch["OP1"]['RCurve'] = bytes[0x9E] & 0x10
+    patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
+    patch["OP1"]['Level'] = bytes[offset + 0x5E]
+    patch["OP1"]['VelSens'] = bytes[offset + 0xC5]
+    patch["OP1"]['Time'] = bytes[offset + 0xCA]
+    patch["OP1"]['UpCurve'] = make_signed(bytes[offset + 0xD3])
+    patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD4])
+    patch["OP1"]['Scale'] = bytes[offset + 0x9F]
+    patch["OP1"]['ALevel'] = bytes[offset + 0x73]
+    patch["OP1"]['ATime'] = bytes[offset + 0x6E]
+    patch["OP1"]['DLevel'] = bytes[offset + 0x74]
+    patch["OP1"]['DTime'] = bytes[offset + 0x6F]
+    patch["OP1"]['SLevel'] = bytes[offset + 0x75]
+    patch["OP1"]['STime'] = bytes[offset + 0x70]
+    patch["OP1"]['RLevel'] = bytes[offset + 0x76]
+    patch["OP1"]['RTime'] = bytes[offset + 0x72]
+    patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9C])
+    patch["OP1"]['RGain'] = make_signed(bytes[offset + 0x9D])
+    patch["OP1"]['LCurve'] = bytes[offset + 0x9E] & 0x01
+    patch["OP1"]['RCurve'] = bytes[offset + 0x9E] & 0x10
 
-    patch["OP2"]['Feedback'] = make_signed(bytes[0x46])
-    patch["OP2"]['OP1In'] = bytes[0xB3]
-    patch["OP2"]['OP3In'] = bytes[0xB5]
-    patch["OP2"]['OP4In'] = bytes[0xB6]
-    patch["OP2"]['Output'] = bytes[0xC2]
-    patch["OP2"]['PitchEnv'] = bytes[0xCF]
-    patch["OP2"]['Fixed'] = bytes[0x4E]
-    ratio = ((bytes[0x61] * 256) + bytes[0x60] )
-    if bytes[0x59] & 0x01:
+    patch["OP2"]['Feedback'] = make_signed(bytes[offset + 0x46])
+    patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
+    patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
+    patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
+    patch["OP2"]['Output'] = bytes[offset + 0xC2]
+    patch["OP2"]['PitchEnv'] = bytes[offset + 0xCF]
+    patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
+    ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
+    if bytes[offset + 0x59] & 0x01:
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP2"]['Ratio'] = ratio
-    patch["OP2"]['Detune'] = make_signed(bytes[0x64])
-    patch["OP2"]['Level'] = bytes[0x63]
-    patch["OP2"]['VelSens'] = bytes[0xC6]
-    patch["OP2"]['Time'] = bytes[0xCB]
-    patch["OP2"]['UpCurve'] = make_signed(bytes[0xD5])
-    patch["OP2"]['DnCurve'] = make_signed(bytes[0xD6])
-    patch["OP2"]['Scale'] = bytes[0xA4]
-    patch["OP2"]['ALevel'] = bytes[0x7C]
-    patch["OP2"]['ATime'] = bytes[0x77]
-    patch["OP2"]['DLevel'] = bytes[0x7D]
-    patch["OP2"]['DTime'] = bytes[0x78]
-    patch["OP2"]['SLevel'] = bytes[0x7E]
-    patch["OP2"]['STime'] = bytes[0x7A]
-    patch["OP2"]['RLevel'] = bytes[0x7F]
-    patch["OP2"]['RTime'] = bytes[0x7B]
-    patch["OP2"]['LGain'] = make_signed(bytes[0xA0])
-    patch["OP2"]['RGain'] = make_signed(bytes[0xA2])
-    patch["OP2"]['LCurve'] = bytes[0xA3] & 0x01
-    patch["OP2"]['RCurve'] = bytes[0xA3] & 0x10
+    patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x64])
+    patch["OP2"]['Level'] = bytes[offset + 0x63]
+    patch["OP2"]['VelSens'] = bytes[offset + 0xC6]
+    patch["OP2"]['Time'] = bytes[offset + 0xCB]
+    patch["OP2"]['UpCurve'] = make_signed(bytes[offset + 0xD5])
+    patch["OP2"]['DnCurve'] = make_signed(bytes[offset + 0xD6])
+    patch["OP2"]['Scale'] = bytes[offset + 0xA4]
+    patch["OP2"]['ALevel'] = bytes[offset + 0x7C]
+    patch["OP2"]['ATime'] = bytes[offset + 0x77]
+    patch["OP2"]['DLevel'] = bytes[offset + 0x7D]
+    patch["OP2"]['DTime'] = bytes[offset + 0x78]
+    patch["OP2"]['SLevel'] = bytes[offset + 0x7E]
+    patch["OP2"]['STime'] = bytes[offset + 0x7A]
+    patch["OP2"]['RLevel'] = bytes[offset + 0x7F]
+    patch["OP2"]['RTime'] = bytes[offset + 0x7B]
+    patch["OP2"]['LGain'] = make_signed(bytes[offset + 0xA0])
+    patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA2])
+    patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
+    patch["OP2"]['RCurve'] = bytes[offset + 0xA3] & 0x10
 
-    patch["OP3"]['Feedback'] = make_signed(bytes[0x47])
-    patch["OP3"]['OP1In'] = bytes[0xB7]
-    patch["OP3"]['OP2In'] = bytes[0xB8]
-    patch["OP3"]['OP4In'] = bytes[0xBB]
-    patch["OP3"]['Output'] = bytes[0xC3]
-    patch["OP3"]['PitchEnv'] = bytes[0xD0]
-    patch["OP3"]['Fixed'] = bytes[0x53]
-    ratio = ((bytes[0x66] * 256) + bytes[0x65] )
-    if bytes[0x61] != 0:
+    patch["OP3"]['Feedback'] = make_signed(bytes[offset + 0x47])
+    patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
+    patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
+    patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
+    patch["OP3"]['Output'] = bytes[offset + 0xC3]
+    patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
+    patch["OP3"]['Fixed'] = bytes[offset + 0x53]
+    ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
+    if bytes[offset + 0x61] != 0:
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
-    patch["OP3"]['Detune'] = make_signed(bytes[0x68])
-    patch["OP3"]['Level'] = bytes[0x67]
-    patch["OP3"]['VelSens'] = bytes[0xC7]
-    patch["OP3"]['Time'] = bytes[0xCC]
-    patch["OP3"]['UpCurve'] = make_signed(bytes[0xD7])
-    patch["OP3"]['DnCurve'] = make_signed(bytes[0xD8])
-    patch["OP3"]['Scale'] = bytes[0xA8]
-    patch["OP3"]['ALevel'] = bytes[0x85]
-    patch["OP3"]['ATime'] = bytes[0x80]
-    patch["OP3"]['DLevel'] = bytes[0x86]
-    patch["OP3"]['DTime'] = bytes[0x82]
-    patch["OP3"]['SLevel'] = bytes[0x87]
-    patch["OP3"]['STime'] = bytes[0x83]
-    patch["OP3"]['RLevel'] = bytes[0x88]
-    patch["OP3"]['RTime'] = bytes[0x84]
-    patch["OP3"]['LGain'] = make_signed(bytes[0xA5])
-    patch["OP3"]['RGain'] = make_signed(bytes[0xA6])
-    patch["OP3"]['LCurve'] = bytes[0xA7] & 0x01
-    patch["OP3"]['RCurve'] = bytes[0xA7] & 0x10
+    patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
+    patch["OP3"]['Level'] = bytes[offset + 0x67]
+    patch["OP3"]['VelSens'] = bytes[offset + 0xC7]
+    patch["OP3"]['Time'] = bytes[offset + 0xCC]
+    patch["OP3"]['UpCurve'] = make_signed(bytes[offset + 0xD7])
+    patch["OP3"]['DnCurve'] = make_signed(bytes[offset + 0xD8])
+    patch["OP3"]['Scale'] = bytes[offset + 0xA8]
+    patch["OP3"]['ALevel'] = bytes[offset + 0x85]
+    patch["OP3"]['ATime'] = bytes[offset + 0x80]
+    patch["OP3"]['DLevel'] = bytes[offset + 0x86]
+    patch["OP3"]['DTime'] = bytes[offset + 0x82]
+    patch["OP3"]['SLevel'] = bytes[offset + 0x87]
+    patch["OP3"]['STime'] = bytes[offset + 0x83]
+    patch["OP3"]['RLevel'] = bytes[offset + 0x88]
+    patch["OP3"]['RTime'] = bytes[offset + 0x84]
+    patch["OP3"]['LGain'] = make_signed(bytes[offset + 0xA5])
+    patch["OP3"]['RGain'] = make_signed(bytes[offset + 0xA6])
+    patch["OP3"]['LCurve'] = bytes[offset + 0xA7] & 0x01
+    patch["OP3"]['RCurve'] = bytes[offset + 0xA7] & 0x10
 
-    patch["OP4"]['Feedback'] = make_signed(bytes[0x48])
-    patch["OP4"]['OP1In'] = bytes[0xBC]
-    patch["OP4"]['OP2In'] = bytes[0xBD]
-    patch["OP4"]['OP3In'] = bytes[0xBE]
-    patch["OP4"]['Output'] = bytes[0xC4]
-    patch["OP4"]['PitchEnv'] = bytes[0xD2]
-    patch["OP4"]['Fixed'] = bytes[0x57]
-    ratio = ((bytes[0x6B] * 256) + bytes[0x6A] )
-    if bytes[0x69] != 0:
+    patch["OP4"]['Feedback'] = make_signed(bytes[offset + 0x48])
+    patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
+    patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
+    patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
+    patch["OP4"]['Output'] = bytes[offset + 0xC4]
+    patch["OP4"]['PitchEnv'] = bytes[offset + 0xD2]
+    patch["OP4"]['Fixed'] = bytes[offset + 0x57]
+    ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
+    if bytes[offset + 0x69] != 0:
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP4"]['Ratio'] = ratio
-    patch["OP4"]['Detune'] = make_signed(bytes[0x6D])
-    patch["OP4"]['Level'] = bytes[0x6C]
-    patch["OP4"]['VelSens'] = bytes[0xC8]
-    patch["OP4"]['Time'] = bytes[0xCD]
-    patch["OP4"]['UpCurve'] = make_signed(bytes[0xDA])
-    patch["OP4"]['DnCurve'] = make_signed(bytes[0xDB])
-    patch["OP4"]['Scale'] = bytes[0xAD]
-    patch["OP4"]['ALevel'] = bytes[0x8E]
-    patch["OP4"]['ATime'] = bytes[0x8A]
-    patch["OP4"]['DLevel'] = bytes[0x8F]
-    patch["OP4"]['DTime'] = bytes[0x8B]
-    patch["OP4"]['SLevel'] = bytes[0x90]
-    patch["OP4"]['STime'] = bytes[0x8C]
-    patch["OP4"]['RLevel'] = bytes[0x92]
-    patch["OP4"]['RTime'] = bytes[0x8D]
-    patch["OP4"]['LGain'] = make_signed(bytes[0xAA])
-    patch["OP4"]['RGain'] = make_signed(bytes[0xAB])
-    patch["OP4"]['LCurve'] = bytes[0xAC] & 0x01
-    patch["OP4"]['RCurve'] = bytes[0xAC] & 0x10
+    patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
+    patch["OP4"]['Level'] = bytes[offset + 0x6C]
+    patch["OP4"]['VelSens'] = bytes[offset + 0xC8]
+    patch["OP4"]['Time'] = bytes[offset + 0xCD]
+    patch["OP4"]['UpCurve'] = make_signed(bytes[offset + 0xDA])
+    patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDB])
+    patch["OP4"]['Scale'] = bytes[offset + 0xAD]
+    patch["OP4"]['ALevel'] = bytes[offset + 0x8E]
+    patch["OP4"]['ATime'] = bytes[offset + 0x8A]
+    patch["OP4"]['DLevel'] = bytes[offset + 0x8F]
+    patch["OP4"]['DTime'] = bytes[offset + 0x8B]
+    patch["OP4"]['SLevel'] = bytes[offset + 0x90]
+    patch["OP4"]['STime'] = bytes[offset + 0x8C]
+    patch["OP4"]['RLevel'] = bytes[offset + 0x92]
+    patch["OP4"]['RTime'] = bytes[offset + 0x8D]
+    patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xAA])
+    patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAB])
+    patch["OP4"]['LCurve'] = bytes[offset + 0xAC] & 0x01
+    patch["OP4"]['RCurve'] = bytes[offset + 0xAC] & 0x10
 
-    patch["Pitch"]['ALevel'] = make_signed(bytes[0x97])
-    patch["Pitch"]['ATime'] = bytes[0x93]
-    patch["Pitch"]['DLevel'] = make_signed(bytes[0x98])
-    patch["Pitch"]['DTime'] = bytes[0x94]
-    patch["Pitch"]['SLevel'] = make_signed(bytes[0x9A])
-    patch["Pitch"]['STime'] = bytes[0x95]
-    patch["Pitch"]['RLevel'] = make_signed(bytes[0x9B])
-    patch["Pitch"]['RTime'] = bytes[0x96]
+    patch["Pitch"]['ALevel'] = make_signed(bytes[offset + 0x97])
+    patch["Pitch"]['ATime'] = bytes[offset + 0x93]
+    patch["Pitch"]['DLevel'] = make_signed(bytes[offset + 0x98])
+    patch["Pitch"]['DTime'] = bytes[offset + 0x94]
+    patch["Pitch"]['SLevel'] = make_signed(bytes[offset + 0x9A])
+    patch["Pitch"]['STime'] = bytes[offset + 0x95]
+    patch["Pitch"]['RLevel'] = make_signed(bytes[offset + 0x9B])
+    patch["Pitch"]['RTime'] = bytes[offset + 0x96]
 
-    patch["Mixer"]['Level'] = make_signed(bytes[0xDC])
+    patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDC])
 
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
@@ -484,16 +503,27 @@ def loadJson():
                         controllist[key][0].setValue(data[i][j])
                     controllist[key][0].draw()
             else:
-                for n in range(4):
-                    key = f'{i}:chr{n}'
-                    print(f'{key} = ', data[i][n])
-                    chrnum= ord(data[i][n])
+                charCount = 0
+                n = 0
+                while n < len(data[i]):
+                    withDot = False
+                    key = f'{i}:chr{charCount}'
+                    print(f'{n}:{charCount}: {key} =  {data[i][n]}')
+                    chrnum = ord(data[i][n])
+                    if n < (len(data[i]) - 1):
+                        if data[i][n + 1] == '.':
+                            withDot = True
                     if chrnum >= ord('A'):
-                        chrnum = chrnum - ord('A') + 10
+                        chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
                     else:
                         chrnum = chrnum - ord('0')
-                    controllist[key][0].setValue(chrnum)
+                    if withDot == True:
+                        chrnum = chrnum + 100 # mark that a dot needs to be drawn
+                        n = n + 1
+                    controllist[key][0].index = chrnum
                     controllist[key][0].draw()
+                    charCount = charCount + 1
+                    n = n + 1
             for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
                 adsrs[j].draw()
 
@@ -516,7 +546,7 @@ anims = {
     "slideVbi" :[ "ctrl_slide_V-48_48.png", 97],
     "_63to63" : [ "ctrl_-63_63.png", 127 ],
     "C1toC7" :  [ "ctrl_C1_C7.png", 7 ],
-    "chars" :   [ "lcd_chars.png", 36 ],
+    "chars" :   [ "lcd_chars.png", 38 ],
     "blk128" :  [ "ctrl_blank_128.png", 128 ],
     "blk33" :   [ "ctrl_blank_33.png", 33 ],
     "blk98" :   [ "ctrl_blank_98.png", 98 ],
@@ -526,7 +556,8 @@ anims = {
     "digits" :  [ "digits_0_127.png", 128 ],
     "digits0" : [ "digits_00_127.png", 128 ],
     "neg"    :  [ "digit_neg.png", 1],
-    "litegrey" :[ "lightgrey.png", 1]
+    "litegrey" :[ "lightgrey.png", 1],
+    "dot" :     [ "dot.png", 1]
 }
 
 # Given the above list open each PNG in turn and break them into N separate anim frames
@@ -720,9 +751,9 @@ controls = {
 
 
     "Name:chr0" :    [ "",          "chars",   1430, 10 ],
-    "Name:chr1" :    [ "",          "chars",   1430 + 64 - 11, 10 ],
-    "Name:chr2" :    [ "",          "chars",   1430 + ((64 - 11) * 2), 10 ],
-    "Name:chr3":     [ "",          "chars",   1430 + ((64 - 11) * 3), 10 ],
+    "Name:chr1" :    [ "",          "chars",   1430 + 64 - 8, 10 ],
+    "Name:chr2" :    [ "",          "chars",   1430 + ((64 - 8) * 2), 10 ],
+    "Name:chr3":     [ "",          "chars",   1430 + ((64 - 8) * 3), 10 ],
     "Pitch:ATime" :  [ "A Time",    "slideH",    1410, 410 ],
     "Pitch:DTime" :  [ "D Time",    "slideH",    1410, 460 ],
     "Pitch:STime" :  [ "S Time",    "slideH",    1410, 510 ],
@@ -808,10 +839,10 @@ controllist["OP1:Scale"][0].setValue(3)
 controllist["OP2:Scale"][0].setValue(3)
 controllist["OP3:Scale"][0].setValue(3)
 controllist["OP4:Scale"][0].setValue(3)
-controllist["Name:chr0"][0].setValue(18)  #'I'
-controllist["Name:chr1"][0].setValue(23)  #'N'
-controllist["Name:chr2"][0].setValue(18)  #'I'
-controllist["Name:chr3"][0].setValue(29)  #'T'
+controllist["Name:chr0"][0].index = 19 + 100  #'I'
+controllist["Name:chr1"][0].index = 24 + 100  #'N'
+controllist["Name:chr2"][0].index = 19 + 100  #'I'
+controllist["Name:chr3"][0].setValue(30)  #'T'
 controllist["OP1:LGain"][0].setValue(0)
 controllist["OP2:LGain"][0].setValue(0)
 controllist["OP3:LGain"][0].setValue(0)
@@ -830,6 +861,6 @@ if len(inports):
     print("MIDI ports:", inports)
 
 if (len(inports) > 1):
-    port = mido.open_input(inports[1], callback=rxmsg)
+    port = mido.open_input(inports[0], callback=rxmsg)
 
 window.mainloop()
