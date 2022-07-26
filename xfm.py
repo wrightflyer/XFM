@@ -580,7 +580,7 @@ for anim in anims:
         ctrlimgs[anim]["frames"].append(frame)
 
 # Textured grey used as background for all 5 sub-windows
-rawback = Image.open("xfm/resources/dark-grey-texture-abstract-hd-wallpaper-1920x1200-1223.jpg")
+rawback = Image.open("dark-grey.jpg")
 opback = rawback.resize((685, 460))
 backimg = ImageTk.PhotoImage(opback)
 
@@ -861,6 +861,6 @@ if len(inports):
     print("MIDI ports:", inports)
 
 if (len(inports) > 1):
-    port = mido.open_input(inports[0], callback=rxmsg)
+    port = mido.open_input(inports[1], callback=rxmsg)
 
 window.mainloop()
