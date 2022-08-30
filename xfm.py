@@ -463,6 +463,139 @@ def decode_bytes(bytes, patch):
 
     patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDC])
 
+def encode_bytes(patch, bytes):
+    bytes[0x2E] = ord(patch['Name'][0])
+    bytes[0x2F] = ord(patch['Name'][1])
+    bytes[0x30] = ord(patch['Name'][2])
+    bytes[0x32] = ord(patch['Name'][3])
+
+    bytes[0x45] = patch["OP1"]['Feedback']                 # -63.0 .. +64.0 (+1.0)
+    bytes[0xAF] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
+    bytes[0xB0] = patch["OP1"]['OP3In']
+    bytes[0xB2] = patch["OP1"]['OP4In']
+    bytes[0xC0] = patch["OP1"]['Output']                   # 0..127 (+1)
+    bytes[0xCE] = patch["OP1"]['PitchEnv']                      # OFF / ON
+    bytes[0x4A] = patch["OP1"]['Fixed']                    # OFF / ON
+    bytes[0x5C] = (patch["OP1"]['Ratio']) & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
+    bytes[0x5D] = int((patch["OP1"]['Ratio']) / 256)
+    bytes[0x5F] = patch["OP1"]['Detune']                   # -63 .. 63 (+1)
+    bytes[0x5E] = patch["OP1"]['Level']                    # 0 .. 127 (+1)
+    bytes[0xC5] = patch["OP1"]['VelSens']                  # 0 .. 127 (+1)
+    bytes[0xCA] = patch["OP1"]['Time']                     # 0 .. 127 (+1)
+    bytes[0xD3] = patch["OP1"]['UpCurve']                   # -18 .. +18 (+1)
+    bytes[0xD4] = patch["OP1"]['DnCurve']                   # -18 .. +18 (+1)
+    bytes[0x9F] = patch["OP1"]['Scale']                    # C1 .. C7
+    bytes[0x73] = patch["OP1"]['ALevel']                   # 0 .. 127 (+1)
+    bytes[0x6E] = patch["OP1"]['ATime']
+    bytes[0x74] = patch["OP1"]['DLevel']
+    bytes[0x6F] = patch["OP1"]['DTime']
+    bytes[0x75] = patch["OP1"]['SLevel']
+    bytes[0x70] = patch["OP1"]['STime']
+    bytes[0x76] = patch["OP1"]['RLevel']
+    bytes[0x72] = patch["OP1"]['RTime']
+    bytes[0x9C] = patch["OP1"]['LGain']                    # -63 .. +63 (+1)
+    bytes[0x9D] = patch["OP1"]['RGain']
+    curves = (patch["OP1"]['LCurve']) | (patch["OP1"]['RCurve'])  # LINE / EXP
+    bytes[0x9E] = curves
+
+    bytes[0x46] = patch["OP2"]['Feedback']
+    bytes[0xB3] = patch["OP2"]['OP1In']
+    bytes[0xB5] = patch["OP2"]['OP3In']
+    bytes[0xB6] = patch["OP2"]['OP4In']
+    bytes[0xC2] = patch["OP2"]['Output']
+    bytes[0xCF] = patch["OP2"]['PitchEnv']
+    bytes[0x4E] = patch["OP2"]['Fixed']
+    bytes[0x60] = (patch["OP2"]['Ratio']) & 0xFF
+    bytes[0x61] = int((patch["OP2"]['Ratio']) / 256)
+    bytes[0x64] = patch["OP2"]['Detune']
+    bytes[0x63] = patch["OP2"]['Level']
+    bytes[0xC6] = patch["OP2"]['VelSens']
+    bytes[0xCB] = patch["OP2"]['Time']
+    bytes[0xD5] = patch["OP2"]['UpCurve']
+    bytes[0xD6] = patch["OP2"]['DnCurve']
+    bytes[0xA4] = patch["OP2"]['Scale']
+    bytes[0x7C] = patch["OP2"]['ALevel']
+    bytes[0x77] = patch["OP2"]['ATime']
+    bytes[0x7D] = patch["OP2"]['DLevel']
+    bytes[0x78] = patch["OP2"]['DTime']
+    bytes[0x7E] = patch["OP2"]['SLevel']
+    bytes[0x7A] = patch["OP2"]['STime']
+    bytes[0x7F] = patch["OP2"]['RLevel']
+    bytes[0x7B] = patch["OP2"]['RTime']
+    bytes[0xA0] = patch["OP2"]['LGain']
+    bytes[0xA2] = patch["OP2"]['RGain']
+    curves = (patch["OP2"]['LCurve']) | (patch["OP2"]['RCurve'])
+    bytes[0xA3] = curves
+
+    bytes[0x47] = patch["OP3"]['Feedback']
+    bytes[0xB7] = patch["OP3"]['OP1In']
+    bytes[0xB8] = patch["OP3"]['OP2In']
+    bytes[0xBB] = patch["OP3"]['OP4In']
+    bytes[0xC3] = patch["OP3"]['Output']
+    bytes[0xD0] = patch["OP3"]['PitchEnv']
+    bytes[0x53] = patch["OP3"]['Fixed']
+    bytes[0x65] = (patch["OP3"]['Ratio']) & 0xFF
+    bytes[0x66] = int((patch["OP3"]['Ratio']) / 256)
+    bytes[0x68] = patch["OP3"]['Detune']
+    bytes[0x67] = patch["OP3"]['Level']
+    bytes[0xC7] = patch["OP3"]['VelSens']
+    bytes[0xCC] = patch["OP3"]['Time']
+    bytes[0xD7] = patch["OP3"]['UpCurve']
+    bytes[0xD8] = patch["OP3"]['DnCurve']
+    bytes[0xA8] = patch["OP3"]['Scale']
+    bytes[0x85] = patch["OP3"]['ALevel']
+    bytes[0x80] = patch["OP3"]['ATime']
+    bytes[0x86] = patch["OP3"]['DLevel']
+    bytes[0x82] = patch["OP3"]['DTime']
+    bytes[0x87] = patch["OP3"]['SLevel']
+    bytes[0x83] = patch["OP3"]['STime']
+    bytes[0x88] = patch["OP3"]['RLevel']
+    bytes[0x84] = patch["OP3"]['RTime']
+    bytes[0xA5] = patch["OP3"]['LGain']
+    bytes[0xA6] = patch["OP3"]['RGain']
+    curves = (patch["OP3"]['LCurve']) | (patch["OP3"]['RCurve'])
+    bytes[0xA7] = curves
+
+    bytes[0x48] = patch["OP4"]['Feedback']
+    bytes[0xBC] = patch["OP4"]['OP1In']
+    bytes[0xBD] = patch["OP4"]['OP2In']
+    bytes[0xBE] = patch["OP4"]['OP3In']
+    bytes[0xC4] = patch["OP4"]['Output']
+    bytes[0xD2] = patch["OP4"]['PitchEnv']
+    bytes[0x57] = patch["OP4"]['Fixed']
+    bytes[0x6A] = (patch["OP4"]['Ratio']) & 0xFF
+    bytes[0x6B] = int((patch["OP4"]['Ratio']) / 256)
+    bytes[0x6D] = patch["OP4"]['Detune']
+    bytes[0x6C] = patch["OP4"]['Level']
+    bytes[0xC8] = patch["OP4"]['VelSens']
+    bytes[0xCD] = patch["OP4"]['Time']
+    bytes[0xDA] = patch["OP4"]['UpCurve']
+    bytes[0xDB] = patch["OP4"]['DnCurve']
+    bytes[0xAD] = patch["OP4"]['Scale']
+    bytes[0x8E] = patch["OP4"]['ALevel']
+    bytes[0x8A] = patch["OP4"]['ATime']
+    bytes[0x8F] = patch["OP4"]['DLevel']
+    bytes[0x8B] = patch["OP4"]['DTime']
+    bytes[0x90] = patch["OP4"]['SLevel']
+    bytes[0x8C] = patch["OP4"]['STime']
+    bytes[0x92] = patch["OP4"]['RLevel']
+    bytes[0x8D] = patch["OP4"]['RTime']
+    bytes[0xAA] = patch["OP4"]['LGain']
+    bytes[0xAB] = patch["OP4"]['RGain']
+    curves = (patch["OP4"]['LCurve']) | (patch["OP4"]['RCurve'])
+    bytes[0xAC] = curves
+
+    bytes[0x97] = patch["Pitch"]['ALevel']         # -48 .. +48 (+1)
+    bytes[0x93] = patch["Pitch"]['ATime']          # 0 .. 127 (+1)
+    bytes[0x98] = patch["Pitch"]['DLevel']
+    bytes[0x94] = patch["Pitch"]['DTime']
+    bytes[0x9A] = patch["Pitch"]['SLevel']
+    bytes[0x95] = patch["Pitch"]['STime']
+    bytes[0x9B] = patch["Pitch"]['RLevel']
+    bytes[0x96] = patch["Pitch"]['RTime']
+
+    bytes[0xDC] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
+
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
@@ -533,6 +666,62 @@ window.geometry("1720x930")
 window.title("Quick Edit for Liven XFM")
 window.configure(bg='#313131')
 window.resizable(False, False)
+
+def disable_event():
+    pass
+
+routing = Toplevel(window)
+routing.geometry("940x670")
+routing.title("OP Routing")
+routing.resizable(False, False)
+routing.protocol("WM_DELETE_WINDOW", disable_event)
+route_canvas = Canvas(routing, width = 940, height = 670, bg='#313131')
+route_canvas.place(x = 0, y = 0)
+OP_W = 280
+OP_H = 180
+OP1_LOCX1 = 80
+OP1_LOCY1 = 90
+OP1_LOCX2 = OP1_LOCX1 + OP_W
+OP1_LOCY2 = OP1_LOCY1 + OP_H
+
+OP2_LOCX1 = 450
+OP2_LOCY1 = 90
+OP2_LOCX2 = OP2_LOCX1 + OP_W
+OP2_LOCY2 = OP2_LOCY1 + OP_H
+
+OP3_LOCX1 = 80
+OP3_LOCY1 = 390
+OP3_LOCX2 = OP3_LOCX1 + OP_W
+OP3_LOCY2 = OP3_LOCY1 + OP_H
+
+OP4_LOCX1 = 450
+OP4_LOCY1 = 390
+OP4_LOCX2 = OP4_LOCX1 + OP_W
+OP4_LOCY2 = OP4_LOCY1 + OP_H
+
+route_canvas.create_rectangle(OP1_LOCX1, OP1_LOCY1, OP1_LOCX2, OP1_LOCY2, fill='#FF0000')
+route_canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 50, anchor=tk.NW, text="OP1", fill='#000000', font=('Helvetica','48','bold'))
+route_canvas.create_rectangle(OP2_LOCX1, OP2_LOCY1, OP2_LOCX2, OP2_LOCY2, fill='#00FF00')
+route_canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 50, anchor=tk.NW, text="OP2", fill='#000000', font=('Helvetica','48','bold'))
+route_canvas.create_rectangle(OP3_LOCX1, OP3_LOCY1, OP3_LOCX2, OP3_LOCY2, fill='#0000FF')
+route_canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 50, anchor=tk.NW, text="OP3", fill='#000000', font=('Helvetica','48','bold'))
+route_canvas.create_rectangle(OP4_LOCX1, OP4_LOCY1, OP4_LOCX2, OP4_LOCY2, fill='#FFFF00')
+route_canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 50, anchor=tk.NW, text="OP4", fill='#000000', font=('Helvetica','48','bold'))
+route_canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 20, OP2_LOCX1, OP1_LOCY1 + 20, fill='#FF0000', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 50, OP2_LOCX1, OP1_LOCY1 + 50, fill='#00FF00', arrow=FIRST, width=16, stipple='@./stipple/stip123.xbm')
+route_canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 20, OP4_LOCX1, OP3_LOCY2 - 20, fill='#0000FF', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 50, OP4_LOCX1, OP3_LOCY2 - 50, fill='#FFFF00', arrow=FIRST, width=16, stipple='@./stipple/stip123.xbm')
+route_canvas.create_line(OP1_LOCX1 + 20, OP1_LOCY2, OP1_LOCX1 + 20, OP3_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple='@./stipple/stip13.xbm')
+route_canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY2, OP1_LOCX1 + 50, OP3_LOCY1, fill='#0000FF', arrow=FIRST, width=16, stipple='@./stipple/stip123.xbm')
+route_canvas.create_line(OP4_LOCX2 - 20, OP2_LOCY2, OP4_LOCX2 - 20, OP4_LOCY1, fill='#00FF00', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP4_LOCX2 - 50, OP2_LOCY2, OP4_LOCX2 - 50, OP4_LOCY1, fill='#FFFF00', arrow=FIRST, width=16, stipple='@./stipple/stip123.xbm')
+route_canvas.create_line(OP1_LOCX2, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple='@./stipple/stip123.xbm')
+route_canvas.create_line(OP1_LOCX2 - 30, OP1_LOCY2, OP4_LOCX1, OP4_LOCY1 + 30, fill='#FFFF00', arrow=FIRST, width=16, stipple='@./stipple/stip49.xbm')
+route_canvas.create_line(OP3_LOCX2, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#0000FF', arrow=LAST, width=16, stipple='@./stipple/stip84.xbm')
+route_canvas.create_line(OP3_LOCX2 - 30, OP3_LOCY1, OP2_LOCX1, OP2_LOCY2 - 30, fill='#00FF00', arrow=FIRST, width=16, stipple='@./stipple/stip31.xbm')
+route_canvas.create_text(OP2_LOCX2 + 20, OP2_LOCY2 + 40, anchor=tk.NW, text="OUTPUT", fill='#FFFFFF', font=('Helvetica','30','bold'))
+routing.withdraw()
+routeShowing = False
 
 # There are only so many different types of control and each has an animated PNG
 # The entries are filename and number of frames (so frame height is overall height / num frames)
@@ -780,11 +969,37 @@ for key in controls:
 def loadJSON(event):
     loadJson()
 
+def saveJSON(event):
+    loadJson()
+
+def routingWindow(event):
+    global routeShowing
+    if not routeShowing:
+        routeButton.itemconfig(route_label, text="Hide\nRoute")
+        routing.deiconify()
+        routeShowing = True
+    else:
+        routeButton.itemconfig(route_label, text="Show\nRoute")
+        routing.withdraw()
+        routeShowing = False
+
 load = Canvas(width=32, height=32, highlightthickness=0)
-load.place(x=1650, y=450)
+load.place(x=1650, y=410)
 load.create_rectangle(0,0, 31, 31, fill='#C00000')
 load.create_text(0, 0, anchor=tk.NW, text="JSON\ntest", fill='#FFFFFF')
 load.bind('<Button>', loadJSON)
+
+save = Canvas(width=32, height=32, highlightthickness=0)
+save.place(x=1600, y=410)
+save.create_rectangle(0,0, 31, 31, fill='#00C000')
+save.create_text(0, 0, anchor=tk.NW, text="JSON\nsave", fill='#FFFFFF')
+save.bind('<Button>', saveJSON)
+
+routeButton = Canvas(width=32, height=32, highlightthickness=0)
+routeButton.place(x=1600, y=450)
+routeButton.create_rectangle(0,0, 31, 31, fill='#0000C0')
+route_label = routeButton.create_text(0, 0, anchor=tk.NW, text="Show\nRoute", fill='#FFFFFF')
+routeButton.bind('<Button>', routingWindow)
 
 
 # set all the non-0 init values into controls as if an "init" patch
