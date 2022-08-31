@@ -736,6 +736,26 @@ route_canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2, OP1_LOCX1 + (OP_W / 
 route_canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 + 60, OP4_LOCX2 + 148, OP3_LOCY2 + 60, fill='#0000FF', width=16, stipple='@./stipple/stip255.xbm')
 route_canvas.create_line(OP4_LOCX2 + 140, OP3_LOCY2 + 60, OP4_LOCX2 + 140, OP4_LOCY1 - 30, fill='#0000FF', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
 
+route_canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1, OP1_LOCX1 + 50, OP1_LOCY1 - 38, fill='#FF0000', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1 - 30, OP1_LOCX1 - 38, OP1_LOCY1 - 30, fill='#FF0000', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP1_LOCX1 - 30, OP1_LOCY1 - 30, OP1_LOCX1 - 30, OP1_LOCY1 + 30, fill='#FF0000', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP1_LOCX1 - 38, OP1_LOCY1 + 30, OP1_LOCX1, OP1_LOCY1 + 30, fill='#FF0000', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+
+route_canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#0000FF', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#0000FF', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+
+route_canvas.create_line(OP2_LOCX2 - 50, OP2_LOCY1, OP2_LOCX2 - 50, OP2_LOCY1 - 38, fill='#00FF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP2_LOCX2 - 50, OP2_LOCY1 - 30, OP2_LOCX2 + 38, OP2_LOCY1 - 30, fill='#00FF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP2_LOCX2 + 30, OP2_LOCY1 - 30, OP2_LOCX2 + 30, OP2_LOCY1 + 30, fill='#00FF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP2_LOCX2 + 38, OP2_LOCY1 + 30, OP2_LOCX2, OP2_LOCY1 + 30, fill='#00FF00', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+
+route_canvas.create_line(OP4_LOCX2 - 50, OP4_LOCY2, OP4_LOCX2 - 50, OP4_LOCY2 + 38, fill='#FFFF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP4_LOCX2 - 50, OP4_LOCY2 + 30, OP4_LOCX2 + 38, OP4_LOCY2 + 30, fill='#FFFF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP4_LOCX2 + 30, OP4_LOCY2 + 30, OP4_LOCX2 + 30, OP4_LOCY2 - 30, fill='#FFFF00', width=16, stipple='@./stipple/stip255.xbm')
+route_canvas.create_line(OP4_LOCX2 + 38, OP4_LOCY2 - 30, OP4_LOCX2, OP4_LOCY2 - 30, fill='#FFFF00', arrow=LAST, width=16, stipple='@./stipple/stip255.xbm')
+
 routing.withdraw()
 routeShowing = False
 
