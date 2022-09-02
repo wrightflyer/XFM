@@ -362,13 +362,13 @@ class RouteWindow:
         # the OP4 ot OP2 route (vert, yellow)
         self.canvas.create_line(OP4_LOCX2 - 50, OP2_LOCY2, OP4_LOCX2 - 50, OP4_LOCY1, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP2:OP4In"), tag="route")
         # the OP1 to OP4 route (diag, red)
-        self.canvas.create_line(OP1_LOCX2, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP1In"), tag="route")
+        self.canvas.create_line(OP1_LOCX2 - 8, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP1In"), tag="route")
         # the OP4 to OP1 route (diag, yellow)
-        self.canvas.create_line(OP1_LOCX2 - 30, OP1_LOCY2, OP4_LOCX1, OP4_LOCY1 + 30, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP4In"), tag="route")
+        self.canvas.create_line(OP1_LOCX2 - 30, OP1_LOCY2, OP4_LOCX1 + 8, OP4_LOCY1 + 30, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP4In"), tag="route")
         # the OP3 to OP2 route (diag, blue)
-        self.canvas.create_line(OP3_LOCX2, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP3In"), tag="route")
+        self.canvas.create_line(OP3_LOCX2 - 8, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP3In"), tag="route")
         # the OP2 to OP3 route (diag, green)
-        self.canvas.create_line(OP3_LOCX2 - 30, OP3_LOCY1, OP2_LOCX1, OP2_LOCY2 - 30, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP2In"), tag="route")
+        self.canvas.create_line(OP3_LOCX2 - 30, OP3_LOCY1, OP2_LOCX1 + 8, OP2_LOCY2 - 30, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP2In"), tag="route")
       
         # the "OUTPUT" text label
         self.canvas.create_text(OP2_LOCX2 + 20, OP2_LOCY2 + 40, anchor=tk.NW, text="OUTPUT", fill='#FFFFFF', font=('Helvetica','30','bold'), tag="route")
