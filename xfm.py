@@ -520,7 +520,7 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['Feedback'] = make_signed(bytes[offset + 0xAE]) * 10
     patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
     patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
-    patch["OP1"]['OP4In'] = bytes[offset + 0xB2]
+    patch["OP1"]['OP4In'] = bytes[offset + 0xB1]
     patch["OP1"]['Output'] = bytes[offset + 0xC0]
     patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
     patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
@@ -553,7 +553,7 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
     patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
     patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
-    patch["OP2"]['Output'] = bytes[offset + 0xC2]
+    patch["OP2"]['Output'] = bytes[offset + 0xC1]
     patch["OP2"]['PitchEnv'] = bytes[offset + 0xCF]
     patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
     ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
@@ -584,8 +584,8 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['Feedback'] = make_signed(bytes[offset + 0xB9]) * 10
     patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
     patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
-    patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
-    patch["OP3"]['Output'] = bytes[offset + 0xC3]
+    patch["OP3"]['OP4In'] = bytes[offset + 0xBA]
+    patch["OP3"]['Output'] = bytes[offset + 0xC2]
     patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
     patch["OP3"]['Fixed'] = bytes[offset + 0x53]
     ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
@@ -617,7 +617,7 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
-    patch["OP4"]['Output'] = bytes[offset + 0xC4]
+    patch["OP4"]['Output'] = bytes[offset + 0xC3]
     patch["OP4"]['PitchEnv'] = bytes[offset + 0xD2]
     patch["OP4"]['Fixed'] = bytes[offset + 0x57]
     ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
