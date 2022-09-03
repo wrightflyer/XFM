@@ -287,6 +287,8 @@ class RouteWindow:
         self.routeWin.protocol("WM_DELETE_WINDOW", self.disable_event)
         self.canvas = Canvas(self.routeWin, width = 940, height = 670, bg='#313131')
         self.canvas.place(x = 0, y = 0)
+        self.showNums = True
+        self.canvas.bind('<Button>', self.toggleNums)
         self.hide()
 
     def show(self):
@@ -298,14 +300,36 @@ class RouteWindow:
         self.routeWin.withdraw()
         self.routeShowing = False
 
+    def toggleNums(self, event):
+        if self.showNums == True:
+            self.showNums = False
+        else:
+            self.showNums = True
+        self.draw()
+    
     def disable_event(self):
         pass
 
     def getStipple(self, key):
         val = abs(controllist[key][0].getValue())
         name = "@./stipple/stip"
-        name = name + str(val * 2) + ".xbm"
+        # there are 0..255 stipple files but values are only 0..63 or 0..127 so need *2 or *4
+        mult = 2
+        if "Feedback" in key:
+            mult = 4
+        name = name + str(val * mult) + ".xbm"
+        # feedback can be +64 and *4 that is 256 but stipples are 0 .. 255 so...
+        if name == "@./stipple/stip256.xbm":
+            name = "@./stipple/stip255.xbm"
         return name
+        
+    def getDigits(self, key):
+        val = "{:03d}".format(controllist[key][0].getValue())
+        if val == "000":
+            val = ""
+        if not self.showNums:
+            val = ""
+        return val
 
     def draw(self):
         if not self.routeShowing:
@@ -345,55 +369,73 @@ class RouteWindow:
         self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 50, anchor=tk.NW, text="OP3", fill='#000000', font=('Helvetica','48','bold'), tag="route")
         self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 50, anchor=tk.NW, text="OP4", fill='#000000', font=('Helvetica','48','bold'), tag="route")
 
+        self.canvas.create_text(280, 640, anchor=tk.NW, text="Click anywhere to show/hide values", fill='#FFFFFF', font=('Helvetica','18'), tag="route")
+
         # the OP1 to OP2 route (horiz, red)
         self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 20, OP2_LOCX1, OP1_LOCY1 + 20, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP1In"), tag="route")
+        self.canvas.create_text(OP1_LOCX2 - 50, OP1_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP1 route (horiz, green)
         self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 50, OP2_LOCX1, OP1_LOCY1 + 50, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP2In"), tag="route")
+        self.canvas.create_text(OP2_LOCX1 + 5, OP1_LOCY1 + 50, anchor=tk.W, text=self.getDigits("OP1:OP2In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP4 route (horiz, bllue)
         self.canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 20, OP4_LOCX1, OP3_LOCY2 - 20, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP3In"), tag="route")
+        self.canvas.create_text(OP3_LOCX2 - 50, OP3_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP4 to OP3 route (horiz, yellow)
         self.canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 50, OP4_LOCX1, OP3_LOCY2 - 50, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP4In"), tag="route")
+        self.canvas.create_text(OP4_LOCX1 + 5, OP3_LOCY2 - 50, anchor=tk.W, text=self.getDigits("OP3:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP1 to OP3 route (vert, red)
         self.canvas.create_line(OP1_LOCX1 + 20, OP1_LOCY2, OP1_LOCX1 + 20, OP3_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP3:OP1In"), tag="route")
+        self.canvas.create_text(OP1_LOCX1 + 5, OP1_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP3:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP1 route (vert, blue)
         self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY2, OP1_LOCX1 + 50, OP3_LOCY1, fill='#0000FF', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP3In"), tag="route")
+        self.canvas.create_text(OP3_LOCX1 + 30, OP3_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP1:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP4 route (vert, green)
         self.canvas.create_line(OP4_LOCX2 - 20, OP2_LOCY2, OP4_LOCX2 - 20, OP4_LOCY1, fill='#00FF00', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP2In"), tag="route")
+        self.canvas.create_text(OP4_LOCX2 - 40, OP2_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:OP2In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP4 ot OP2 route (vert, yellow)
         self.canvas.create_line(OP4_LOCX2 - 50, OP2_LOCY2, OP4_LOCX2 - 50, OP4_LOCY1, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP2:OP4In"), tag="route")
+        self.canvas.create_text(OP4_LOCX2 - 70, OP4_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP1 to OP4 route (diag, red)
         self.canvas.create_line(OP1_LOCX2 - 8, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP1In"), tag="route")
+        self.canvas.create_text(OP1_LOCX2 - 50, OP1_LOCY2 - 30, anchor=tk.W, text=self.getDigits("OP4:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP4 to OP1 route (diag, yellow)
         self.canvas.create_line(OP1_LOCX2 - 30, OP1_LOCY2, OP4_LOCX1 + 8, OP4_LOCY1 + 30, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP4In"), tag="route")
+        self.canvas.create_text(OP4_LOCX1 + 8 , OP4_LOCY1 + 30, anchor=tk.W, text=self.getDigits("OP1:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP2 route (diag, blue)
         self.canvas.create_line(OP3_LOCX2 - 8, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP3In"), tag="route")
+        self.canvas.create_text(OP3_LOCX2 - 50 , OP3_LOCY1 + 30, anchor=tk.W, text=self.getDigits("OP2:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP3 route (diag, green)
         self.canvas.create_line(OP3_LOCX2 - 30, OP3_LOCY1, OP2_LOCX1 + 8, OP2_LOCY2 - 30, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP2In"), tag="route")
+        self.canvas.create_text(OP2_LOCX1 + 8 , OP2_LOCY2 - 30, anchor=tk.W, text=self.getDigits("OP3:OP2In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
       
         # the "OUTPUT" text label
         self.canvas.create_text(OP2_LOCX2 + 20, OP2_LOCY2 + 40, anchor=tk.NW, text="OUTPUT", fill='#FFFFFF', font=('Helvetica','30','bold'), tag="route")
-
-        # the OP2 route to OUPUT (green)
-        stip = self.getStipple("OP2:Output")
-        self.canvas.create_line(OP2_LOCX2, OP2_LOCY1 + (OP_H / 2), OP2_LOCX2 + 58, OP2_LOCY1 + (OP_H / 2), fill='#00FF00', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP2_LOCX2 + 50, OP2_LOCY1 + (OP_H / 2), OP2_LOCX2 + 50, OP2_LOCY2 + 30, arrow=LAST, fill='#00FF00', width=16, stipple=stip, tag="route")
-
-        # the OP4 route to OUTPUT (yellow)
-        stip = self.getStipple("OP4:Output")
-        self.canvas.create_line(OP4_LOCX2, OP4_LOCY1 + (OP_H / 2), OP4_LOCX2 + 58, OP4_LOCY1 + (OP_H / 2), fill='#FFFF00', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP4_LOCX2 + 50, OP4_LOCY1 + (OP_H / 2), OP4_LOCX2 + 50, OP4_LOCY1 - 30, arrow=LAST, fill='#FFFF00', width=16, stipple=stip, tag="route")
 
         # the OP1 route to OUTPUT (red)
         stip = self.getStipple("OP1:Output")
         self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1, OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 68, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 60, OP2_LOCX2 + 148, OP1_LOCY1 - 60, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 + 140, OP1_LOCY1 - 60, OP2_LOCX2 + 140, OP2_LOCY2 + 30, fill='#FF0000', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 + 20, anchor=tk.CENTER, text=self.getDigits("OP1:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+
+        # the OP2 route to OUPUT (green)
+        stip = self.getStipple("OP2:Output")
+        self.canvas.create_line(OP2_LOCX2, OP2_LOCY1 + (OP_H / 2), OP2_LOCX2 + 58, OP2_LOCY1 + (OP_H / 2), fill='#00FF00', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP2_LOCX2 + 50, OP2_LOCY1 + (OP_H / 2), OP2_LOCX2 + 50, OP2_LOCY2 + 30, arrow=LAST, fill='#00FF00', width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP2_LOCX2 - 50, OP2_LOCY1 + (OP_H / 2), anchor=tk.W, text=self.getDigits("OP2:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP3 route to OUPUT (blue)
         stip = self.getStipple("OP3:Output")
         self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2, OP1_LOCX1 + (OP_W / 2), OP3_LOCY2 + 68, fill='#0000FF', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 + 60, OP4_LOCX2 + 148, OP3_LOCY2 + 60, fill='#0000FF', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 + 140, OP3_LOCY2 + 60, OP4_LOCX2 + 140, OP4_LOCY1 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 - 20, anchor=tk.CENTER, text=self.getDigits("OP3:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+
+        # the OP4 route to OUTPUT (yellow)
+        stip = self.getStipple("OP4:Output")
+        self.canvas.create_line(OP4_LOCX2, OP4_LOCY1 + (OP_H / 2), OP4_LOCX2 + 58, OP4_LOCY1 + (OP_H / 2), fill='#FFFF00', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP4_LOCX2 + 50, OP4_LOCY1 + (OP_H / 2), OP4_LOCX2 + 50, OP4_LOCY1 - 30, arrow=LAST, fill='#FFFF00', width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP4_LOCX2 - 50, OP4_LOCY1 + (OP_H / 2), anchor=tk.W, text=self.getDigits("OP4:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP1 feedback loop (red)
         stip = self.getStipple("OP1:Feedback")
@@ -401,13 +443,7 @@ class RouteWindow:
         self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1 - 30, OP1_LOCX1 - 38, OP1_LOCY1 - 30, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 - 30, OP1_LOCY1 - 30, OP1_LOCX1 - 30, OP1_LOCY1 + 30, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 - 38, OP1_LOCY1 + 30, OP1_LOCX1, OP1_LOCY1 + 30, fill='#FF0000', arrow=LAST, width=16, stipple=stip, tag="route")
-
-        # the OP3 feedback loop (blue)
-        stip = self.getStipple("OP3:Feedback")
-        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP1_LOCX1 + 30, OP1_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP1:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP2 feedback loop (green)
         stip = self.getStipple("OP2:Feedback")
@@ -415,6 +451,15 @@ class RouteWindow:
         self.canvas.create_line(OP2_LOCX2 - 50, OP2_LOCY1 - 30, OP2_LOCX2 + 38, OP2_LOCY1 - 30, fill='#00FF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 + 30, OP2_LOCY1 - 30, OP2_LOCX2 + 30, OP2_LOCY1 + 30, fill='#00FF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 + 38, OP2_LOCY1 + 30, OP2_LOCX2, OP2_LOCY1 + 30, fill='#00FF00', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP2_LOCX2 - 70, OP2_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+
+        # the OP3 feedback loop (blue)
+        stip = self.getStipple("OP3:Feedback")
+        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#0000FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP3_LOCX1 + 30, OP3_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP3:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP4 feedback loop (yellow)
         stip = self.getStipple("OP4:Feedback")
@@ -422,6 +467,7 @@ class RouteWindow:
         self.canvas.create_line(OP4_LOCX2 - 50, OP4_LOCY2 + 30, OP4_LOCX2 + 38, OP4_LOCY2 + 30, fill='#FFFF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 + 30, OP4_LOCY2 + 30, OP4_LOCX2 + 30, OP4_LOCY2 - 30, fill='#FFFF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 + 38, OP4_LOCY2 - 30, OP4_LOCX2, OP4_LOCY2 - 30, fill='#FFFF00', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_text(OP4_LOCX2 - 70, OP4_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
 
 def print_dump(bytes):
