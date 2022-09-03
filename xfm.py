@@ -529,6 +529,8 @@ def decode_bytes(bytes, patch):
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
+    freq = ((byes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
+    patch["OP1"]["Freq"] = freq
     patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
     patch["OP1"]['Level'] = bytes[offset + 0x5E]
     patch["OP1"]['VelSens'] = bytes[offset + 0xC5]
@@ -561,6 +563,8 @@ def decode_bytes(bytes, patch):
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP2"]['Ratio'] = ratio
+    freq = ((byes[offset + 0x50] * 256) + bytes[offset + 0x4F])
+    patch["OP2"]["Freq"] = freq
     patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x64])
     patch["OP2"]['Level'] = bytes[offset + 0x63]
     patch["OP2"]['VelSens'] = bytes[offset + 0xC6]
@@ -593,6 +597,8 @@ def decode_bytes(bytes, patch):
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
+    freq = ((byes[offset + 0x55] * 256) + bytes[offset + 0x54])
+    patch["OP3"]["Freq"] = freq
     patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
     patch["OP3"]['Level'] = bytes[offset + 0x67]
     patch["OP3"]['VelSens'] = bytes[offset + 0xC7]
@@ -625,6 +631,8 @@ def decode_bytes(bytes, patch):
         # bit 7 of low byte held separately...
         ratio = ratio + 128
     patch["OP4"]['Ratio'] = ratio
+    freq = ((byes[offset + 0x5A] * 256) + bytes[offset + 0x58])
+    patch["OP4"]["Freq"] = freq
     patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
     patch["OP4"]['Level'] = bytes[offset + 0x6C]
     patch["OP4"]['VelSens'] = bytes[offset + 0xC8]
