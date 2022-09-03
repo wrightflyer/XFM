@@ -517,7 +517,7 @@ def decode_bytes(bytes, patch):
         offset = 5
     patch['Name'] = txt
 
-    patch["OP1"]['Feedback'] = make_signed(bytes[offset + 0x45])
+    patch["OP1"]['Feedback'] = make_signed(bytes[offset + 0xAE]) * 10
     patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
     patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
     patch["OP1"]['OP4In'] = bytes[offset + 0xB2]
@@ -549,7 +549,7 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['LCurve'] = bytes[offset + 0x9E] & 0x01
     patch["OP1"]['RCurve'] = bytes[offset + 0x9E] & 0x10
 
-    patch["OP2"]['Feedback'] = make_signed(bytes[offset + 0x46])
+    patch["OP2"]['Feedback'] = make_signed(bytes[offset + 0xB3]) * 10
     patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
     patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
     patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
@@ -581,7 +581,7 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
     patch["OP2"]['RCurve'] = bytes[offset + 0xA3] & 0x10
 
-    patch["OP3"]['Feedback'] = make_signed(bytes[offset + 0x47])
+    patch["OP3"]['Feedback'] = make_signed(bytes[offset + 0xB9]) * 10
     patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
     patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
     patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
@@ -613,7 +613,7 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['LCurve'] = bytes[offset + 0xA7] & 0x01
     patch["OP3"]['RCurve'] = bytes[offset + 0xA7] & 0x10
 
-    patch["OP4"]['Feedback'] = make_signed(bytes[offset + 0x48])
+    patch["OP4"]['Feedback'] = make_signed(bytes[offset + 0xBF]) * 10
     patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
@@ -808,6 +808,7 @@ def rxmsg(msg):
 
         # then load from that disk file (really?)
         loadJson()
+        routeWin.draw()
 
 def loadJson():
     with open("activepatch.json") as f:
