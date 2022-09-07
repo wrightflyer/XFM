@@ -293,12 +293,12 @@ class RouteWindow:
 
     def show(self):
         self.routeWin.deiconify()
-        self.routeShowing = True
+        self.Showing = True
         self.draw()
 
     def hide(self):
         self.routeWin.withdraw()
-        self.routeShowing = False
+        self.Showing = False
 
     def toggleNums(self, event):
         if self.showNums == True:
@@ -332,7 +332,7 @@ class RouteWindow:
         return val
 
     def draw(self):
-        if not self.routeShowing:
+        if not self.Showing:
             return
         self.canvas.delete("route") # delete everything already on the canvas (if any)
         OP_W = 280
@@ -469,6 +469,67 @@ class RouteWindow:
         self.canvas.create_line(OP4_LOCX2 + 38, OP4_LOCY2 - 30, OP4_LOCX2, OP4_LOCY2 - 30, fill='#FFFF00', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP4_LOCX2 - 70, OP4_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
+class SetupWindow:
+    def __init__(self):
+        self.setupWin = Toplevel(window)
+        self.setupWin.geometry("940x670")
+        self.setupWin.title("Setup")
+        self.setupWin.resizable(False, False)
+        self.setupWin.protocol("WM_DELETE_WINDOW", self.disable_event)
+        self.canvas = Canvas(self.setupWin, width = 940, height = 670, bg='#313131')
+        self.canvas.place(x = 0, y = 0)
+        self.listbox = Listbox(self.setupWin, width = 50)
+        self.listbox.place(x = 100, y = 100)
+        self.midiButton = Button(self.setupWin, text = "Open MIDI port")
+        self.midiButton.place(x = 200, y = 280)
+        self.midiButton.bind('<Button>', self.openMIDI)
+        self.showNums = True
+        self.bytes = b''
+        self.hide()
+
+    def disable_event(self):
+        pass
+
+    def show(self):
+        self.setupWin.deiconify()
+        self.Showing = True
+        self.draw()
+
+    def hide(self):
+        self.setupWin.withdraw()
+        self.Showing = False
+
+    def draw(self):
+        if not self.Showing:
+            return
+        print("len of bytes = " + str(len(self.bytes)))
+        for x in range(16, len(self.bytes) - 1):
+            byt = self.bytes[x]
+            tx = str(format(byt, '02x'))
+            Xoff = (x * 20) % 320
+            Yoff = int(x / 16) * 20
+            if self.bytes[x] == self.oldBytes[x]:
+                self.canvas.create_text(440 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF')
+            else:
+                self.canvas.create_text(440 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF0000')
+
+    def setPorts(self, inports):
+        for port in inports:
+            self.listbox.insert(END, port)
+
+    def openMIDI(self, event):
+        global port
+        global portOpen
+        if portOpen:
+            port.close()
+        print("going to open" + self.listbox.get(ANCHOR))
+        port = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
+        portOpen = True
+        window.title("Quick Edit for Liven XFM")
+
+    def setBytes(self, bytes):
+        self.oldBytes = self.bytes
+        self.bytes = bytes
 
 def print_dump(bytes):
     txt = ""
@@ -530,7 +591,7 @@ def decode_bytes(bytes, patch):
         ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
-    patch["OP1"]["Freq"] = freq
+    patch["OP1"]["Freq"] = freq / 10
     patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
     patch["OP1"]['Level'] = bytes[offset + 0x5E]
     patch["OP1"]['VelSens'] = bytes[offset + 0xC5]
@@ -564,7 +625,7 @@ def decode_bytes(bytes, patch):
         ratio = ratio + 128
     patch["OP2"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
-    patch["OP2"]["Freq"] = freq
+    patch["OP2"]["Freq"] = freq / 10
     patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x64])
     patch["OP2"]['Level'] = bytes[offset + 0x63]
     patch["OP2"]['VelSens'] = bytes[offset + 0xC6]
@@ -598,7 +659,7 @@ def decode_bytes(bytes, patch):
         ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x55] * 256) + bytes[offset + 0x54])
-    patch["OP3"]["Freq"] = freq
+    patch["OP3"]["Freq"] = freq / 10
     patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
     patch["OP3"]['Level'] = bytes[offset + 0x67]
     patch["OP3"]['VelSens'] = bytes[offset + 0xC7]
@@ -632,7 +693,7 @@ def decode_bytes(bytes, patch):
         ratio = ratio + 128
     patch["OP4"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x5A] * 256) + bytes[offset + 0x58])
-    patch["OP4"]["Freq"] = freq
+    patch["OP4"]["Freq"] = freq / 10
     patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
     patch["OP4"]['Level'] = bytes[offset + 0x6C]
     patch["OP4"]['VelSens'] = bytes[offset + 0xC8]
@@ -803,6 +864,7 @@ def rxmsg(msg):
     if msg.type == 'sysex' and msg.bytes()[8] == 2:
         patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
         bytes = msg.bytes()
+        setupWin.setBytes(bytes)
 
         print_dump(bytes)
 
@@ -863,12 +925,13 @@ def loadJson():
                 adsrs[j].draw()
 
 #============================= THE start ================================
+portOpen = False
+
 window = Tk()
 window.geometry("1720x930")
-window.title("Quick Edit for Liven XFM")
+window.title("Quick Edit for Liven XFM - no MIDI port open - use Setup!!")
 window.configure(bg='#313131')
 window.resizable(False, False)
-
 
 # There are only so many different types of control and each has an animated PNG
 # The entries are filename and number of frames (so frame height is overall height / num frames)
@@ -1134,7 +1197,7 @@ save.bind('<Button>', saveJSON)
 routeWin = RouteWindow()
 
 def routeButtonClick(event):
-    if not routeWin.routeShowing:
+    if not routeWin.Showing:
         routeWin.show()
         routeButton.itemconfig(route_label, text="Hide\nRoute")
     else:
@@ -1147,6 +1210,19 @@ routeButton.create_rectangle(0,0, 31, 31, fill='#0000C0')
 route_label = routeButton.create_text(0, 0, anchor=tk.NW, text="Show\nRoute", fill='#FFFFFF')
 routeButton.bind('<Button>', routeButtonClick)
 
+setupWin = SetupWindow()
+
+def setupButtonClick(event):
+    if not setupWin.Showing:
+        setupWin.show()
+    else:
+        setupWin.hide()
+
+setupButton = Canvas(width=32, height=32, highlightthickness=0)
+setupButton.place(x=1650, y=450)
+setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
+setupButton.create_text(0, 0, anchor=tk.NW, text="Setup", fill='#FFFFFF')
+setupButton.bind('<Button>', setupButtonClick)
 
 # set all the non-0 init values into controls as if an "init" patch
 controllist["OP1:ALevel"][0].setValue(127)
@@ -1218,10 +1294,12 @@ for entry in controllist:
     controllist[entry][0].draw()
 
 inports = mido.get_input_names()
+setupWin.setPorts(inports)
+
 if len(inports):
     print("MIDI ports:", inports)
 
-if (len(inports) > 1):
-    port = mido.open_input(inports[1], callback=rxmsg)
+#if (len(inports) > 1):
+#    port = mido.open_input(inports[1], callback=rxmsg)
 
 window.mainloop()
