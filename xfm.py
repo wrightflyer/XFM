@@ -331,6 +331,16 @@ class RouteWindow:
             val = ""
         return val
 
+    def getWave(self, fbk):
+        if fbk < -32.0:
+            return waveSquareImage
+        elif fbk >= -32.0 and fbk < 32.0:
+            return waveSineImage
+        elif fbk >= 32.0 and fbk < 63.0:
+            return waveSawImage
+        else:
+            return waveNoiseImage
+
     def draw(self):
         if not self.Showing:
             return
@@ -438,36 +448,52 @@ class RouteWindow:
         self.canvas.create_text(OP4_LOCX2 - 50, OP4_LOCY1 + (OP_H / 2), anchor=tk.W, text=self.getDigits("OP4:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP1 feedback loop (red)
+        op1fbk = controllist["OP1:Feedback"][0].getValue()
+        wave_file = self.getWave(op1fbk)
         stip = self.getStipple("OP1:Feedback")
         self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1, OP1_LOCX1 + 50, OP1_LOCY1 - 38, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1 - 30, OP1_LOCX1 - 38, OP1_LOCY1 - 30, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 - 30, OP1_LOCY1 - 30, OP1_LOCX1 - 30, OP1_LOCY1 + 30, fill='#FF0000', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP1_LOCX1 - 38, OP1_LOCY1 + 30, OP1_LOCX1, OP1_LOCY1 + 30, fill='#FF0000', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP1_LOCX1 + 30, OP1_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP1:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        if op1fbk != 0.0 and self.showNums:
+            self.canvas.create_image(OP1_LOCX1 + 30, OP1_LOCY1 + 40, anchor=tk.NW, image = wave_file, tag="route")
 
         # the OP2 feedback loop (green)
+        op2fbk = controllist["OP2:Feedback"][0].getValue()
+        wave_file = self.getWave(op2fbk)
         stip = self.getStipple("OP2:Feedback")
         self.canvas.create_line(OP2_LOCX2 - 50, OP2_LOCY1, OP2_LOCX2 - 50, OP2_LOCY1 - 38, fill='#00FF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 - 50, OP2_LOCY1 - 30, OP2_LOCX2 + 38, OP2_LOCY1 - 30, fill='#00FF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 + 30, OP2_LOCY1 - 30, OP2_LOCX2 + 30, OP2_LOCY1 + 30, fill='#00FF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP2_LOCX2 + 38, OP2_LOCY1 + 30, OP2_LOCX2, OP2_LOCY1 + 30, fill='#00FF00', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP2_LOCX2 - 70, OP2_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        if op2fbk != 0.0 and self.showNums:
+            self.canvas.create_image(OP2_LOCX2 - 70, OP2_LOCY1 + 40, anchor=tk.NW, image = wave_file, tag="route")
 
         # the OP3 feedback loop (blue)
+        op3fbk = controllist["OP3:Feedback"][0].getValue()
+        wave_file = self.getWave(op3fbk)
         stip = self.getStipple("OP3:Feedback")
         self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#0000FF', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP3_LOCX1 + 30, OP3_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP3:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        if op3fbk != 0.0 and self.showNums:
+            self.canvas.create_image(OP3_LOCX1 + 30, OP3_LOCY2 - 70, anchor=tk.NW, image = wave_file, tag="route")
 
         # the OP4 feedback loop (yellow)
+        op4fbk = controllist["OP4:Feedback"][0].getValue()
+        wave_file = self.getWave(op4fbk)
         stip = self.getStipple("OP4:Feedback")
         self.canvas.create_line(OP4_LOCX2 - 50, OP4_LOCY2, OP4_LOCX2 - 50, OP4_LOCY2 + 38, fill='#FFFF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 - 50, OP4_LOCY2 + 30, OP4_LOCX2 + 38, OP4_LOCY2 + 30, fill='#FFFF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 + 30, OP4_LOCY2 + 30, OP4_LOCX2 + 30, OP4_LOCY2 - 30, fill='#FFFF00', width=16, stipple=stip, tag="route")
         self.canvas.create_line(OP4_LOCX2 + 38, OP4_LOCY2 - 30, OP4_LOCX2, OP4_LOCY2 - 30, fill='#FFFF00', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP4_LOCX2 - 70, OP4_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        if op4fbk != 0.0 and self.showNums:
+            self.canvas.create_image(OP4_LOCX2 - 70, OP4_LOCY2 - 70, anchor=tk.NW, image = wave_file, tag="route")
 
 class SetupWindow:
     def __init__(self):
@@ -1011,6 +1037,11 @@ for anim in anims:
         frame = ImageTk.PhotoImage(img.crop(tup))
         # having cropped each frame from PNG store it separatelt in "frames" list
         ctrlimgs[anim]["frames"].append(frame)
+
+waveSineImage = ImageTk.PhotoImage(Image.open("sine.png").resize((32,32), Image.Resampling.LANCZOS))
+waveSawImage = ImageTk.PhotoImage(Image.open("saw.png").resize((32,32), Image.Resampling.LANCZOS))
+waveSquareImage = ImageTk.PhotoImage(Image.open("square.png").resize((32,32), Image.Resampling.LANCZOS))
+waveNoiseImage = ImageTk.PhotoImage(Image.open("noise.png").resize((32,32), Image.Resampling.LANCZOS))
 
 # Textured grey used as background for all 5 sub-windows
 rawback = Image.open("dark-grey.jpg")
