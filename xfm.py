@@ -479,11 +479,14 @@ class SetupWindow:
         self.canvas = Canvas(self.setupWin, width = 940, height = 670, bg='#313131')
         self.canvas.place(x = 0, y = 0)
         self.listbox = Listbox(self.setupWin, width = 50)
-        self.listbox.place(x = 100, y = 100)
+        self.listbox.place(x = 20, y = 50)
         self.midiButton = Button(self.setupWin, text = "Open MIDI port")
-        self.midiButton.place(x = 200, y = 280)
+        self.midiButton.place(x = 120, y = 230)
         self.midiButton.bind('<Button>', self.openMIDI)
+        self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#FFFFFF')
+        self.midiLabel.place(x = 120, y = 20)
         self.showNums = True
+        self.portsListed = False
         self.bytes = b''
         self.hide()
 
@@ -503,27 +506,45 @@ class SetupWindow:
         if not self.Showing:
             return
         print("len of bytes = " + str(len(self.bytes)))
-        for x in range(16, len(self.bytes) - 1):
+        if len(self.bytes) == 0:
+            return
+        if self.bytes[0x2A] == 4:
+            offset = 0
+        else:
+            offset = 5
+        for y in range(11):
+            Ypos = (y * 20) + 50
+            addr = str(format(y * 16, '02x')) + ":"
+            self.canvas.create_text(440, Ypos, anchor=tk.NW, text = addr, fill='#0000FF')
+        for x in range(16 + offset, len(self.bytes) - 1):
             byt = self.bytes[x]
             tx = str(format(byt, '02x'))
             Xoff = (x * 20) % 320
             Yoff = int(x / 16) * 20
             if self.bytes[x] == self.oldBytes[x]:
-                self.canvas.create_text(440 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF')
+                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF')
             else:
-                self.canvas.create_text(440 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF0000')
+                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF0000')
 
     def setPorts(self, inports):
-        for port in inports:
-            self.listbox.insert(END, port)
+        print("Len ports = ", len(inports))
+        if len(inports) > 0:
+            for port in inports:
+                self.listbox.insert(END, port)
+            self.listbox.selection_anchor(0)
+            self.portsListed = True
 
     def openMIDI(self, event):
+        print("Ports listed = ", self.portsListed)
+        if not self.portsListed:
+            return
         global port
         global portOpen
         if portOpen:
             port.close()
         print("going to open" + self.listbox.get(ANCHOR))
         port = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
+        self.midiLabel.config(text = "MIDI port: " + self.listbox.get(ANCHOR))
         portOpen = True
         window.title("Quick Edit for Liven XFM")
 
