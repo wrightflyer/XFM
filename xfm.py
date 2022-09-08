@@ -374,12 +374,32 @@ class RouteWindow:
         self.canvas.create_rectangle(OP4_LOCX1, OP4_LOCY1, OP4_LOCX2, OP4_LOCY2, fill='#FFFF00', tag="route")
 
         # labels for the rectangles
-        self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 50, anchor=tk.NW, text="OP1", fill='#000000', font=('Helvetica','48','bold'), tag="route")
-        self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 50, anchor=tk.NW, text="OP2", fill='#000000', font=('Helvetica','48','bold'), tag="route")
-        self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 50, anchor=tk.NW, text="OP3", fill='#000000', font=('Helvetica','48','bold'), tag="route")
-        self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 50, anchor=tk.NW, text="OP4", fill='#000000', font=('Helvetica','48','bold'), tag="route")
+        self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 40, anchor=tk.NW, text="OP1", fill='#000000', font=('Helvetica','48','bold'), tag="route")
+        self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 40, anchor=tk.NW, text="OP2", fill='#000000', font=('Helvetica','48','bold'), tag="route")
+        self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 40, anchor=tk.NW, text="OP3", fill='#000000', font=('Helvetica','48','bold'), tag="route")
+        self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 40, anchor=tk.NW, text="OP4", fill='#000000', font=('Helvetica','48','bold'), tag="route")
 
         self.canvas.create_text(280, 640, anchor=tk.NW, text="Click anywhere to show/hide values", fill='#FFFFFF', font=('Helvetica','18'), tag="route")
+
+        if controllist["OP1:Fixed"][0].getValue():
+            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP1:Freq"][0].getValue() * 100 + controllist["OP1:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        else:
+            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP1:Ratio"][0].getValue() * 100 + controllist["OP1:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        
+        if controllist["OP2:Fixed"][0].getValue():
+            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP2:Freq"][0].getValue() * 100 + controllist["OP2:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        else:
+            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP2:Ratio"][0].getValue() * 100 + controllist["OP2:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+
+        if controllist["OP3:Fixed"][0].getValue():
+            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP3:Freq"][0].getValue() * 100 + controllist["OP3:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        else:
+            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP3:Ratio"][0].getValue() * 100 + controllist["OP3:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+
+        if controllist["OP4:Fixed"][0].getValue():
+            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP4:Freq"][0].getValue() * 100 + controllist["OP4:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+        else:
+            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP4:Ratio"][0].getValue() * 100 + controllist["OP4:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP1 to OP2 route (horiz, red)
         self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 20, OP2_LOCX1, OP1_LOCY1 + 20, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP1In"), tag="route")
