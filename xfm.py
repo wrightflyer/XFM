@@ -485,6 +485,8 @@ class SetupWindow:
         self.midiButton.bind('<Button>', self.openMIDI)
         self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#FFFFFF')
         self.midiLabel.place(x = 120, y = 20)
+        self.dumpLabel = Label(self.setupWin, text = "Dump of received sysex (red = changed)", bg = '#FFFFFF')
+        self.dumpLabel.place(x = 510, y = 20)
         self.showNums = True
         self.portsListed = False
         self.bytes = b''
@@ -510,24 +512,35 @@ class SetupWindow:
             return
         if self.bytes[0x2A] == 4:
             offset = 0
+            Yrange = 14
+            byteLimit = len(self.bytes) - 1
         else:
             offset = 5
-        for y in range(11):
+            Yrange = 15
+            byteLimit = len(self.bytes) - 6
+        self.canvas.delete("dump")
+        for y in range(1, Yrange):
             Ypos = (y * 20) + 50
-            addr = str(format(y * 16, '02x')) + ":"
-            self.canvas.create_text(440, Ypos, anchor=tk.NW, text = addr, fill='#0000FF')
-        for x in range(16 + offset, len(self.bytes) - 1):
-            byt = self.bytes[x]
-            tx = str(format(byt, '02x'))
+            addr = str(format(y * 16, '02X')) + " :"
+            self.canvas.create_text(440, Ypos, anchor=tk.NW, text = addr, fill='#8080FF', tag="dump")
+        for x in range(16):
+            Xpos = x * 20 + 470
+            addr = str(format(x, '02X'))
+            self.canvas.create_text(Xpos, 50, anchor=tk.NW, text = addr, fill='#80FF80', tag="dump")
+        for x in range(16, byteLimit):
+            byt = self.bytes[x + offset]
+            tx = str(format(byt, '02X'))
             Xoff = (x * 20) % 320
             Yoff = int(x / 16) * 20
-            if self.bytes[x] == self.oldBytes[x]:
-                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF')
+            if len(self.bytes) != len(self.oldBytes):
+                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
             else:
-                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF0000')
+                if self.bytes[x + offset] == self.oldBytes[x + offset]:
+                    self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                else:
+                    self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
 
     def setPorts(self, inports):
-        print("Len ports = ", len(inports))
         if len(inports) > 0:
             for port in inports:
                 self.listbox.insert(END, port)
@@ -535,14 +548,13 @@ class SetupWindow:
             self.portsListed = True
 
     def openMIDI(self, event):
-        print("Ports listed = ", self.portsListed)
         if not self.portsListed:
             return
         global port
         global portOpen
         if portOpen:
             port.close()
-        print("going to open" + self.listbox.get(ANCHOR))
+        print("going to open: " + self.listbox.get(ANCHOR))
         port = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
         self.midiLabel.config(text = "MIDI port: " + self.listbox.get(ANCHOR))
         portOpen = True
@@ -551,6 +563,7 @@ class SetupWindow:
     def setBytes(self, bytes):
         self.oldBytes = self.bytes
         self.bytes = bytes
+        self.draw()
 
 def print_dump(bytes):
     txt = ""
