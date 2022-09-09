@@ -324,8 +324,17 @@ class RouteWindow:
         return name
         
     def getDigits(self, key):
-        val = "{:03d}".format(controllist[key][0].getValue())
-        if val == "000":
+        if "Feedback" in key:
+            fb = controllist[key][0].getValue() * 10
+            if fb < 0.0:
+                fb = fb - controllist[key][0].fraction
+            else:
+                fb = fb + controllist[key][0].fraction
+            fb = fb / 10
+            val = "{:03.1f}".format(fb)
+        else:
+            val = "{:03d}".format(controllist[key][0].getValue())
+        if val == "000" or val == "0.0":
             val = ""
         if not self.showNums:
             val = ""
@@ -368,9 +377,9 @@ class RouteWindow:
         OP4_LOCY2 = OP4_LOCY1 + OP_H
 
         # four coloured OP rectangles
-        self.canvas.create_rectangle(OP1_LOCX1, OP1_LOCY1, OP1_LOCX2, OP1_LOCY2, fill='#FF0000', tag="route")
+        self.canvas.create_rectangle(OP1_LOCX1, OP1_LOCY1, OP1_LOCX2, OP1_LOCY2, fill='#FF1818', tag="route")
         self.canvas.create_rectangle(OP2_LOCX1, OP2_LOCY1, OP2_LOCX2, OP2_LOCY2, fill='#00FF00', tag="route")
-        self.canvas.create_rectangle(OP3_LOCX1, OP3_LOCY1, OP3_LOCX2, OP3_LOCY2, fill='#0000FF', tag="route")
+        self.canvas.create_rectangle(OP3_LOCX1, OP3_LOCY1, OP3_LOCX2, OP3_LOCY2, fill='#2828FF', tag="route")
         self.canvas.create_rectangle(OP4_LOCX1, OP4_LOCY1, OP4_LOCX2, OP4_LOCY2, fill='#FFFF00', tag="route")
 
         # labels for the rectangles
@@ -382,42 +391,51 @@ class RouteWindow:
         self.canvas.create_text(280, 640, anchor=tk.NW, text="Click anywhere to show/hide values", fill='#FFFFFF', font=('Helvetica','18'), tag="route")
 
         if controllist["OP1:Fixed"][0].getValue():
-            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP1:Freq"][0].getValue() * 100 + controllist["OP1:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 105, anchor=tk.NW, text="Freq: " + str(controllist["OP1:Freq"][0].getValue() * 100 + controllist["OP1:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18'), tag="route")
         else:
-            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP1:Ratio"][0].getValue() * 100 + controllist["OP1:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 105, anchor=tk.NW, text="Ratio: x" + str((controllist["OP1:Ratio"][0].getValue() * 100 + controllist["OP1:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18'), tag="route")
+        if controllist["OP1:Detune"][0].getValue() != 0:
+            self.canvas.create_text(OP1_LOCX1 + 70, OP1_LOCY1 + 130, anchor=tk.NW, text="Detune: " + str(controllist["OP1:Detune"][0].getValue()), fill='#000000', font=('Helvetica','18'), tag="route")
         
         if controllist["OP2:Fixed"][0].getValue():
-            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP2:Freq"][0].getValue() * 100 + controllist["OP2:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 105, anchor=tk.NW, text="Freq: " + str(controllist["OP2:Freq"][0].getValue() * 100 + controllist["OP2:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18'), tag="route")
         else:
-            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP2:Ratio"][0].getValue() * 100 + controllist["OP2:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 105, anchor=tk.NW, text="Ratio: x" + str((controllist["OP2:Ratio"][0].getValue() * 100 + controllist["OP2:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18'), tag="route")
+        if controllist["OP2:Detune"][0].getValue() != 0:
+            self.canvas.create_text(OP2_LOCX1 + 70, OP2_LOCY1 + 130, anchor=tk.NW, text="Detune: " + str(controllist["OP2:Detune"][0].getValue()), fill='#000000', font=('Helvetica','18'), tag="route")
 
         if controllist["OP3:Fixed"][0].getValue():
-            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP3:Freq"][0].getValue() * 100 + controllist["OP3:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 105, anchor=tk.NW, text="Freq: " + str(controllist["OP3:Freq"][0].getValue() * 100 + controllist["OP3:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18'), tag="route")
         else:
-            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP3:Ratio"][0].getValue() * 100 + controllist["OP3:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 105, anchor=tk.NW, text="Ratio: x" + str((controllist["OP3:Ratio"][0].getValue() * 100 + controllist["OP3:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18'), tag="route")
+        if controllist["OP3:Detune"][0].getValue() != 0:
+            self.canvas.create_text(OP3_LOCX1 + 70, OP3_LOCY1 + 130, anchor=tk.NW, text="Detune: " + str(controllist["OP3:Detune"][0].getValue()), fill='#000000', font=('Helvetica','18'), tag="route")
 
         if controllist["OP4:Fixed"][0].getValue():
-            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 100, anchor=tk.NW, text="Freq: " + str(controllist["OP4:Freq"][0].getValue() * 100 + controllist["OP4:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 105, anchor=tk.NW, text="Freq: " + str(controllist["OP4:Freq"][0].getValue() * 100 + controllist["OP4:Freq"][0].fraction) + " Hz", fill='#000000', font=('Helvetica','18'), tag="route")
         else:
-            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 100, anchor=tk.NW, text="Ratio: X " + str((controllist["OP4:Ratio"][0].getValue() * 100 + controllist["OP4:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18','bold'), tag="route")
+            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 105, anchor=tk.NW, text="Ratio: x" + str((controllist["OP4:Ratio"][0].getValue() * 100 + controllist["OP4:Ratio"][0].fraction) / 100), fill='#000000', font=('Helvetica','18'), tag="route")
+        if controllist["OP4:Detune"][0].getValue() != 0:
+            self.canvas.create_text(OP4_LOCX1 + 70, OP4_LOCY1 + 130, anchor=tk.NW, text="Detune: " + str(controllist["OP4:Detune"][0].getValue()), fill='#000000', font=('Helvetica','18'), tag="route")
+
 
         # the OP1 to OP2 route (horiz, red)
-        self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 20, OP2_LOCX1, OP1_LOCY1 + 20, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP1In"), tag="route")
+        self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 20, OP2_LOCX1, OP1_LOCY1 + 20, fill='#FF1818', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP1In"), tag="route")
         self.canvas.create_text(OP1_LOCX2 - 50, OP1_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP1 route (horiz, green)
         self.canvas.create_line(OP1_LOCX2, OP1_LOCY1 + 50, OP2_LOCX1, OP1_LOCY1 + 50, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP2In"), tag="route")
         self.canvas.create_text(OP2_LOCX1 + 5, OP1_LOCY1 + 50, anchor=tk.W, text=self.getDigits("OP1:OP2In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP4 route (horiz, bllue)
-        self.canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 20, OP4_LOCX1, OP3_LOCY2 - 20, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP3In"), tag="route")
+        self.canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 20, OP4_LOCX1, OP3_LOCY2 - 20, fill='#2828FF', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP3In"), tag="route")
         self.canvas.create_text(OP3_LOCX2 - 50, OP3_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP4:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP4 to OP3 route (horiz, yellow)
         self.canvas.create_line(OP3_LOCX2, OP3_LOCY2 - 50, OP4_LOCX1, OP3_LOCY2 - 50, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP4In"), tag="route")
         self.canvas.create_text(OP4_LOCX1 + 5, OP3_LOCY2 - 50, anchor=tk.W, text=self.getDigits("OP3:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP1 to OP3 route (vert, red)
-        self.canvas.create_line(OP1_LOCX1 + 20, OP1_LOCY2, OP1_LOCX1 + 20, OP3_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP3:OP1In"), tag="route")
+        self.canvas.create_line(OP1_LOCX1 + 20, OP1_LOCY2, OP1_LOCX1 + 20, OP3_LOCY1, fill='#FF1818', arrow=LAST, width=16, stipple=self.getStipple("OP3:OP1In"), tag="route")
         self.canvas.create_text(OP1_LOCX1 + 5, OP1_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP3:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP1 route (vert, blue)
-        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY2, OP1_LOCX1 + 50, OP3_LOCY1, fill='#0000FF', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP3In"), tag="route")
+        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY2, OP1_LOCX1 + 50, OP3_LOCY1, fill='#2828FF', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP3In"), tag="route")
         self.canvas.create_text(OP3_LOCX1 + 30, OP3_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP1:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP4 route (vert, green)
         self.canvas.create_line(OP4_LOCX2 - 20, OP2_LOCY2, OP4_LOCX2 - 20, OP4_LOCY1, fill='#00FF00', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP2In"), tag="route")
@@ -426,13 +444,13 @@ class RouteWindow:
         self.canvas.create_line(OP4_LOCX2 - 50, OP2_LOCY2, OP4_LOCX2 - 50, OP4_LOCY1, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP2:OP4In"), tag="route")
         self.canvas.create_text(OP4_LOCX2 - 70, OP4_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP2:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP1 to OP4 route (diag, red)
-        self.canvas.create_line(OP1_LOCX2 - 8, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF0000', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP1In"), tag="route")
+        self.canvas.create_line(OP1_LOCX2 - 8, OP1_LOCY2 - 30, OP4_LOCX1 + 30, OP4_LOCY1, fill='#FF1818', arrow=LAST, width=16, stipple=self.getStipple("OP4:OP1In"), tag="route")
         self.canvas.create_text(OP1_LOCX2 - 50, OP1_LOCY2 - 30, anchor=tk.W, text=self.getDigits("OP4:OP1In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP4 to OP1 route (diag, yellow)
         self.canvas.create_line(OP1_LOCX2 - 30, OP1_LOCY2, OP4_LOCX1 + 8, OP4_LOCY1 + 30, fill='#FFFF00', arrow=FIRST, width=16, stipple=self.getStipple("OP1:OP4In"), tag="route")
         self.canvas.create_text(OP4_LOCX1 + 8 , OP4_LOCY1 + 30, anchor=tk.W, text=self.getDigits("OP1:OP4In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP3 to OP2 route (diag, blue)
-        self.canvas.create_line(OP3_LOCX2 - 8, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#0000FF', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP3In"), tag="route")
+        self.canvas.create_line(OP3_LOCX2 - 8, OP3_LOCY1 + 30, OP2_LOCX1 + 30, OP2_LOCY2, fill='#2828FF', arrow=LAST, width=16, stipple=self.getStipple("OP2:OP3In"), tag="route")
         self.canvas.create_text(OP3_LOCX2 - 50 , OP3_LOCY1 + 30, anchor=tk.W, text=self.getDigits("OP2:OP3In"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         # the OP2 to OP3 route (diag, green)
         self.canvas.create_line(OP3_LOCX2 - 30, OP3_LOCY1, OP2_LOCX1 + 8, OP2_LOCY2 - 30, fill='#00FF00', arrow=FIRST, width=16, stipple=self.getStipple("OP3:OP2In"), tag="route")
@@ -443,9 +461,9 @@ class RouteWindow:
 
         # the OP1 route to OUTPUT (red)
         stip = self.getStipple("OP1:Output")
-        self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1, OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 68, fill='#FF0000', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 60, OP2_LOCX2 + 148, OP1_LOCY1 - 60, fill='#FF0000', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP2_LOCX2 + 140, OP1_LOCY1 - 60, OP2_LOCX2 + 140, OP2_LOCY2 + 30, fill='#FF0000', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1, OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 68, fill='#FF1818', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 - 60, OP2_LOCX2 + 148, OP1_LOCY1 - 60, fill='#FF1818', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP2_LOCX2 + 140, OP1_LOCY1 - 60, OP2_LOCX2 + 140, OP2_LOCY2 + 30, fill='#FF1818', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP1_LOCX1 + (OP_W / 2), OP1_LOCY1 + 20, anchor=tk.CENTER, text=self.getDigits("OP1:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP2 route to OUPUT (green)
@@ -456,9 +474,9 @@ class RouteWindow:
 
         # the OP3 route to OUPUT (blue)
         stip = self.getStipple("OP3:Output")
-        self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2, OP1_LOCX1 + (OP_W / 2), OP3_LOCY2 + 68, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 + 60, OP4_LOCX2 + 148, OP3_LOCY2 + 60, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP4_LOCX2 + 140, OP3_LOCY2 + 60, OP4_LOCX2 + 140, OP4_LOCY1 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2, OP1_LOCX1 + (OP_W / 2), OP3_LOCY2 + 68, fill='#2828FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 + 60, OP4_LOCX2 + 148, OP3_LOCY2 + 60, fill='#2828FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP4_LOCX2 + 140, OP3_LOCY2 + 60, OP4_LOCX2 + 140, OP4_LOCY1 - 30, fill='#2828FF', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP3_LOCX1 + (OP_W / 2), OP3_LOCY2 - 20, anchor=tk.CENTER, text=self.getDigits("OP3:Output"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
 
         # the OP4 route to OUTPUT (yellow)
@@ -471,10 +489,10 @@ class RouteWindow:
         op1fbk = controllist["OP1:Feedback"][0].getValue()
         wave_file = self.getWave(op1fbk)
         stip = self.getStipple("OP1:Feedback")
-        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1, OP1_LOCX1 + 50, OP1_LOCY1 - 38, fill='#FF0000', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1 - 30, OP1_LOCX1 - 38, OP1_LOCY1 - 30, fill='#FF0000', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP1_LOCX1 - 30, OP1_LOCY1 - 30, OP1_LOCX1 - 30, OP1_LOCY1 + 30, fill='#FF0000', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP1_LOCX1 - 38, OP1_LOCY1 + 30, OP1_LOCX1, OP1_LOCY1 + 30, fill='#FF0000', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1, OP1_LOCX1 + 50, OP1_LOCY1 - 38, fill='#FF1818', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 + 50, OP1_LOCY1 - 30, OP1_LOCX1 - 38, OP1_LOCY1 - 30, fill='#FF1818', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 - 30, OP1_LOCY1 - 30, OP1_LOCX1 - 30, OP1_LOCY1 + 30, fill='#FF1818', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP1_LOCX1 - 38, OP1_LOCY1 + 30, OP1_LOCX1, OP1_LOCY1 + 30, fill='#FF1818', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP1_LOCX1 + 30, OP1_LOCY1 + 20, anchor=tk.W, text=self.getDigits("OP1:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         if op1fbk != 0.0 and self.showNums:
             self.canvas.create_image(OP1_LOCX1 + 30, OP1_LOCY1 + 40, anchor=tk.NW, image = wave_file, tag="route")
@@ -495,10 +513,10 @@ class RouteWindow:
         op3fbk = controllist["OP3:Feedback"][0].getValue()
         wave_file = self.getWave(op3fbk)
         stip = self.getStipple("OP3:Feedback")
-        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#0000FF', width=16, stipple=stip, tag="route")
-        self.canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#0000FF', arrow=LAST, width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2, OP3_LOCX1 + 50, OP3_LOCY2 + 38, fill='#2828FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 + 50, OP3_LOCY2 + 30, OP3_LOCX1 - 38, OP3_LOCY2 + 30, fill='#2828FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 - 30, OP3_LOCY2 - 30, OP3_LOCX1 - 30, OP3_LOCY2 + 30, fill='#2828FF', width=16, stipple=stip, tag="route")
+        self.canvas.create_line(OP3_LOCX1 - 38, OP3_LOCY2 - 30, OP3_LOCX1, OP3_LOCY2 - 30, fill='#2828FF', arrow=LAST, width=16, stipple=stip, tag="route")
         self.canvas.create_text(OP3_LOCX1 + 30, OP3_LOCY2 - 20, anchor=tk.W, text=self.getDigits("OP3:Feedback"), fill='#000000', font=('Helvetica','18','bold'), tag="route")
         if op3fbk != 0.0 and self.showNums:
             self.canvas.create_image(OP3_LOCX1 + 30, OP3_LOCY2 - 70, anchor=tk.NW, image = wave_file, tag="route")
@@ -1309,70 +1327,8 @@ setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
 setupButton.create_text(0, 0, anchor=tk.NW, text="Setup", fill='#FFFFFF')
 setupButton.bind('<Button>', setupButtonClick)
 
-# set all the non-0 init values into controls as if an "init" patch
-controllist["OP1:ALevel"][0].setValue(127)
-controllist["OP1:DLevel"][0].setValue(127)
-controllist["OP1:SLevel"][0].setValue(127)
-controllist["OP2:ALevel"][0].setValue(127)
-controllist["OP2:DLevel"][0].setValue(127)
-controllist["OP2:SLevel"][0].setValue(127)
-controllist["OP3:ALevel"][0].setValue(127)
-controllist["OP3:DLevel"][0].setValue(127)
-controllist["OP3:SLevel"][0].setValue(127)
-controllist["OP4:ALevel"][0].setValue(127)
-controllist["OP4:DLevel"][0].setValue(127)
-controllist["OP4:SLevel"][0].setValue(127)
-adsrs["OP1:"].init()
-adsrs["OP2:"].init()
-adsrs["OP3:"].init()
-adsrs["OP4:"].init()
-controllist["Pitch:ALevel"][0].setValue(0)
-controllist["Pitch:DLevel"][0].setValue(0)
-controllist["Pitch:SLevel"][0].setValue(0)
-controllist["Pitch:RLevel"][0].setValue(0)
-adsrs["Pitch:"].draw()
-controllist["OP1:Output"][0].setValue(127)
-controllist["OP1:Level"][0].setValue(0)
-controllist["OP2:Level"][0].setValue(0)
-controllist["OP3:Level"][0].setValue(0)
-controllist["OP4:Level"][0].setValue(0)
-controllist["OP1:Feedback"][0].setValue(0)
-controllist["OP2:Feedback"][0].setValue(0)
-controllist["OP3:Feedback"][0].setValue(0)
-controllist["OP4:Feedback"][0].setValue(0)
-controllist["OP1:Ratio"][0].setValue(1)
-controllist["OP2:Ratio"][0].setValue(1)
-controllist["OP3:Ratio"][0].setValue(1)
-controllist["OP4:Ratio"][0].setValue(1)
-controllist["Mixer:Level"][0].setValue(63)
-controllist["OP1:Detune"][0].setValue(0)
-controllist["OP2:Detune"][0].setValue(0)
-controllist["OP3:Detune"][0].setValue(0)
-controllist["OP4:Detune"][0].setValue(0)
-controllist["OP1:UpCurve"][0].setValue(0)
-controllist["OP2:UpCurve"][0].setValue(0)
-controllist["OP3:UpCurve"][0].setValue(0)
-controllist["OP4:UpCurve"][0].setValue(0)
-controllist["OP1:DnCurve"][0].setValue(0)
-controllist["OP2:DnCurve"][0].setValue(0)
-controllist["OP3:DnCurve"][0].setValue(0)
-controllist["OP4:DnCurve"][0].setValue(0)
-controllist["OP1:Scale"][0].setValue(3)
-controllist["OP2:Scale"][0].setValue(3)
-controllist["OP3:Scale"][0].setValue(3)
-controllist["OP4:Scale"][0].setValue(3)
-controllist["Name:chr0"][0].index = 19 + 100  #'I'
-controllist["Name:chr1"][0].index = 24 + 100  #'N'
-controllist["Name:chr2"][0].index = 19 + 100  #'I'
-controllist["Name:chr3"][0].setValue(30)  #'T'
-controllist["OP1:LGain"][0].setValue(0)
-controllist["OP2:LGain"][0].setValue(0)
-controllist["OP3:LGain"][0].setValue(0)
-controllist["OP4:LGain"][0].setValue(0)
-controllist["OP1:RGain"][0].setValue(0)
-controllist["OP2:RGain"][0].setValue(0)
-controllist["OP3:RGain"][0].setValue(0)
-controllist["OP4:RGain"][0].setValue(0)
+# load activepatch.json (which will default to an "init" patch.
+loadJson()
 
 # Now init values are set run throught the list and draw all animated controls
 for entry in controllist:
@@ -1383,8 +1339,5 @@ setupWin.setPorts(inports)
 
 if len(inports):
     print("MIDI ports:", inports)
-
-#if (len(inports) > 1):
-#    port = mido.open_input(inports[1], callback=rxmsg)
 
 window.mainloop()
