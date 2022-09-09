@@ -676,7 +676,7 @@ def decode_bytes(bytes, patch):
         offset = 5
     patch['Name'] = txt
 
-    patch["OP1"]['Feedback'] = make_signed(bytes[offset + 0xAE]) * 10
+    patch["OP1"]['Feedback'] = (make_signed(bytes[offset + 0xAE]) * 10) + make_signed(bytes[offset + 0x45])
     patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
     patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
     patch["OP1"]['OP4In'] = bytes[offset + 0xB1]
@@ -710,7 +710,7 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['LCurve'] = bytes[offset + 0x9E] & 0x01
     patch["OP1"]['RCurve'] = bytes[offset + 0x9E] & 0x10
 
-    patch["OP2"]['Feedback'] = make_signed(bytes[offset + 0xB3]) * 10
+    patch["OP2"]['Feedback'] = (make_signed(bytes[offset + 0xB4]) * 10) + make_signed(bytes[offset + 0x46])
     patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
     patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
     patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
@@ -744,10 +744,10 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
     patch["OP2"]['RCurve'] = bytes[offset + 0xA3] & 0x10
 
-    patch["OP3"]['Feedback'] = make_signed(bytes[offset + 0xB9]) * 10
+    patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xB9]) * 10) + make_signed(bytes[offset + 0x47])
     patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
     patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
-    patch["OP3"]['OP4In'] = bytes[offset + 0xBA]
+    patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
     patch["OP3"]['Output'] = bytes[offset + 0xC2]
     patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
     patch["OP3"]['Fixed'] = bytes[offset + 0x53]
@@ -778,7 +778,7 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['LCurve'] = bytes[offset + 0xA7] & 0x01
     patch["OP3"]['RCurve'] = bytes[offset + 0xA7] & 0x10
 
-    patch["OP4"]['Feedback'] = make_signed(bytes[offset + 0xBF]) * 10
+    patch["OP4"]['Feedback'] = (make_signed(bytes[offset + 0xBF]) * 10) + make_signed(bytes[offset + 0x48])
     patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
@@ -993,7 +993,7 @@ def loadJson():
                         controllist[key][0].fraction = int(data[i][j] % 100)
                     elif j == "Feedback":
                         controllist[key][0].setValue(int(data[i][j] / 10))
-                        controllist[key][0].fraction = int(data[i][j] % 10)
+                        controllist[key][0].fraction = int(abs(data[i][j]) % 10)
                     else:
                         controllist[key][0].setValue(data[i][j])
                     controllist[key][0].draw()
