@@ -679,7 +679,10 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['Feedback'] = (make_signed(bytes[offset + 0xAE]) * 10) + make_signed(bytes[offset + 0x45])
     patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
     patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
-    patch["OP1"]['OP4In'] = bytes[offset + 0xB1]
+    if offset == 0:
+        patch["OP1"]['OP4In'] = bytes[offset + 0xB2]
+    else:
+        patch["OP1"]['OP4In'] = bytes[offset + 0xB1]
     patch["OP1"]['Output'] = bytes[offset + 0xC0]
     patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
     patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
