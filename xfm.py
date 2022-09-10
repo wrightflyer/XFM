@@ -683,19 +683,34 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['Output'] = bytes[offset + 0xC0]
     patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
     patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
-    ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5C] )
-    if bytes[offset + 0x59] & 0x10:
-        # bit 7 of low byte held separately...
-        ratio = ratio + 128
+    if offset == 0:
+        ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5C] )
+        if bytes[offset + 0x59] & 0x10:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
+    else:
+        ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5B] )
+        if bytes[offset + 0x54] & 0x01:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
     patch["OP1"]["Freq"] = freq / 10
     patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
     patch["OP1"]['Level'] = bytes[offset + 0x5E]
     patch["OP1"]['VelSens'] = bytes[offset + 0xC5]
-    patch["OP1"]['Time'] = bytes[offset + 0xCA]
-    patch["OP1"]['UpCurve'] = make_signed(bytes[offset + 0xD3])
-    patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD4])
+    if offset == 0:
+        patch["OP1"]['Time'] = bytes[offset + 0xCA]
+    else:
+        patch["OP1"]['Time'] = bytes[offset + 0xC9]
+    if offset == 0:
+        patch["OP1"]['UpCurve'] = make_signed(bytes[offset + 0xD3])
+    else:
+        patch["OP1"]['UpCurve'] = make_signed(bytes[offset + 0xD2])
+    if offset == 0:
+        patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD4])
+    else:
+        patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD3])
     patch["OP1"]['Scale'] = bytes[offset + 0x9F]
     patch["OP1"]['ALevel'] = bytes[offset + 0x73]
     patch["OP1"]['ATime'] = bytes[offset + 0x6E]
@@ -705,32 +720,60 @@ def decode_bytes(bytes, patch):
     patch["OP1"]['STime'] = bytes[offset + 0x70]
     patch["OP1"]['RLevel'] = bytes[offset + 0x76]
     patch["OP1"]['RTime'] = bytes[offset + 0x72]
-    patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9C])
+    if offset == 0:
+        patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9C])
+    else:
+        patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9B])
     patch["OP1"]['RGain'] = make_signed(bytes[offset + 0x9D])
     patch["OP1"]['LCurve'] = bytes[offset + 0x9E] & 0x01
     patch["OP1"]['RCurve'] = bytes[offset + 0x9E] & 0x10
 
-    patch["OP2"]['Feedback'] = (make_signed(bytes[offset + 0xB4]) * 10) + make_signed(bytes[offset + 0x46])
-    patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
+    if offset == 0:
+        patch["OP2"]['Feedback'] = (make_signed(bytes[offset + 0xB4]) * 10) + make_signed(bytes[offset + 0x46])
+    else:
+        patch["OP2"]['Feedback'] = (make_signed(bytes[offset + 0xB3]) * 10) + make_signed(bytes[offset + 0x46])
+    if offset == 0:
+        patch["OP2"]['OP1In'] = bytes[offset + 0xB3]
+    else:
+        patch["OP2"]['OP1In'] = bytes[offset + 0xB2]
     patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
     patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
     patch["OP2"]['Output'] = bytes[offset + 0xC1]
     patch["OP2"]['PitchEnv'] = bytes[offset + 0xCF]
     patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
-    ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
-    if bytes[offset + 0x59] & 0x01:
-        # bit 7 of low byte held separately...
-        ratio = ratio + 128
-    patch["OP2"]['Ratio'] = ratio
+    if offset == 0:
+        ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
+        if bytes[offset + 0x59] & 0x01:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
+        patch["OP2"]['Ratio'] = ratio
+    else:
+        ratio = ((bytes[offset + 0x5C] * 256) + bytes[offset + 0x60] )
+        if bytes[offset + 0x5C] & 0x18:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
+        patch["OP2"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
     patch["OP2"]["Freq"] = freq / 10
-    patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x64])
-    patch["OP2"]['Level'] = bytes[offset + 0x63]
+    if offset == 0:
+        patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x64])
+    else:
+        patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x63])
+    if offset == 0:
+        patch["OP2"]['Level'] = bytes[offset + 0x63]
+    else:
+        patch["OP2"]['Level'] = bytes[offset + 0x62]
     patch["OP2"]['VelSens'] = bytes[offset + 0xC6]
-    patch["OP2"]['Time'] = bytes[offset + 0xCB]
+    if offset == 0:
+        patch["OP2"]['Time'] = bytes[offset + 0xCB]
+    else:
+        patch["OP2"]['Time'] = bytes[offset + 0xCA]
     patch["OP2"]['UpCurve'] = make_signed(bytes[offset + 0xD5])
     patch["OP2"]['DnCurve'] = make_signed(bytes[offset + 0xD6])
-    patch["OP2"]['Scale'] = bytes[offset + 0xA4]
+    if offset == 0:
+        patch["OP2"]['Scale'] = bytes[offset + 0xA4]
+    else:
+        patch["OP2"]['Scale'] = bytes[offset + 0xA3]
     patch["OP2"]['ALevel'] = bytes[offset + 0x7C]
     patch["OP2"]['ATime'] = bytes[offset + 0x77]
     patch["OP2"]['DLevel'] = bytes[offset + 0x7D]
@@ -740,28 +783,46 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['RLevel'] = bytes[offset + 0x7F]
     patch["OP2"]['RTime'] = bytes[offset + 0x7B]
     patch["OP2"]['LGain'] = make_signed(bytes[offset + 0xA0])
-    patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA2])
+    if offset == 0:
+        patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA2])
+    else:
+        patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA1])
     patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
     patch["OP2"]['RCurve'] = bytes[offset + 0xA3] & 0x10
 
-    patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xB9]) * 10) + make_signed(bytes[offset + 0x47])
+    if offset == 0:
+        patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xBA]) * 10) + make_signed(bytes[offset + 0x47])
+    else:
+        patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xB9]) * 10) + make_signed(bytes[offset + 0x47])
     patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
     patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
-    patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
+    if offset == 0:
+        patch["OP3"]['OP4In'] = bytes[offset + 0xBB]
+    else:
+        patch["OP3"]['OP4In'] = bytes[offset + 0xBA]
     patch["OP3"]['Output'] = bytes[offset + 0xC2]
     patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
     patch["OP3"]['Fixed'] = bytes[offset + 0x53]
-    ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
-    if bytes[offset + 0x61] != 0:
-        # bit 7 of low byte held separately...
-        ratio = ratio + 128
+    if offset == 0:
+        ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
+        if bytes[offset + 0x61] != 0:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
+    else:
+        ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
+        if bytes[offset + 0x64] & 0x40:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
     freq = ((bytes[offset + 0x55] * 256) + bytes[offset + 0x54])
     patch["OP3"]["Freq"] = freq / 10
     patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
     patch["OP3"]['Level'] = bytes[offset + 0x67]
     patch["OP3"]['VelSens'] = bytes[offset + 0xC7]
-    patch["OP3"]['Time'] = bytes[offset + 0xCC]
+    if offset == 0:
+        patch["OP3"]['Time'] = bytes[offset + 0xCC]
+    else:
+        patch["OP3"]['Time'] = bytes[offset + 0xCB]
     patch["OP3"]['UpCurve'] = make_signed(bytes[offset + 0xD7])
     patch["OP3"]['DnCurve'] = make_signed(bytes[offset + 0xD8])
     patch["OP3"]['Scale'] = bytes[offset + 0xA8]
@@ -779,7 +840,10 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['RCurve'] = bytes[offset + 0xA7] & 0x10
 
     patch["OP4"]['Feedback'] = (make_signed(bytes[offset + 0xBF]) * 10) + make_signed(bytes[offset + 0x48])
-    patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
+    if offset == 0:
+        patch["OP4"]['OP1In'] = bytes[offset + 0xBC]
+    else:
+        patch["OP4"]['OP1In'] = bytes[offset + 0xBB]
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
     patch["OP4"]['Output'] = bytes[offset + 0xC3]
@@ -793,11 +857,20 @@ def decode_bytes(bytes, patch):
     freq = ((bytes[offset + 0x5A] * 256) + bytes[offset + 0x58])
     patch["OP4"]["Freq"] = freq / 10
     patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
-    patch["OP4"]['Level'] = bytes[offset + 0x6C]
+    if offset == 0:
+        patch["OP4"]['Level'] = bytes[offset + 0x6C]
+    else:
+        patch["OP4"]['Level'] = bytes[offset + 0x6B]
     patch["OP4"]['VelSens'] = bytes[offset + 0xC8]
     patch["OP4"]['Time'] = bytes[offset + 0xCD]
-    patch["OP4"]['UpCurve'] = make_signed(bytes[offset + 0xDA])
-    patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDB])
+    if offset == 0:
+        patch["OP4"]['UpCurve'] = make_signed(bytes[offset + 0xDA])
+    else:
+        patch["OP4"]['UpCurve'] = make_signed(bytes[offset + 0xD9])
+    if offset == 0:
+        patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDB])
+    else:
+        patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDA])
     patch["OP4"]['Scale'] = bytes[offset + 0xAD]
     patch["OP4"]['ALevel'] = bytes[offset + 0x8E]
     patch["OP4"]['ATime'] = bytes[offset + 0x8A]
@@ -807,8 +880,14 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['STime'] = bytes[offset + 0x8C]
     patch["OP4"]['RLevel'] = bytes[offset + 0x92]
     patch["OP4"]['RTime'] = bytes[offset + 0x8D]
-    patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xAA])
-    patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAB])
+    if offset == 0:
+        patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xAA])
+    else:
+        patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xA9])
+    if offset == 0:
+        patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAB])
+    else:
+        patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAA])
     patch["OP4"]['LCurve'] = bytes[offset + 0xAC] & 0x01
     patch["OP4"]['RCurve'] = bytes[offset + 0xAC] & 0x10
 
