@@ -685,7 +685,10 @@ def decode_bytes(bytes, patch):
         patch["OP1"]['OP4In'] = bytes[offset + 0xB1]
     patch["OP1"]['Output'] = bytes[offset + 0xC0]
     patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
-    patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
+    if offset == 0:
+        patch["OP1"]['Fixed'] = bytes[offset + 0x4A]
+    else:
+        patch["OP1"]['Fixed'] = bytes[offset + 0x49]
     if offset == 0:
         ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5C] )
         if bytes[offset + 0x59] & 0x10:
@@ -717,14 +720,23 @@ def decode_bytes(bytes, patch):
     else:
         patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD3])
     patch["OP1"]['Scale'] = bytes[offset + 0x9F]
-    patch["OP1"]['ALevel'] = bytes[offset + 0x73]
+    if offset == 0:
+        patch["OP1"]['ALevel'] = bytes[offset + 0x73]
+    else:
+        patch["OP1"]['ALevel'] = bytes[offset + 0x72]
     patch["OP1"]['ATime'] = bytes[offset + 0x6E]
-    patch["OP1"]['DLevel'] = bytes[offset + 0x74]
+    if offset == 0:
+        patch["OP1"]['DLevel'] = bytes[offset + 0x74]
+    else:
+        patch["OP1"]['DLevel'] = bytes[offset + 0x73]
     patch["OP1"]['DTime'] = bytes[offset + 0x6F]
     patch["OP1"]['SLevel'] = bytes[offset + 0x75]
     patch["OP1"]['STime'] = bytes[offset + 0x70]
     patch["OP1"]['RLevel'] = bytes[offset + 0x76]
-    patch["OP1"]['RTime'] = bytes[offset + 0x72]
+    if offset == 0:
+        patch["OP1"]['RTime'] = bytes[offset + 0x72]
+    else:
+        patch["OP1"]['RTime'] = bytes[offset + 0x71]
     if offset == 0:
         patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9C])
     else:
@@ -781,21 +793,33 @@ def decode_bytes(bytes, patch):
         patch["OP2"]['Scale'] = bytes[offset + 0xA4]
     else:
         patch["OP2"]['Scale'] = bytes[offset + 0xA3]
-    patch["OP2"]['ALevel'] = bytes[offset + 0x7C]
+    if offset == 0:
+        patch["OP2"]['ALevel'] = bytes[offset + 0x7C]
+    else:
+        patch["OP2"]['ALevel'] = bytes[offset + 0x7B]
     patch["OP2"]['ATime'] = bytes[offset + 0x77]
     patch["OP2"]['DLevel'] = bytes[offset + 0x7D]
     patch["OP2"]['DTime'] = bytes[offset + 0x78]
     patch["OP2"]['SLevel'] = bytes[offset + 0x7E]
-    patch["OP2"]['STime'] = bytes[offset + 0x7A]
+    if offset == 0:
+        patch["OP2"]['STime'] = bytes[offset + 0x7A]
+    else:
+        patch["OP2"]['STime'] = bytes[offset + 0x79]
     patch["OP2"]['RLevel'] = bytes[offset + 0x7F]
-    patch["OP2"]['RTime'] = bytes[offset + 0x7B]
+    if offset == 0:
+        patch["OP2"]['RTime'] = bytes[offset + 0x7B]
+    else:
+        patch["OP2"]['RTime'] = bytes[offset + 0x7A]
     patch["OP2"]['LGain'] = make_signed(bytes[offset + 0xA0])
     if offset == 0:
         patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA2])
     else:
         patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA1])
     patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
-    patch["OP2"]['RCurve'] = 1 if bytes[offset + 0xA3] & 0x10 else 0
+    if offset == 0:
+        patch["OP2"]['RCurve'] = 1 if bytes[offset + 0xA3] & 0x10 else 0
+    else:
+        patch["OP2"]['RCurve'] = 1 if bytes[offset + 0xA2] & 0x10 else 0
 
     if offset == 0:
         patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xBA]) * 10) + make_signed(bytes[offset + 0x47])
@@ -809,7 +833,10 @@ def decode_bytes(bytes, patch):
         patch["OP3"]['OP4In'] = bytes[offset + 0xBA]
     patch["OP3"]['Output'] = bytes[offset + 0xC3]
     patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
-    patch["OP3"]['Fixed'] = bytes[offset + 0x53]
+    if offset == 0:
+        patch["OP3"]['Fixed'] = bytes[offset + 0x53]
+    else:
+        patch["OP3"]['Fixed'] = bytes[offset + 0x52]
     if offset == 0:
         ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
         if bytes[offset + 0x61] & 0x08:
@@ -838,11 +865,20 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['ALevel'] = bytes[offset + 0x85]
     patch["OP3"]['ATime'] = bytes[offset + 0x80]
     patch["OP3"]['DLevel'] = bytes[offset + 0x86]
-    patch["OP3"]['DTime'] = bytes[offset + 0x82]
+    if offset == 0:
+        patch["OP3"]['DTime'] = bytes[offset + 0x82]
+    else:
+        patch["OP3"]['DTime'] = bytes[offset + 0x81]
     patch["OP3"]['SLevel'] = bytes[offset + 0x87]
-    patch["OP3"]['STime'] = bytes[offset + 0x83]
+    if offset == 0:
+        patch["OP3"]['STime'] = bytes[offset + 0x83]
+    else:
+        patch["OP3"]['STime'] = bytes[offset + 0x82]
     patch["OP3"]['RLevel'] = bytes[offset + 0x88]
-    patch["OP3"]['RTime'] = bytes[offset + 0x84]
+    if offset == 0:
+        patch["OP3"]['RTime'] = bytes[offset + 0x84]
+    else:
+        patch["OP3"]['RTime'] = bytes[offset + 0x83]
     patch["OP3"]['LGain'] = make_signed(bytes[offset + 0xA5])
     patch["OP3"]['RGain'] = make_signed(bytes[offset + 0xA6])
     patch["OP3"]['LCurve'] = bytes[offset + 0xA7] & 0x01
@@ -884,12 +920,24 @@ def decode_bytes(bytes, patch):
         patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDA])
     patch["OP4"]['Scale'] = bytes[offset + 0xAD]
     patch["OP4"]['ALevel'] = bytes[offset + 0x8E]
-    patch["OP4"]['ATime'] = bytes[offset + 0x8A]
+    if offset == 0:
+        patch["OP4"]['ATime'] = bytes[offset + 0x8A]
+    else:
+        patch["OP4"]['ATime'] = bytes[offset + 0x89]
     patch["OP4"]['DLevel'] = bytes[offset + 0x8F]
-    patch["OP4"]['DTime'] = bytes[offset + 0x8B]
+    if offset == 0:
+        patch["OP4"]['DTime'] = bytes[offset + 0x8B]
+    else:
+        patch["OP4"]['DTime'] = bytes[offset + 0x8A]
     patch["OP4"]['SLevel'] = bytes[offset + 0x90]
-    patch["OP4"]['STime'] = bytes[offset + 0x8C]
-    patch["OP4"]['RLevel'] = bytes[offset + 0x92]
+    if offset == 0:
+        patch["OP4"]['STime'] = bytes[offset + 0x8C]
+    else:
+        patch["OP4"]['STime'] = bytes[offset + 0x8b]
+    if offset == 0:
+        patch["OP4"]['RLevel'] = bytes[offset + 0x92]
+    else:
+        patch["OP4"]['RLevel'] = bytes[offset + 0x91]
     patch["OP4"]['RTime'] = bytes[offset + 0x8D]
     if offset == 0:
         patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xAA])
@@ -903,15 +951,30 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['RCurve'] = 1 if bytes[offset + 0xAC] & 0x10 else 0
 
     patch["Pitch"]['ALevel'] = make_signed(bytes[offset + 0x97])
-    patch["Pitch"]['ATime'] = bytes[offset + 0x93]
+    if offset == 0:
+        patch["Pitch"]['ATime'] = bytes[offset + 0x93]
+    else:
+        patch["Pitch"]['ATime'] = bytes[offset + 0x92]
     patch["Pitch"]['DLevel'] = make_signed(bytes[offset + 0x98])
-    patch["Pitch"]['DTime'] = bytes[offset + 0x94]
-    patch["Pitch"]['SLevel'] = make_signed(bytes[offset + 0x9A])
+    if offset == 0:
+        patch["Pitch"]['DTime'] = bytes[offset + 0x94]
+    else:
+        patch["Pitch"]['DTime'] = bytes[offset + 0x93]
+    if offset == 0:
+        patch["Pitch"]['SLevel'] = make_signed(bytes[offset + 0x9A])
+    else:
+        patch["Pitch"]['SLevel'] = make_signed(bytes[offset + 0x99])
     patch["Pitch"]['STime'] = bytes[offset + 0x95]
-    patch["Pitch"]['RLevel'] = make_signed(bytes[offset + 0x9B])
+    if offset == 0:
+        patch["Pitch"]['RLevel'] = make_signed(bytes[offset + 0x9B])
+    else:
+        patch["Pitch"]['RLevel'] = make_signed(bytes[offset + 0x9A])
     patch["Pitch"]['RTime'] = bytes[offset + 0x96]
 
-    patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDC])
+    if offset == 0:
+        patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDC])
+    else:
+        patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDB])
 
 def encode_bytes(patch, bytes):
     bytes[0x2E] = ord(patch['Name'][0])
