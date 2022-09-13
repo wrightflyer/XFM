@@ -1168,9 +1168,16 @@ def loadCtrls(data):
             adsrs[j].draw()
 
 def readCtrls():
+    patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
     for x in controllist:
-        print(x)
-    return []
+        print(x, controllist[x][0].getValue(), controllist[x][0].fraction)
+        sect= x.split(':')[0]
+        item = x.split(':')[1]
+        print(sect, item)
+        if sect != "Name":
+            patch[sect][item] = controllist[x][0].getValue()
+    print(patch)
+    return patch
 
 def loadJson():
     with open("activepatch.json") as f:
@@ -1179,7 +1186,7 @@ def loadJson():
 
 def saveJson(patch):
     jsonpatch = json.dumps(patch, indent=4)
-    with open("activepatch.json", 'w') as f:
+    with open("savetest.json", 'w') as f:
         f.write(jsonpatch)
 
 #============================= THE start ================================
