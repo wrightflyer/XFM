@@ -1064,53 +1064,56 @@ def rxmsg(msg):
         with open("activepatch.json", 'w') as f:
             f.write(jsonpatch)
 
-        # then load from that disk file (really?)
-        loadJson()
+        # then load the patch (dict)
+        loadCtrls(patch)
         routeWin.draw()
+
+def loadCtrls(data):
+    for i in data:
+        print("=====", i, "=====")
+        if (i != "Name"):
+            for j in data[i]:
+                key = f'{i}:{j}'
+                print(f'{key} = ', data[i][j])
+                if j == "Freq" or j == "Ratio":
+                    controllist[key][0].setValue(int(data[i][j] / 100))
+                    controllist[key][0].fraction = int(data[i][j] % 100)
+                elif j == "Feedback":
+                    controllist[key][0].setValue(int(data[i][j] / 10))
+                    controllist[key][0].fraction = int(abs(data[i][j]) % 10)
+                else:
+                    controllist[key][0].setValue(data[i][j])
+                controllist[key][0].draw()
+        else:
+            charCount = 0
+            n = 0
+            while n < len(data[i]):
+                withDot = False
+                key = f'{i}:chr{charCount}'
+                print(f'{n}:{charCount}: {key} =  {data[i][n]}')
+                chrnum = ord(data[i][n])
+                if n < (len(data[i]) - 1):
+                    if data[i][n + 1] == '.':
+                        withDot = True
+                if chrnum >= ord('A'):
+                    chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
+                else:
+                    chrnum = chrnum - ord('0')
+                if withDot == True:
+                    chrnum = chrnum + 100 # mark that a dot needs to be drawn
+                    n = n + 1
+                controllist[key][0].index = chrnum
+                controllist[key][0].draw()
+                charCount = charCount + 1
+                n = n + 1
+        for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
+            adsrs[j].draw()
 
 def loadJson():
     with open("activepatch.json") as f:
         data = json.load(f)
+        loadCtrls(data)
 
-        for i in data:
-            print("=====", i, "=====")
-            if (i != "Name"):
-                for j in data[i]:
-                    key = f'{i}:{j}'
-                    print(f'{key} = ', data[i][j])
-                    if j == "Freq" or j == "Ratio":
-                        controllist[key][0].setValue(int(data[i][j] / 100))
-                        controllist[key][0].fraction = int(data[i][j] % 100)
-                    elif j == "Feedback":
-                        controllist[key][0].setValue(int(data[i][j] / 10))
-                        controllist[key][0].fraction = int(abs(data[i][j]) % 10)
-                    else:
-                        controllist[key][0].setValue(data[i][j])
-                    controllist[key][0].draw()
-            else:
-                charCount = 0
-                n = 0
-                while n < len(data[i]):
-                    withDot = False
-                    key = f'{i}:chr{charCount}'
-                    print(f'{n}:{charCount}: {key} =  {data[i][n]}')
-                    chrnum = ord(data[i][n])
-                    if n < (len(data[i]) - 1):
-                        if data[i][n + 1] == '.':
-                            withDot = True
-                    if chrnum >= ord('A'):
-                        chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
-                    else:
-                        chrnum = chrnum - ord('0')
-                    if withDot == True:
-                        chrnum = chrnum + 100 # mark that a dot needs to be drawn
-                        n = n + 1
-                    controllist[key][0].index = chrnum
-                    controllist[key][0].draw()
-                    charCount = charCount + 1
-                    n = n + 1
-            for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
-                adsrs[j].draw()
 
 #============================= THE start ================================
 portOpen = False
