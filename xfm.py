@@ -1057,12 +1057,7 @@ def rxmsg(msg):
         print_dump(bytes)
 
         decode_bytes(bytes, patch)
-        jsonpatch = json.dumps(patch, indent=4)
-
-        print(jsonpatch)
-        # write the received patch to disk file
-        with open("activepatch.json", 'w') as f:
-            f.write(jsonpatch)
+        saveJson(patch)
 
         # then load the patch (dict)
         loadCtrls(patch)
@@ -1109,11 +1104,20 @@ def loadCtrls(data):
         for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
             adsrs[j].draw()
 
+def readCtrls():
+    for x in controllist:
+        print(x)
+    return []
+
 def loadJson():
     with open("activepatch.json") as f:
         data = json.load(f)
         loadCtrls(data)
 
+def saveJson(patch):
+    jsonpatch = json.dumps(patch, indent=4)
+    with open("activepatch.json", 'w') as f:
+        f.write(jsonpatch)
 
 #============================= THE start ================================
 portOpen = False
@@ -1377,7 +1381,8 @@ def loadJSON(event):
     loadJson()
 
 def saveJSON(event):
-    loadJson()
+    patch = readCtrls()
+    saveJson(patch)
 
 load = Canvas(width=32, height=32, highlightthickness=0)
 load.place(x=1650, y=410)
