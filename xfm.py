@@ -1177,7 +1177,7 @@ opback = rawback.resize((685, 460))
 backimg = ImageTk.PhotoImage(opback)
 
 # Background for pitch/master edit right - same image just resized
-mstrback = rawback.resize((340, 882))
+mstrback = rawback.resize((340, 928))
 mstrimg = ImageTk.PhotoImage(mstrback)
 
 # "Quick Edit for Sonicware Liven XFM logo"
@@ -1188,7 +1188,7 @@ Backdrop("OP1", 0, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][0], 0, 8)
 Backdrop("OP2", 688, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][1], 0, 8)
 Backdrop("OP3", 0, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][2], 0, 8)
 Backdrop("OP4", 688, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][3], 0, 8)
-Backdrop("Master", 1375, 0, 340, 922, mstrimg, mainlogo, 30, 630)
+Backdrop("Master", 1375, 0, 340, 922, mstrimg, mainlogo, 15, 680)
 
 adsrs = {}
 # The five grey ADSR canvases
