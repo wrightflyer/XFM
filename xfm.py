@@ -1118,6 +1118,7 @@ portOpen = False
 window = Tk()
 window.geometry("1720x930")
 window.title("Quick Edit for Liven XFM - no MIDI port open - use Setup!!")
+window.iconbitmap("xicon.ico")
 window.configure(bg='#313131')
 window.resizable(False, False)
 
