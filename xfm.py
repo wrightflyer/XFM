@@ -724,7 +724,7 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['OP1In'] = bytes[offset + 0xB2 + inc]
     patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
     patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
-    patch["OP2"]['Output'] = bytes[offset + 0xC2]
+    patch["OP2"]['Output'] = bytes[offset + 0xC1 + inc]
     patch["OP2"]['PitchEnv'] = bytes[offset + 0xCF]
     patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
     if offset == 0:
@@ -767,7 +767,7 @@ def decode_bytes(bytes, patch):
     patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
     patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
     patch["OP3"]['OP4In'] = bytes[offset + 0xBA + inc]
-    patch["OP3"]['Output'] = bytes[offset + 0xC3]
+    patch["OP3"]['Output'] = bytes[offset + 0xC2 + inc]
     patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
     patch["OP3"]['Fixed'] = bytes[offset + 0x52 + inc]
     if offset == 0:
@@ -809,7 +809,7 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['OP1In'] = bytes[offset + 0xBB + inc]
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
-    patch["OP4"]['Output'] = bytes[offset + 0xC4]
+    patch["OP4"]['Output'] = bytes[offset + 0xC3 + inc]
     patch["OP4"]['PitchEnv'] = bytes[offset + 0xD2]
     patch["OP4"]['Fixed'] = bytes[offset + 0x57]
     ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
