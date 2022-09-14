@@ -696,9 +696,19 @@ def decode_bytes(bytes, patch):
             # bit 7 of low byte held separately...
             ratio = ratio + 128
     patch["OP1"]['Ratio'] = ratio
-    freq = ((bytes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
-    if bytes[offset + 0x49] & 0x20:
-        freq = freq + 128
+    if offset == 0:
+        freq = ((bytes[offset + 0x4D] * 65536) + (bytes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
+        if bytes[offset + 0x49] & 0x20:
+            freq = freq + 128
+        if bytes[offset + 0x49] & 0x10:
+            freq = freq + 32768
+    else:
+        freq = ((bytes[offset + 0x4D] * 65536) + (bytes[offset + 0x4B] * 256) + bytes[offset + 0x4A])
+        if bytes[offset + 0x44] & 0x02:
+            freq = freq + 128
+        if bytes[offset + 0x44] & 0x01:
+            freq = freq + 32768
+    print("op1 freq = ", freq)
     patch["OP1"]["Freq"] = freq
     patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
     patch["OP1"]['Level'] = bytes[offset + 0x5E]
@@ -729,19 +739,29 @@ def decode_bytes(bytes, patch):
     patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
     if offset == 0:
         ratio = ((bytes[offset + 0x62] * 256) + bytes[offset + 0x60] )
-        if bytes[offset + 0x59] & 0x10:
+        if bytes[offset + 0x59] & 0x01:
             # bit 7 of low byte held separately...
             ratio = ratio + 128
         patch["OP2"]['Ratio'] = ratio
     else:
-        ratio = ((bytes[offset + 0x5C] * 256) + bytes[offset + 0x60] )
-        if bytes[offset + 0x5C] & 0x18:
+        ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
+        if bytes[offset + 0x5C] & 0x08:
             # bit 7 of low byte held separately...
             ratio = ratio + 128
         patch["OP2"]['Ratio'] = ratio
-    freq = ((bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
-    if bytes[offset + 0x49] & 0x02:
-        freq = freq + 128
+    if offset == 0:
+        freq = ((bytes[offset + 0x52] * 65536) + (bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
+        if bytes[offset + 0x49] & 0x02:
+            freq = freq + 128
+        if bytes[offset + 0x49] & 0x01:
+            freq = freq + 32768
+    else:
+        freq = ((bytes[offset + 0x51] * 65536) + (bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
+        if bytes[offset + 0x4C] & 0x10:
+            freq = freq + 128
+        if bytes[offset + 0x4C] & 0x08:
+            freq = freq + 32768
+    print("op2 freq = ", freq)
     patch["OP2"]["Freq"] = freq
     patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x63 + inc])
     patch["OP2"]['Level'] = bytes[offset + 0x62 + inc]
@@ -781,9 +801,19 @@ def decode_bytes(bytes, patch):
             # bit 7 of low byte held separately...
             ratio = ratio + 128
     patch["OP3"]['Ratio'] = ratio
-    freq = ((bytes[offset + 0x55] * 256) + bytes[offset + 0x54])
-    if bytes[offset + 0x51] & 0x10:
-        freq = freq + 128
+    if offset == 0:
+        freq = ((bytes[offset + 0x56] * 65536) + (bytes[offset + 0x55] * 256) + bytes[offset + 0x54])
+        if bytes[offset + 0x51] & 0x10:
+            freq = freq + 128
+        if bytes[offset + 0x51] & 0x08:
+            freq = freq + 32768
+    else:
+        freq = ((bytes[offset + 0x56] * 65536) + (bytes[offset + 0x55] * 256) + bytes[offset + 0x53])
+        if bytes[offset + 0x4c] & 0x10:
+            freq = freq + 128
+        if bytes[offset + 0x54] & 0x40:
+            freq = freq + 32768
+    print("op3 freq = ", freq)
     patch["OP3"]["Freq"] = freq
     patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
     patch["OP3"]['Level'] = bytes[offset + 0x67]
@@ -810,16 +840,32 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
     patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
     patch["OP4"]['Output'] = bytes[offset + 0xC3 + inc]
-    patch["OP4"]['PitchEnv'] = bytes[offset + 0xD2]
+    patch["OP4"]['PitchEnv'] = bytes[offset + 0xD1 + inc]
     patch["OP4"]['Fixed'] = bytes[offset + 0x57]
-    ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
-    if bytes[offset + 0x69] != 0:
-        # bit 7 of low byte held separately...
-        ratio = ratio + 128
+    if offset == 0:
+        ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
+        if bytes[offset + 0x69] & 0x40:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
+    else:
+        ratio = ((bytes[offset + 0x6A] * 256) + bytes[offset + 0x69] )
+        if bytes[offset + 0x64] & 0x04:
+            # bit 7 of low byte held separately...
+            ratio = ratio + 128
     patch["OP4"]['Ratio'] = ratio
-    freq = ((bytes[offset + 0x5A] * 256) + bytes[offset + 0x58])
-    if bytes[offset + 0x51] & 0x01:
-        freq = freq + 128
+    if offset == 0:
+        freq = ((bytes[offset + 0x5B] * 65536) + (bytes[offset + 0x5A] * 256) + bytes[offset + 0x58 + inc])
+        if bytes[offset + 0x51] & 0x01:
+            freq = freq + 128
+        if bytes[offset + 0x59] & 0x40:
+            freq = freq + 32768
+    else:
+        freq = ((bytes[offset + 0x5A] * 65536) + (bytes[offset + 0x59] * 256) + bytes[offset + 0x58 + inc])
+        if bytes[offset + 0x54] & 0x08:
+            freq = freq + 128
+        if bytes[offset + 0x54] & 0x04:
+            freq = freq + 32768
+    print("op4 freq = ", freq)
     patch["OP4"]["Freq"] = freq
     patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
     patch["OP4"]['Level'] = bytes[offset + 0x6B + inc]
@@ -838,8 +884,8 @@ def decode_bytes(bytes, patch):
     patch["OP4"]['RTime'] = bytes[offset + 0x8D]
     patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xA9 + inc])
     patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAA + inc])
-    patch["OP4"]['LCurve'] = bytes[offset + 0xAC] & 0x01
-    patch["OP4"]['RCurve'] = 1 if bytes[offset + 0xAC] & 0x10 else 0
+    patch["OP4"]['LCurve'] = bytes[offset + 0xAB + inc] & 0x01
+    patch["OP4"]['RCurve'] = 1 if bytes[offset + 0xAB + inc] & 0x10 else 0
 
     patch["Pitch"]['ALevel'] = make_signed(bytes[offset + 0x97])
     patch["Pitch"]['ATime'] = bytes[offset + 0x92 + inc]
@@ -1010,7 +1056,9 @@ def loadCtrls(data):
                 key = f'{i}:{j}'
                 print(f'{key} = ', data[i][j])
                 valToSet = data[i][j]
-                if j == "Freq" or j == "Ratio":                
+                if j == "Freq":
+                    valToSet = (valToSet + 5) / 10 # so 4408 (for example) becomes 441
+                if j == "Freq" or j == "Ratio":
                     controllist[key][0].setValue(int(valToSet / 100))
                     controllist[key][0].fraction = int(valToSet % 100)
                 elif j == "Feedback":
