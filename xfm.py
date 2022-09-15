@@ -536,21 +536,25 @@ class RouteWindow:
 class SetupWindow:
     def __init__(self):
         self.setupWin = Toplevel(window)
-        self.setupWin.geometry("940x670")
+        self.setupWin.geometry("940x370")
         self.setupWin.title("Setup")
         self.setupWin.resizable(False, False)
         self.setupWin.protocol("WM_DELETE_WINDOW", self.disable_event)
-        self.canvas = Canvas(self.setupWin, width = 940, height = 670, bg='#313131')
+        self.canvas = Canvas(self.setupWin, width = 940, height = 370, bg='#313131')
         self.canvas.place(x = 0, y = 0)
         self.listbox = Listbox(self.setupWin, width = 50)
         self.listbox.place(x = 20, y = 50)
         self.midiButton = Button(self.setupWin, text = "Open MIDI port")
         self.midiButton.place(x = 120, y = 230)
         self.midiButton.bind('<Button>', self.openMIDI)
-        self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#FFFFFF')
+        self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#313131', fg='#FFFFFF')
         self.midiLabel.place(x = 120, y = 20)
-        self.dumpLabel = Label(self.setupWin, text = "Dump of received sysex (red = changed)", bg = '#FFFFFF')
+        self.dumpLabel = Label(self.setupWin, text = "Dump of received sysex (red = changed)", bg='#313131', fg = '#FFFFFF')
         self.dumpLabel.place(x = 510, y = 20)
+        self.saveLoadState = IntVar()
+        self.saveLoadState.set(0)
+        self.saveLoad = Checkbutton(self.setupWin, text="Save JSON when patches received", variable=self.saveLoadState, bg='#313131', fg = '#FFFFFF', selectcolor='#313131' )
+        self.saveLoad.place(x = 50, y = 280)
         self.showNums = True
         self.portsListed = False
         self.bytes = b''
@@ -576,14 +580,12 @@ class SetupWindow:
             return
         if self.bytes[0x2A] == 4:
             offset = 0
-            Yrange = 14
             byteLimit = len(self.bytes) - 1
         else:
             offset = 5
-            Yrange = 15
             byteLimit = len(self.bytes) - 6
         self.canvas.delete("dump")
-        for y in range(1, Yrange):
+        for y in range(1, 14):
             Ypos = (y * 20) + 50
             addr = str(format(y * 16, '02X')) + " :"
             self.canvas.create_text(440, Ypos, anchor=tk.NW, text = addr, fill='#8080FF', tag="dump")
@@ -1042,7 +1044,8 @@ def rxmsg(msg):
         print_dump(bytes)
 
         decode_bytes(bytes, patch)
-        saveJson(patch)
+        if setupWin.saveLoadState.get() == 1:
+            saveJson(patch)
 
         # then load the patch (dict)
         loadCtrls(patch)
@@ -1075,16 +1078,20 @@ def loadCtrls(data):
                 key = f'{i}:chr{charCount}'
                 print(f'{n}:{charCount}: {key} =  {data[i][n]}')
                 chrnum = ord(data[i][n])
+                print("chr =", data[i][n], " chrnum (raw) = ", chrnum)
                 if n < (len(data[i]) - 1):
                     if data[i][n + 1] == '.':
                         withDot = True
                 if chrnum >= ord('A'):
                     chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
+                elif chrnum == ord(' '):
+                    chrnum = 10
                 else:
                     chrnum = chrnum - ord('0')
                 if withDot == True:
                     chrnum = chrnum + 100 # mark that a dot needs to be drawn
                     n = n + 1
+                print("chrnum loaded into ctrl =", chrnum)
                 controllist[key][0].index = chrnum
                 controllist[key][0].draw()
                 charCount = charCount + 1
