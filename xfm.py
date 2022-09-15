@@ -1115,7 +1115,9 @@ def readCtrls():
                 nameList.append('.')
             if item == "chr3":
                 patch["Name"] = ''.join(nameList)
-        elif item == "Freq" or item == "Ratio":
+        elif item == "Freq":
+            patch[sect][item] = ((controllist[x][0].getValue() * 100) + controllist[x][0].fraction) * 10
+        elif item == "Ratio":
             patch[sect][item] = (controllist[x][0].getValue() * 100) + controllist[x][0].fraction
         elif item == "Feedback":
             patch[sect][item] = (controllist[x][0].getValue() * 10) + controllist[x][0].fraction
@@ -1130,7 +1132,7 @@ def loadInitJson():
 
 def saveJson(patch):
     jsonpatch = json.dumps(patch, indent=4)
-    with open("savetest.json", 'w') as f:
+    with open("PATCH_" + patch['Name'] + ".json", 'w') as f:
         f.write(jsonpatch)
 
 #============================= THE start ================================
