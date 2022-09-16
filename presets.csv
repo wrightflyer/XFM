@@ -37,7 +37,7 @@ HRP.2 ,Harp 2,,,,,WHSL  ,Whistling,,,,,BARK ,Barking Bass,,,,,KC.12,Kick 12,,,
 ,SNR1,,,SNR2,,,HH1,,,HH2,,,PRC1,,,PRC2,,,BELL,,,CHD1
 N.SNR,Normal Snare (dup),,SN.12,Snare 12,,NM.HH ,Normal Hi Hat (dup),,M.RID,Metallic Ride (dup),,MLT.D,Multi Drum (dup),,TECH ,Techno Drum,,CHIM ,Chime (dup),,Q.MAJ,Square major
 M.SNR,Melodic Snare (dup),,SN.13,Snare 13,,M.HAT ,Metallic Hi Hat (dup),,RID.1,Ride 1,,PIPE ,PVC Pipes,,CLK.1,Click 1,,BUNS ,Bouncing Bell (dup),,Q.MIN,Square minor
-CLP.1,Dry Clap 1,,SN.14,Snare 14,,CRSH  ,Crash Cymbal (dup),,RID.2,Ride 2,,CWB.1,Cowbell 1 (dup),,CLK.2,Click 2,,BER3 ,Bell Release,,Q.MA7,Square M7
+CLP.1,Dry Clap 1 (dup),,SN.14,Snare 14,,CRSH  ,Crash Cymbal (dup),,RID.2,Ride 2,,CWB.1,Cowbell 1 (dup),,CLK.2,Click 2,,BER3 ,Bell Release,,Q.MA7,Square M7
 CLP.2,Dry Clap 2,,SN.15,Snare 15,,SCRM  ,Metallic Scream,,RID.3,Ride 3,,CWB.2,Cowbell 2,,CLK.3,Click 3,,LO.BL,LoBit Bell,,Q.MI7,Square m7
 H.SNR,Hard Snare,,SN.16,Snare 16,,FHHF  ,FM Hi Hat,,RID.4,Ride 4,,TOM.1,Tom 1 (dup),,CLK.4,Click 4,,HD.HT,Hardhit Bell,,Q.7TH,Square 7
 SN.01,Snare 1,,SN.17,Snare 17,,S.HH.1,Short Hi Hat 1,,RID.5,Ride 5,,TOM.2,Tom 2,,CLK.5,Click 5,,BEL.1,Bell 1,,Q.AD9,Square add9
