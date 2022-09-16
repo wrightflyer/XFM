@@ -1,0 +1,71 @@
+,XFM1,,,XFM2,,,LD1,,,LD2,,,KEY1,,,KEY2,,,PAD1,,,PAD2
+WGGL ,Wiggle Lead,,L.KCK,Low Kick,,WGGL ,Wiggle Lead (dup),,LF.LD ,Lo-Fi Lead,,EP.1  ,Electric Piano 1 (dup),,KEY.1,Keys 1,,DSTR  ,Distorted Pad (dup),,A.PD.1,Attack Pad 1
+ORG.1,Organ 1,,H.KCK,Hard Kick,,S.SAW,Super Saw Lead (dup),,S.LD.1,Sweep Lead 1,,EP.2  ,Electric Piano 2,,KEY.2,Keys 2,,T.GAP ,TimeGap Pad,,A.PD.2,Attack Pad 2
+F.TRP,Forte Trumpet,,N.SNR,Normal Snare,,BR.LD,Bright Lead,,S.LD.2,Sweep Lead 2,,EP.3  ,Electric Piano 3,,KEY.3,Keys 3,,D.SAW ,Deep Saw Pad,,A.PD.3,Attack Pad 3
+PSYC ,Psychedelica,,M.SNR,Melodic Snare,,AT.LD,Attacky Lead,,HP.LD ,High Pass Lead,,WD.EP ,Wood EP,,KEY.4,Keys 4,,VOXS  ,Voices Pad,,A.PD.4,Attack Pad 4
+DIG.B,Digital Bass,,CLP1 ,Dry Clap 1,,PENT ,Penta Lead,,D.LD  ,Distorted Lead,,BEL.P ,Bell Piano,,KEY.5,Keys 5,,FOGY  ,Foggy Pad,,W.PD.1,Warm Pad 1
+S.SAW,Super Saw,,NM.HH,Normal Hi Hat,,NM.LD,Normal Lead,,N.LD.1,Noisy Lead 1,,DL.KY ,Delayed Keys,,KEY.6,Keys 6,,NZ.PD ,Noisy Pad,,W.PD.2,Warm Pad 2
+EP.1 ,Electric Piano 1,,M.HAT,Metallic Hi Hat,,PD.LD,Prodigy Lead,,N.LD.2,Noisy Lead 2,,AMVE  ,Ambient Wave,,KEY.7,Keys 7,,NTEL  ,Nostalgic Bell,,SFT.1 ,Soft Pad 1
+DSTR ,Distorted Pad,,CRSH ,Crash Cymbal,,SYNC ,Sync Lead,,CL.LD ,Cloudy Lead,,CC0R  ,Accordion,,KEY.8,Keys 8,,GLAS  ,Glassy Pad,,SFT.2 ,Soft Pad 2
+ENS1 ,String Ensemble 1,,M.RID,Metalic Ride,,S.SQR,Super Square Lead,,VCDR  ,Vocorder,,PSYC  ,Psychedelica (dup),,KEY.9,Keys 9,,DK.PD ,Dark Pad,,SFT.3 ,Soft Pad 3
+DMSR ,IDM Sitar,,MLT.D,Multi Drum,,BITE ,Bity Lead,,NES   ,NES,,PC.OR ,Percussive Organ,,,,,D.PD.1,Detuned Pad 1,,WN.PD ,White Noise Pad
+B.TRP,Bright Trumpet,,CWB.1,Cowbell 1,,MVOX ,Male Voice,,PV.LD ,PV LEAD,,ORG.1 ,Organ 1 (dup),,,,,D.PD.2,Detuned Pad 2,,CHOR  ,Choir
+FL.BS,Flanging Bass,,TOM.1,Tom 1,,4SAW ,4 Bit Saw,,,,,ORG.2 ,Organ 2,,,,,D.PD.3,Detuned Pad 3,,SL.PD ,Slow Pad
+S.MAJ,Strummed Major,,MRMB ,Marimba,,MT.LD,Motion Lead,,,,,ORG.3 ,Organ 3,,,,,B.SAW ,Bright Saw Pad,,,
+CRYS ,The Crystal,,CHIM ,Chime,,MD.LD,Modulated Lead,,,,,ORG.4 ,Organ 4,,,,,BR.PD ,Bright Pad,,,
+0RR0 ,FM Riser,,BUNS ,Bouncing Bell,,UN.LD,Unison Lead,,,,,P.OG.1,Pipe Organ 1,,,,,C.PAD ,Cat'N'Pad,,,
+CRWL ,Crawl Noise,,R.YTM,The Rhythmica,,BP.LD,Beep Lead,,,,,P.OG.2,Pipe Organ 2,,,,,SW.PD ,Sweep Pad 1,,,
+,,,,,,,,,,,,,,,,,,,,,,
+,STR1,,,STR2,,,WND1,,,WND2,,,BS1,,,BS2,,,KCK1,,,KCK2
+ENS1  ,String Ensemble 1 (dup),,GT.1,Guitar 1,,F.TRP ,Forte Trumpet (dup),,BR.1,Brass 1,,FL.BS,Flanging Bass (dup),,BS.01,Bass 1,,L.KCK,Low Kick (dup),,KC.13,Kick 13
+ENS2  ,String Ensemble 2,,GT.2,Guitar 2,,B.TRP ,Bright Trumpet (dup),,BR.2,Brass 2,,DIG.B,Digital Bass (dup),,BS.02,Bass 2,,H.KCK,Hard Kick (dup),,KC.14,Kick 14
+DMSR  ,IDM Sitar (dup),,GT.3,Guitar 3,,WD.WN ,Woodwind,,BR.3,Brass 3,,ALS.B,Alias Bass,,BS.03,Bass 3,,908,909 / 808,,KC.15,Kick 15
+GR.ST ,Grid Strings,,GT.4,Guitar 4,,FNFR  ,Fanfare,,BR.4,Brass 4,,PUL.B,Pulse Bass,,BS.04,Bass 4,,DP.KC,Deep Kick,,,
+VL.1  ,Violin 1,,GT.5,Guitar 5,,BR.WD ,Brassy Wind,,BR.5,Brass 5,,SYN.B,Sync Bass,,BS.05,Bass 5,,KC.01,Kick 1,,,
+VL.2  ,Violin 2,,GT.6,Guitar 6,,D.BR.1,Detuned Brass 1,,BR.6,Brass 6,,HAU.B,Haunting Bass,,BS.06,Bass 6,,KC.02,Kick 2,,,
+VLA   ,Viola,,D.GT,Distorted Guitar,,D.BR.2,Detuned Brass 2,,BR.7,Brass 7,,DOPL ,Doppler Bass,,BS.07,Bass 7,,KC.03,Kick 3,,,
+VLC.1 ,Cello 1,,M.GT,Mute Guitar,,TRB.1 ,Trombone 1,,BR.8,Brass 8,,3BBS ,EBM BASS,,BS.08,Bass 8,,KC.04,Kick 4,,,
+VLC.2 ,Cello 2,,KOTO,Koto,,TRB.2 ,Trombone 2,,BR.9,Brass 9,,OCT.B,Octave Bass,,BS.09,Bass 9,,KC.05,Kick 5,,,
+C.BS  ,Contra Bass,,SITR,Sitar,,CLRN  ,Clarinet,,,,,SWL.B,Swelling Bass,,BS.10,Bass 10,,KC.06,Kick 6,,,
+N.ST.1,Noisy Strings 1,,,,,FLT.1 ,Flute 1,,,,,KCK.B,Kick Bass,,BS.11,Bass 11,,KC.07,Kick 7,,,
+N.ST.2,Noisy Strings 2,,,,,FLT.2 ,Flute 2,,,,,BR.BS,Bright Bass,,BS.12,Bass 12,,KC.08,Kick 8,,,
+N.ST.3,Noisy Strings 3,,,,,TR.FL ,Tron-flute,,,,,E.BS ,Electric Bass,,BS.13,Bass 13,,KC.09,Kick 9,,,
+N.ST.4,Noisy Strings 4,,,,,RCDR  ,Recorder,,,,,FT.BS,Filtered Bass,,BS.14,Bass 14,,KC.10,Kick 10,,,
+HRP.1 ,Harp 1,,,,,PCCL  ,Piccolo,,,,,WB.BS,Wobble Bass,,BS.15,Bass 15,,KC.11,Kick 11,,,
+HRP.2 ,Harp 2,,,,,WHSL  ,Whistling,,,,,BARK ,Barking Bass,,,,,KC.12,Kick 12,,,
+,,,,,,,,,,,,,,,,,,,,,,
+,SNR1,,,SNR2,,,HH1,,,HH2,,,PRC1,,,PRC2,,,BELL,,,CHD1
+N.SNR,Normal Snare (dup),,SN.12,Snare 12,,NM.HH ,Normal Hi Hat (dup),,M.RID,Metallic Ride (dup),,MLT.D,Multi Drum (dup),,TECH ,Techno Drum,,CHIM ,Chime (dup),,Q.MAJ,Square major
+M.SNR,Melodic Snare (dup),,SN.13,Snare 13,,M.HAT ,Metallic Hi Hat (dup),,RID.1,Ride 1,,PIPE ,PVC Pipes,,CLK.1,Click 1,,BUNS ,Bouncing Bell (dup),,Q.MIN,Square minor
+CLP.1,Dry Clap 1,,SN.14,Snare 14,,CRSH  ,Crash Cymbal (dup),,RID.2,Ride 2,,CWB.1,Cowbell 1 (dup),,CLK.2,Click 2,,BER3 ,Bell Release,,Q.MA7,Square M7
+CLP.2,Dry Clap 2,,SN.15,Snare 15,,SCRM  ,Metallic Scream,,RID.3,Ride 3,,CWB.2,Cowbell 2,,CLK.3,Click 3,,LO.BL,LoBit Bell,,Q.MI7,Square m7
+H.SNR,Hard Snare,,SN.16,Snare 16,,FHHF  ,FM Hi Hat,,RID.4,Ride 4,,TOM.1,Tom 1 (dup),,CLK.4,Click 4,,HD.HT,Hardhit Bell,,Q.7TH,Square 7
+SN.01,Snare 1,,SN.17,Snare 17,,S.HH.1,Short Hi Hat 1,,RID.5,Ride 5,,TOM.2,Tom 2,,CLK.5,Click 5,,BEL.1,Bell 1,,Q.AD9,Square add9
+SN.02,Snare 2,,RIM.1,Rim Shot 1,,S.HH.2,Short Hi Hat 2,,,,,TOM.3,Tom 3,,,,,BEL.2,Bell 2,,Q.SU4,Square sus4
+SN.03,Snare 3,,RIM.2,Rim Shot 2,,O.C.1 ,Open Close Hi Hat 1,,,,,TOM.4,Tom 4,,,,,BEL.3,Bell 3,,Q.PWR,Square Power Chord
+SN.04,Snare 4,,,,,O.C.2 ,Open Close Hi Hat 2,,,,,MRMB ,Marimba (dup),,,,,BEL.4,Bell 4,,W.MAJ,Saw major
+SN.05,Snare 5,,,,,O.C.3 ,Open Close Hi Hat 3,,,,,TMPN ,Timpani,,,,,BEL.5,Bell 5,,W.MIN,Saw minor
+SN.06,Snare 6,,,,,HH.1  ,Hi Hat 1,,,,,CNGA ,Conga,,,,,,,,W.MA7,Saw M7
+SN.07,Snare 7,,,,,HH.2  ,Hi Hat 2,,,,,BNG.1,Bongo 1,,,,,,,,W.MI7,Saw m7
+SN.08,Snare 8,,,,,HH.3  ,Hi Hat 1,,,,,BNG.2,Bongo 2,,,,,,,,W.7TH,Saw 7
+SN.09,Snare 9,,,,,HH.4  ,Hi Hat 1,,,,,BMBO ,Bamboo,,,,,,,,W.AD9,Saw add9
+SN.10,Snare 10,,,,,HH.5  ,Hi Hat 1,,,,,MTL.1,Metal1,,,,,,,,W.SU4,Saw sus4
+SN.11,Snare 11,,,,,HH.6  ,Hi Hat 1,,,,,MTL.2,Metal2,,,,,,,,W.PWR,Saw Power Chord
+,,,,,,,,,,,,,,,,,,,,,,
+,CHD2,,,RYTM,,,SFX1,,,SFX2,,,XLFO,,,,,,,,,
+S.MAJ,Strummed Major (dup),,CRYS ,The Crystal (dup),,0RR0 ,FM Riser (dup),,FX.6  ,SFX 6,,DSQ1 ,Detuned Squares 1,,,,,,,,,
+S.MIN,Strummed Minor,,RW.AT,ReWind & Attack,,CRWL ,Crawl Noise (dup),,FX.7  ,SFX 7,,DSQ2 ,Detuned Squares 2,,,,,,,,,
+S.MA7,Strum Major 7,,REFL ,Reflectica,,FMJY ,FM Jelly,,FX.8  ,SFX 8,,DSW1 ,Detuned Saws 1,,,,,,,,,
+S.MI7,Strum Minor 7,,S.MOD,Strings Modulation,,IMHT ,Industrial Hit,,FX.9  ,SFX 9,,DSW2 ,Detuned Saws 2,,,,,,,,,
+S.7TH,Strummed 7,,TRON ,Melotronica,,IDS3 ,Industrial SE,,FX.10 ,SFX 10,,DSN1 ,Detuned Sines,,,,,,,,,
+S.AD9,Strummed add9,,MNML ,Minimal Strings,,INDS ,Industrial,,FX.11 ,SFX 11,,PWM1 ,Pulse Width Modulation 1,,,,,,,,,
+S.SU4,Strummed sus4,,RE.SN,ReAttack Sinewave,,SQEK ,The Squeak,,FX.12 ,SFX 12,,PWM2 ,Pulse Width Modulation 2,,,,,,,,,
+S.PWR,Strummed Power Chord,,RE.BP,ReAttack Beep,,M3TE ,Metal SE,,FX.13 ,SFX 13,,ASW1 ,Acid Saw 1,,,,,,,,,
+K.MAJ,Keys Major,,R.YTM,The Rhythmica (dup),,TPDT ,Tape Dust,,FX.14 ,SFX 14,,ASW2 ,Acid Saw 2,,,,,,,,,
+K.MIN,Keys Minor,,RYT.M,The Rhythmica 2,,F.WEB,Feedback Web 1,,W.NS.1,White Noise 1,,ASQ1 ,Acid Square 1,,,,,,,,,
+K.MA7,Keys Major 7,,,,,RDFX ,Broken Radio,,W.NS.2,White Noise 2,,ASQ2 ,Acid Square 2,,,,,,,,,
+K.MI7,Keys Minor 7,,,,,FX.1 ,SFX 1,,W.NS.3,White Noise 3,,PUL1 ,Pulse 1 (Narrow),,,,,,,,,
+K.7TH,Keys 7,,,,,FX.2 ,SFX 2,,W.NS.4,White Noise 4,,PUL2 ,Pulse 2 (Wide),,,,,,,,,
+K.AD9,Keys add9,,,,,FX.3 ,SFX 3,,W.NS.5,White Noise 5,,SHF1 ,Harmonic Shift 1,,,,,,,,,
+K.SU4,Keys sus4,,,,,FX.4 ,SFX 4,,,,,SHF2 ,Harmonic Shift 2,,,,,,,,,
+K.PWR,Keys Power Chord,,,,,FX.5 ,SFX 5,,,,,S.WEB,Soft Web,,,,,,,,,

@@ -1,0 +1,408 @@
+
+1  WGGL  Wiggle Lead
+2  ORG.1 Organ 1
+3  F.TRP Forte Trumpet
+4  PSYC  Psychedelica
+5  DIG.B Digital Bass
+6  S.SAW Super Saw
+7  EP.1  Electric Piano 1
+8  DSTR  Distorted Pad
+9  ENS1  String Ensemble 1
+10 DMSR  IDM Sitar
+11 B.TRP Bright Trumpet
+12 FL.BS Flanging Bass
+13 S.MAJ Strummed Major
+14 CRYS  The Crystal
+15 0RR0  FM Riser
+16 CRWL  Crawl Noise
+
+1  L.KCK Low Kick
+2  H.KCK Hard Kick
+3  N.SNR Normal Snare
+4  M.SNR Melodic Snare
+5  CLP1  Dry Clap 1
+6  NM.HH Normal Hi Hat
+7  M.HAT Metallic Hi Hat
+8  CRSH  Crash Cymbal
+9  M.RID Metalic Ride
+10 MLT.D Multi Drum
+11 CWB.1 Cowbell 1
+12 TOM.1 Tom 1
+13 MRMB  Marimba
+14 CHIM  Chime
+15 BUNS  Bouncing Bell
+16 R.YTM The Rhythmica
+
+1  WGGL  Wiggle Lead
+2  S.SAW Super Saw Lead
+3  BR.LD Bright Lead
+4  AT.LD Attacky Lead
+5  PENT  Penta Lead
+6  NM.LD Normal Lead
+7  PD.LD Prodigy Lead
+8  SYNC  Sync Lead
+9  S.SQR Super Square Lead
+10 BITE  Bity Lead
+11 MVOX  Male Voice
+12 4SAW  4 Bit Saw
+13 MT.LD Motion Lead
+14 MD.LD Modulated Lead
+15 UN.LD Unison Lead
+16 BP.LD Beep Lead
+
+1  LF.LD  Lo-Fi Lead
+2  S.LD.1 Sweep Lead 1
+3  S.LD.2 Sweep Lead 2
+4  HP.LD  High Pass Lead
+5  D.LD   Distorted Lead
+6  N.LD.1 Noisy Lead 1
+7  N.LD.2 Noisy Lead 2
+8  CL.LD  Cloudy Lead
+9  VCDR   Vocorder
+10 NES    NES
+11 PV.LD  PV LEAD
+
+1  EP.1   Electric Piano 1
+2  EP.2   Electric Piano 2
+3  EP.3   Electric Piano 3
+4  WD.EP  Wood EP
+5  BEL.P  Bell Piano
+6  DL.KY  Delayed Keys
+7  AMVE   Ambient Wave
+8  CC0R   Accordion
+9  PSYC   Psychedelica
+10 PC.OR  Percussive Organ
+11 ORG.1  Organ 1
+12 ORG.2  Organ 2
+13 ORG.3  Organ 3
+14 ORG.4  Organ 4
+15 P.OG.1 Pipe Organ 1
+16 P.OG.2 Pipe Organ 2
+
+1  KEY.1 Keys 1
+2  KEY.2 Keys 2
+3  KEY.3 Keys 3
+4  KEY.4 Keys 4
+5  KEY.5 Keys 5
+6  KEY.6 Keys 6
+7  KEY.7 Keys 7
+8  KEY.8 Keys 8
+9  KEY.9 Keys 9
+
+1  DSTR   Distorted Pad
+2  T.GAP  TimeGap Pad
+3  D.SAW  Deep Saw Pad
+4  VOXS   Voices Pad
+5  FOGY   Foggy Pad
+6  NZ.PD  Noisy Pad
+7  NTEL   Nostalgic Bell
+8  GLAS   Glassy Pad
+9  DK.PD  Dark Pad
+10 D.PD.1 Detuned Pad 1
+11 D.PD.2 Detuned Pad 2
+12 D.PD.3 Detuned Pad 3
+13 B.SAW  Bright Saw Pad
+14 BR.PD  Bright Pad
+15 C.PAD  Cat'N'Pad
+16 SW.PD  Sweep Pad 1
+
+1  A.PD.1 Attack Pad 1
+2  A.PD.2 Attack Pad 2
+3  A.PD.3 Attack Pad 3
+4  A.PD.4 Attack Pad 4
+5  W.PD.1 Warm Pad 1
+6  W.PD.2 Warm Pad 2
+7  SFT.1  Soft Pad 1
+8  SFT.2  Soft Pad 2
+9  SFT.3  Soft Pad 3
+10 WN.PD  White Noise Pad
+11 CHOR   Choir
+12 SL.PD  Slow Pad
+
+1  ENS1   String Ensemble 1
+2  ENS2   String Ensemble 2
+3  DMSR   IDM Sitar
+4  GR.ST  Grid Strings
+5  VL.1   Violin 1
+6  VL.2   Violin 2
+7  VLA    Viola
+8  VLC.1  Cello 1
+9  VLC.2  Cello 2
+10 C.BS   Contra Bass
+11 N.ST.1 Noisy Strings 1
+12 N.ST.2 Noisy Strings 2
+13 N.ST.3 Noisy Strings 3
+14 N.ST.4 Noisy Strings 4
+15 HRP.1  Harp 1
+16 HRP.2  Harp 2
+
+1  GT.1 Guitar 1
+2  GT.2 Guitar 2
+3  GT.3 Guitar 3
+4  GT.4 Guitar 4
+5  GT.5 Guitar 5
+6  GT.6 Guitar 6
+7  D.GT Distorted Guitar
+8  M.GT Mute Guitar
+9  KOTO Koto
+10 SITR Sitar
+
+1  F.TRP  Forte Trumpet
+2  B.TRP  Bright Trumpet
+3  WD.WN  Woodwind
+4  FNFR   Fanfare
+5  BR.WD  Brassy Wind
+6  D.BR.1 Detuned Brass 1
+7  D.BR.2 Detuned Brass 2
+8  TRB.1  Trombone 1
+9  TRB.2  Trombone 2
+10 CLRN   Clarinet
+11 FLT.1  Flute 1
+12 FLT.2  Flute 2
+13 TR.FL  Tron-flute
+14 RCDR   Recorder
+15 PCCL   Piccolo
+16 WHSL   Whistling
+
+1  BR.1 Brass 1
+2  BR.2 Brass 2
+3  BR.3 Brass 3
+4  BR.4 Brass 4
+5  BR.5 Brass 5
+6  BR.6 Brass 6
+7  BR.7 Brass 7
+8  BR.8 Brass 8
+9  BR.9 Brass 9
+
+1  FL.BS Flanging Bass
+2  DIG.B Digital Bass
+3  ALS.B Alias Bass
+4  PUL.B Pulse Bass
+5  SYN.B Sync Bass
+6  HAU.B Haunting Bass
+7  DOPL  Doppler Bass
+8  3BBS  EBM BASS
+9  OCT.B Octave Bass
+10 SWL.B Swelling Bass
+11 KCK.B Kick Bass
+12 BR.BS Bright Bass
+13 E.BS  Electric Bass
+14 FT.BS Filtered Bass
+15 WB.BS Wobble Bass
+16 BARK  Barking Bass
+
+1  BS.01 Bass 1
+2  BS.02 Bass 2
+3  BS.03 Bass 3
+4  BS.04 Bass 4
+5  BS.05 Bass 5
+6  BS.06 Bass 6
+7  BS.07 Bass 7
+8  BS.08 Bass 8
+9  BS.09 Bass 9
+10 BS.10 Bass 10
+11 BS.11 Bass 11
+12 BS.12 Bass 12
+13 BS.13 Bass 13
+14 BS.14 Bass 14
+15 BS.15 Bass 15
+
+1  L.KCK Low Kick
+2  H.KCK Hard Kick
+3  0908  909 / 808
+4  DP.KC Deep Kick
+5  KC.01 Kick 1
+6  KC.02 Kick 2
+7  KC.03 Kick 3
+8  KC.04 Kick 4
+9  KC.05 Kick 5
+10 KC.06 Kick 6
+11 KC.07 Kick 7
+12 KC.08 Kick 8
+13 KC.09 Kick 9
+14 KC.10 Kick 10
+15 KC.11 Kick 11
+16 KC.12 Kick 12
+
+1  KC.13 Kick 13
+2  KC.14 Kick 14
+3  KC.15 Kick 15
+
+1  N.SNR Normal Snare
+2  M.SNR Melodic Snare
+3  CLP.1 Dry Clap 1
+4  CLP.2 Dry Clap 2
+5  H.SNR Hard Snare
+6  SN.01 Snare 1
+7  SN.02 Snare 2
+8  SN.03 Snare 3
+9  SN.04 Snare 4
+10 SN.05 Snare 5
+11 SN.06 Snare 6
+12 SN.07 Snare 7
+13 SN.08 Snare 8
+14 SN.09 Snare 9
+15 SN.10 Snare 10
+16 SN.11 Snare 11
+
+1  SN.12 Snare 12
+2  SN.13 Snare 13
+3  SN.14 Snare 14
+4  SN.15 Snare 15
+5  SN.16 Snare 16
+6  SN.17 Snare 17
+7  RIM.1 Rim Shot 1
+8  RIM.2 Rim Shot 2
+
+1  NM.HH  Normal Hi Hat
+2  M.HAT  Metallic Hi Hat
+3  CRSH   Crash Cymbal
+4  SCRM   Metallic Scream
+5  FHHF   FM Hi Hat
+6  S.HH.1 Short Hi Hat 1
+7  S.HH.2 Short Hi Hat 2
+8  O.C.1  Open Close Hi Hat 1
+9  O.C.2  Open Close Hi Hat 2
+10 O.C.3  Open Close Hi Hat 3
+11 HH.1   Hi Hat 1
+12 HH.2   Hi Hat 2
+13 HH.3   Hi Hat 1
+14 HH.4   Hi Hat 1
+15 HH.5   Hi Hat 1
+16 HH.6   Hi Hat 1
+
+1 M.RID Metallic Ride
+2 RID.1 Ride 1
+3 RID.2 Ride 2
+4 RID.3 Ride 3
+5 RID.4 Ride 4
+6 RID.5 Ride 5
+
+1  MLT.D Multi Drum
+2  PIPE  PVC Pipes
+3  CWB.1 Cowbell 1
+4  CWB.2 Cowbell 2
+5  TOM.1 Tom 1
+6  TOM.2 Tom 2
+7  TOM.3 Tom 3
+8  TOM.4 Tom 4
+9  MRMB  Marimba
+10 TMPN  Timpani
+11 CNGA  Conga
+12 BNG.1 Bongo 1
+13 BNG.2 Bongo 2
+14 BMBO  Bamboo
+15 MTL.1 Metal1
+16 MTL.2 Metal2
+
+1 TECH  Techno Drum
+2 CLK.1 Click 1
+3 CLK.2 Click 2
+4 CLK.3 Click 3
+5 CLK.4 Click 4
+6 CLK.5 Click 5
+
+1  CHIM  Chime
+2  BUNS  Bouncing Bell
+3  BER3  Bell Release
+4  LO.BL LoBit Bell
+5  HD.HT Hardhit Bell
+6  BEL.1 Bell 1
+7  BEL.2 Bell 2
+8  BEL.3 Bell 3
+9  BEL.4 Bell 4
+10 BEL.5 Bell 5
+
+1  Q.MAJ Square major
+2  Q.MIN Square minor
+3  Q.MA7 Square M7
+4  Q.MI7 Square m7
+5  Q.7TH Square 7
+6  Q.AD9 Square add9
+7  Q.SU4 Square sus4
+8  Q.PWR Square Power Chord
+9  W.MAJ Saw major
+10 W.MIN Saw minor
+11 W.MA7 Saw M7
+12 W.MI7 Saw m7
+13 W.7TH Saw 7
+14 W.AD9 Saw add9
+15 W.SU4 Saw sus4
+16 W.PWR Saw Power Chord
+
+1  S.MAJ Strummed Major
+2  S.MIN Strummed Minor
+3  S.MA7 Strum Major 7
+4  S.MI7 Strum Minor 7
+5  S.7TH Strummed 7
+6  S.AD9 Strummed add9
+7  S.SU4 Strummed sus4
+8  S.PWR Strummed Power Chord
+9  K.MAJ Keys Major
+10 K.MIN Keys Minor
+11 K.MA7 Keys Major 7
+12 K.MI7 Keys Minor 7
+13 K.7TH Keys 7
+14 K.AD9 Keys add9
+15 K.SU4 Keys sus4
+16 K.PWR Keys Power Chord
+
+1  CRYS  The Crystal
+2  RW.AT ReWind & Attack
+3  REFL  Reflectica
+4  S.MOD Strings Modulation
+5  TRON  Melotronica
+6  MNML  Minimal Strings
+7  RE.SN ReAttack Sinewave
+8  RE.BP ReAttack Beep
+9  R.YTM The Rhythmica
+10 RYT.M The Rhythmica 2
+
+1  0RR0  FM Riser
+2  CRWL  Crawl Noise
+3  FMJY  FM Jelly
+4  IMHT  Industrial Hit
+5  IDS3  Industrial SE
+6  INDS  Industrial
+7  SQEK  The Squeak
+8  M3TE  Metal SE
+9  TPDT  Tape Dust
+10 F.WEB Feedback Web 1
+11 RDFX  Broken Radio
+12 FX.1  SFX 1
+13 FX.2  SFX 2
+14 FX.3  SFX 3
+15 FX.4  SFX 4
+16 FX.5  SFX 5
+
+1  FX.6   SFX 6
+2  FX.7   SFX 7
+3  FX.8   SFX 8
+4  FX.9   SFX 9
+5  FX.10  SFX 10
+6  FX.11  SFX 11
+7  FX.12  SFX 12
+8  FX.13  SFX 13
+9  FX.14  SFX 14
+10 W.NS.1 White Noise 1
+11 W.NS.2 White Noise 2
+12 W.NS.3 White Noise 3
+13 W.NS.4 White Noise 4
+14 W.NS.5 White Noise 5
+
+1  DSQ1  Detuned Squares 1
+2  DSQ2  Detuned Squares 2
+3  DSW1  Detuned Saws 1
+4  DSW2  Detuned Saws 2
+5  DSN1  Detuned Sines
+6  PWM1  Pulse Width Modulation 1
+7  PWM2  Pulse Width Modulation 2
+8  ASW1  Acid Saw 1
+9  ASW2  Acid Saw 2
+10 ASQ1  Acid Square 1
+11 ASQ2  Acid Square 2
+12 PUL1  Pulse 1 (Narrow)
+13 PUL2  Pulse 2 (Wide)
+14 SHF1  Harmonic Shift 1
+15 SHF2  Harmonic Shift 2
+16 S.WEB Soft Web
