@@ -282,9 +282,9 @@ class RouteWindow:
     def __init__(self):
         self.routeWin = Toplevel(window)
         self.routeWin.geometry("940x670")
-        self.routeWin.title("Operator signal routing                       (close using Hide button not X)")
+        self.routeWin.title("Operator signal routing")
         self.routeWin.resizable(False, False)
-        self.routeWin.protocol("WM_DELETE_WINDOW", self.disable_event)
+        self.routeWin.protocol("WM_DELETE_WINDOW", self.toggle_window)
         self.canvas = Canvas(self.routeWin, width = 940, height = 670, bg='#313131')
         self.canvas.place(x = 0, y = 0)
         self.showNums = True
@@ -307,8 +307,11 @@ class RouteWindow:
             self.showNums = True
         self.draw()
     
-    def disable_event(self):
-        pass
+    def toggle_window(self):
+        if self.Showing:
+            self.hide()
+        else:
+            self.show()
 
     def getStipple(self, key):
         val = abs(controllist[key][0].getValue())
@@ -539,7 +542,7 @@ class SetupWindow:
         self.setupWin.geometry("940x370")
         self.setupWin.title("Setup")
         self.setupWin.resizable(False, False)
-        self.setupWin.protocol("WM_DELETE_WINDOW", self.disable_event)
+        self.setupWin.protocol("WM_DELETE_WINDOW", self.toggle_window)
         self.canvas = Canvas(self.setupWin, width = 940, height = 370, bg='#313131')
         self.canvas.place(x = 0, y = 0)
         self.listbox = Listbox(self.setupWin, width = 50)
@@ -560,8 +563,11 @@ class SetupWindow:
         self.bytes = b''
         self.hide()
 
-    def disable_event(self):
-        pass
+    def toggle_window(self):
+        if self.Showing:
+            self.hide()
+        else:
+            self.show()
 
     def show(self):
         self.setupWin.deiconify()
@@ -1399,13 +1405,13 @@ def saveJSON(event):
 load = Canvas(width=32, height=32, highlightthickness=0)
 load.place(x=1650, y=410)
 load.create_rectangle(0,0, 31, 31, fill='#C00000')
-load.create_text(0, 0, anchor=tk.NW, text="JSON\ninit", fill='#FFFFFF')
+load.create_text(0, 10, anchor=tk.NW, text="  Init", fill='#FFFFFF')
 load.bind('<Button>', loadJSON)
 
 save = Canvas(width=32, height=32, highlightthickness=0)
 save.place(x=1600, y=410)
 save.create_rectangle(0,0, 31, 31, fill='#00C000')
-save.create_text(0, 0, anchor=tk.NW, text="JSON\nsave", fill='#FFFFFF')
+save.create_text(0, 0, anchor=tk.NW, text=" Save\nJSON", fill='#FFFFFF')
 save.bind('<Button>', saveJSON)
 
 routeWin = RouteWindow()
@@ -1413,15 +1419,13 @@ routeWin = RouteWindow()
 def routeButtonClick(event):
     if not routeWin.Showing:
         routeWin.show()
-        routeButton.itemconfig(route_label, text="Hide\nRoute")
     else:
-        routeButton.itemconfig(route_label, text="Show\nRoute")
         routeWin.hide()
 
 routeButton = Canvas(width=32, height=32, highlightthickness=0)
 routeButton.place(x=1600, y=450)
 routeButton.create_rectangle(0,0, 31, 31, fill='#0000C0')
-route_label = routeButton.create_text(0, 0, anchor=tk.NW, text="Show\nRoute", fill='#FFFFFF')
+route_label = routeButton.create_text(0, 10, anchor=tk.NW, text="Route", fill='#FFFFFF')
 routeButton.bind('<Button>', routeButtonClick)
 
 setupWin = SetupWindow()
@@ -1435,7 +1439,7 @@ def setupButtonClick(event):
 setupButton = Canvas(width=32, height=32, highlightthickness=0)
 setupButton.place(x=1650, y=450)
 setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
-setupButton.create_text(0, 0, anchor=tk.NW, text="Setup", fill='#FFFFFF')
+setupButton.create_text(0, 10, anchor=tk.NW, text="Setup", fill='#FFFFFF')
 setupButton.bind('<Button>', setupButtonClick)
 
 # load initpatch.json (which will default to an "init" patch.
