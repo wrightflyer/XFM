@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import *
+from tkinter import filedialog as fd
 from PIL import Image, ImageTk
 import json
 import mido
@@ -1138,10 +1139,13 @@ def readCtrls():
             patch[sect][item] = controllist[x][0].getValue()
     return patch
 
-def loadInitJson():
-    with open("initpatch.json") as f:
+def loadJson(filename):
+    with open(filename) as f:
         data = json.load(f)
         loadCtrls(data)
+
+def loadInitJson():
+    loadJson("initpatch.json")
 
 def saveJson(patch):
     jsonpatch = json.dumps(patch, indent=4)
@@ -1380,7 +1384,7 @@ controls = {
     "Pitch:RLevel" : [ "R Level",   "slideVbi",    1620, 90, -48 ],
     "Pitch:RTime" :  [ "R Time",    "slideH",    1410, 560 ],
 
-    "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 500, -63 ],
+    "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 600, -63 ],
 }
 
 # For all the above controls simply create their anm objects but don't draw until inits set
@@ -1395,24 +1399,35 @@ for key in controls:
 
 # following is a JSON experiment to load a file (when a canvas is clicked) and load all the
 # values into the controls
-def loadJSON(event):
+def initJSON(event):
     loadInitJson()
+
+def loadJSON(event):
+    file = fd.askopenfilename(title="Load JSON patch", filetypes=[("JSON patches", "*.json")])
+    if "json" in file:
+        loadJson(file)
 
 def saveJSON(event):
     patch = readCtrls()
     saveJson(patch)
 
-load = Canvas(width=32, height=32, highlightthickness=0)
-load.place(x=1650, y=410)
-load.create_rectangle(0,0, 31, 31, fill='#C00000')
-load.create_text(0, 10, anchor=tk.NW, text="  Init", fill='#FFFFFF')
-load.bind('<Button>', loadJSON)
+init = Canvas(width=32, height=32, highlightthickness=0)
+init.place(x=1650, y=410)
+init.create_rectangle(0,0, 31, 31, fill='#C00000')
+init.create_text(0, 10, anchor=tk.NW, text="  Init", fill='#FFFFFF')
+init.bind('<Button>', initJSON)
 
 save = Canvas(width=32, height=32, highlightthickness=0)
 save.place(x=1600, y=410)
 save.create_rectangle(0,0, 31, 31, fill='#00C000')
 save.create_text(0, 0, anchor=tk.NW, text=" Save\nJSON", fill='#FFFFFF')
 save.bind('<Button>', saveJSON)
+
+load = Canvas(width=32, height=32, highlightthickness=0)
+load.place(x=1600, y=450)
+load.create_rectangle(0,0, 31, 31, fill='#c0C000')
+load.create_text(0, 0, anchor=tk.NW, text=" load\nJSON", fill='#FFFFFF')
+load.bind('<Button>', loadJSON)
 
 routeWin = RouteWindow()
 
@@ -1423,7 +1438,7 @@ def routeButtonClick(event):
         routeWin.hide()
 
 routeButton = Canvas(width=32, height=32, highlightthickness=0)
-routeButton.place(x=1600, y=450)
+routeButton.place(x=1600, y=490)
 routeButton.create_rectangle(0,0, 31, 31, fill='#0000C0')
 route_label = routeButton.create_text(0, 10, anchor=tk.NW, text="Route", fill='#FFFFFF')
 routeButton.bind('<Button>', routeButtonClick)
@@ -1437,7 +1452,7 @@ def setupButtonClick(event):
         setupWin.hide()
 
 setupButton = Canvas(width=32, height=32, highlightthickness=0)
-setupButton.place(x=1650, y=450)
+setupButton.place(x=1650, y=490)
 setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
 setupButton.create_text(0, 10, anchor=tk.NW, text="Setup", fill='#FFFFFF')
 setupButton.bind('<Button>', setupButtonClick)
