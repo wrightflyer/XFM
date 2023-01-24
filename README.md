@@ -11,17 +11,17 @@ So on to the development...
 
 ### Graphics
 
-The first thing I did was a simple Python program (I like the simplicity of Tkinter for graphics) to run some experiments in drawing 8 point ADSR envelopes...
+The first thing I did was a simple Python program, adsr.py, (I like the simplicity of Tkinter for graphics) to run some experiments in drawing 8 point ADSR envelopes...
 
-![](pretty.png)
+![](readme_pics/pretty.png)
 
 This was just playing about to understand how to visually represent 8 parameter envelopes as used by XFM.
 
 ### MIDI in Python
 
-I also did experiments to read Sysex from XFM. I spent some time researching how you could interface to MIDI from inside a Python program. The library I ended up with is "MIDO" but this is really just a high level interface that then relies on a lower level, back end to connect to "ports" and in this case that is RT_MIDI. With mido you can just mido.get_input_names() to find the MIDI ports available and mido.open() one and register callback=function and then that function is called with a message each time something arrives on the port. I wrote some code to then hex/ASCII dump the 230+ bytes of the main patch message
+I also did experiments to read Sysex from XFM (rx_syx.py). I spent some time researching how you could interface to MIDI from inside a Python program. The library I ended up with is "MIDO" but this is really just a high level interface that then relies on a lower level, back end to connect to "ports" and in this case that is RT_MIDI. With mido you can just mido.get_input_names() to find the MIDI ports available and mido.open() one and register callback=function and then that function is called with a message each time something arrives on the port. I wrote some code to then hex/ASCII dump the 230+ bytes of the main patch message
 
-![](sysex_dump.png)
+![](readme_pics/sysex_dump.png)
 
 At the start I had no idea what any of the bytes of this data controlled. It's not documented anywhere and Sonicware were too busy working on things like LoFi12 and SmplTrek to take time out to produce a document. So a lot (an awful lot!!) of the work in this project was capturing 100's if not 1000's of Sysex dumps like this picture. Each time I would make some small control adjustment and see what bit/bytes changed. The complexity of the layout of the data is simply incredible. I sort of assumed it would be a C struct and one localized element might change for a control adjustment but for some things the bytes are split all over the place. This is especially true for controls that don't have a simple 7bit (MIDI sized!) value holding 0..127. For things like Frequency/Ratio/Feedback you will not believe how complex the storage of the values is !! But to get a flavour...
 ```
@@ -46,7 +46,7 @@ I love playing with knobs!
 
 I also wanted to prototype the "look" of the program before I had any way to draw animated knobs in Python. So I reverted to my old friend Ctrlr which is a GUI program for making MIDI control panels. I was just interested in laying out controls more than anything. Now with Ctrlr it has a default "look and feel" as seen in this control panel I actually used for my own design Teensy4 based synth:
 
-![](synthctrlr.png)
+![](readme_pics/synthctrlr.png)
 
 But I wanted to use my own knob design. Reading around I found that some users of Ctrlr used a dedicated knob design program called Knobman because Ctrlr can have an animation file attached to a control that is then used to draw each step of the control:
 
@@ -58,13 +58,13 @@ There's Windows specific versions, Java versions and even an online based editor
 
 It's slow to load but worth the wait as there's tons of knob designs there to choose from (or you can draw from scratch if you want). I ended up with a bit of both. Now I actually like the look of a knob like:
 
-![](original_knob.png)
+![](readme_pics/original_knob.png)
 
 It had a "3D" look but I didn't like the red/white scale or the red pointer. I also noticed when I was editing on the XFM with the editing overlay in place that because the holes for the knobs were a bit bigger then the knobs themselves a "blue halo" would show through so I used knobman to create my own knob design that has subtle "ticks" in white to show scale but then a blue halo that grows as the knob is turned.
 
 Another requirement I had (apart from the blue halo) was a way to instantly read the value of every control. So I searched and searched and found a Truetype LCD font that was very like the characters in the XFM display. So I overlaid this on the rotary controls so they would show the value of the reading. In the end the editing looked like:
 
-![](knobman_editor.png)
+![](readme_pics/knobman_editor.png)
 
 Knobman basically takes all the design elements of the knob (some of which vary from frame to frame - like the angle of the white mark, the blue halo and the LCD printed value) and then it creates either animated GIFs or animated PNG files with every frame in it. I already knew about animated GIF but didn't know about animated PNG. In the latter it basically draws each frame either side-by-side or on top of one another. The nice thing about that is that if you want to do your own animator it's just a case in a file that is w x N*h to cut out the rectangle from (0, h * N1) to (w, h * N2) and drawing that. As many of the controls have a 0..127 range they are effectively 128 small rectangles on top of one another. The code directory is full of such PNG animations like:
 
@@ -74,7 +74,7 @@ Knobman basically takes all the design elements of the knob (some of which vary 
 
 So anyway, having created PNG animations it was possible to initially prototype the look of the layout (complete with operational / animated knobs) in Ctrlr so it looked like:
 
-![](ctrlr_layout.png)
+![](readme_pics/ctrlr_layout.png)
 
 (the one thing I could not fake "inside" controller were my dynamic ADSR curves so in this they are just static images as "placeholders").
 
@@ -90,6 +90,14 @@ So finally it came time to put all these experiments together in one big program
 
 ![](knobman.png)
 
+Having watched one of Chris ("Lody") Dodsworth's excellent Sonicware videos I was inspired by a sketch he drew trying to explain XFM signal routing...
+
+![](readme_pics/route_inspiration.png)
+
+to implement a feature so that when "Route" is pressed on the main editor this secondary window will be toggled on. It shows the signal routing between each operator (density of line indicates strength of signal). Signal shape is shown - when feedback is close to 0 it is "sine", when large positive (but not 63..64) it is sawtooth, when positive 63..64 it is noise, when large negative it is square...
+
+![](readme_pics/route.png)
+
 ### Running / Using the code
 
 So it's a Python program which means that to be able to run it you need to have Python installed. It does not work with the now dead Python 2.7. It has to be some flavour of 3.x (a later one!)
@@ -100,6 +108,10 @@ Because I tried to stick with lib code that comes with Python (like Tkinter for 
     pip install python-rtmidi
 
 The latter is the lower level support (RTmidi) that allows Mido to open and interact with the MIDI ports on the machine.
+
+If it's not installed already you will also need
+
+    pip install pillow
 
 While writing these words I also found that I used a feature in PIL (Pillow - part of Python's image handling) that is only available in a fairly recent Pillow (> v9.x) and that such a late version of PIL is only compatible with later versions of Python (3.9, 3.10, 3.11) so if you have an earlier 3.6 (say) you may need to upgrade and if "pip list" shows your Pillow is an older version before V9 you may need to do a pip upgrade of that wheel too.
 

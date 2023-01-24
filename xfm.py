@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import *
 from tkinter import filedialog as fd
@@ -1083,12 +1084,14 @@ def loadCtrls(data):
             while n < len(data[i]):
                 withDot = False
                 key = f'{i}:chr{charCount}'
-                print(f'{n}:{charCount}: {key} =  {data[i][n]}')
+                print(f'{key} =  {data[i][n]}', end="")
                 chrnum = ord(data[i][n])
-                print("chr =", data[i][n], " chrnum (raw) = ", chrnum)
                 if n < (len(data[i]) - 1):
                     if data[i][n + 1] == '.':
                         withDot = True
+                        print(".")
+                    else:
+                        print()
                 if chrnum >= ord('A'):
                     chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
                 elif chrnum == ord(' '):
@@ -1098,11 +1101,11 @@ def loadCtrls(data):
                 if withDot == True:
                     chrnum = chrnum + 100 # mark that a dot needs to be drawn
                     n = n + 1
-                print("chrnum loaded into ctrl =", chrnum)
                 controllist[key][0].index = chrnum
                 controllist[key][0].draw()
                 charCount = charCount + 1
                 n = n + 1
+            print()
         for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
             adsrs[j].draw()
 
@@ -1154,6 +1157,11 @@ def saveJson(patch):
 
 #============================= THE start ================================
 portOpen = False
+
+# save current (install) directory
+cur_dir = os.getcwd()
+# switch to sub-dir where all the controls and logos are held while everything is loaded
+os.chdir('./images_animations')
 
 window = Tk()
 window.geometry("1720x930")
@@ -1457,6 +1465,9 @@ setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
 setupButton.create_text(0, 10, anchor=tk.NW, text="Setup", fill='#FFFFFF')
 setupButton.bind('<Button>', setupButtonClick)
 
+# now all images/logos loaded back to the install directory where patches/etc will be
+os.chdir(cur_dir)
+
 # load initpatch.json (which will default to an "init" patch.
 loadInitJson()
 
@@ -1469,5 +1480,6 @@ setupWin.setPorts(inports)
 
 if len(inports):
     print("MIDI ports:", inports)
+
 
 window.mainloop()
