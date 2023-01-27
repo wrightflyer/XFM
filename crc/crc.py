@@ -34,7 +34,7 @@ input_list = [
 ]
 
 def crc32_2(msg):
-    crc = 0xffffffff
+    crc = 0x00000000
     for b in msg:
         crc ^= b
         for _ in range(8):
@@ -49,14 +49,38 @@ def reverse_Bits(n, no_of_bits):
         n >>= 1
     return result
 
+def create_table():
+    a = []
+    for i in range(256):
+        k = i << 24;
+        for _ in range(8):
+            k = (k << 1) ^ 0x4c11db7 if k & 0x80000000 else k << 1
+        a.append(k & 0xffffffff)
+    return a
+
+def crc32_tbl(bytestream):
+    crc_table = create_table()
+    crc = 0
+    for byte in bytestream:
+        lookup_index = ((crc >> 24) ^ byte) & 0xff
+        crc = ((crc & 0xffffff) << 8) ^ crc_table[lookup_index]
+    return crc
+
 input_bytes = bytes(input_list)
 
-print(input_bytes)
-print(hex(zlib.crc32(input_bytes)), hex(0x100000000 - zlib.crc32(input_bytes)))
+print("aiming for 0x2174604F or maybe 0x4F607421 (from packet 3!)")
+print()
+
+print("zlib", hex(zlib.crc32(input_bytes)), "inverted", hex(0xFFFFFFFF ^ zlib.crc32(input_bytes)))
+
 crc = crc32(0, input_list, 215)
-print("crc = ", hex(crc), hex(0x100000000 - crc))
-print("rev function = ", hex(crc32_2(input_bytes)), hex(0x100000000 - crc32_2(input_bytes)))
+print("crc = ", hex(crc), "inverted", hex(0xFFFFFFFF ^ crc), end="")
+print("  reversed", hex(reverse_Bits(crc, 32)), "inverted", hex(0xFFFFFFFF ^ reverse_Bits(crc, 32)))
 
-print("reversed", hex(reverse_Bits(crc, 32)), hex(reverse_Bits(0x100000000 - crc, 32)))
+crc = crc32_2(input_bytes)
+print("rev function = ", hex(crc), "inverted", hex(0xFFFFFFFF ^ crc), end="")
+print("  reversed", hex(reverse_Bits(crc, 32)), "rev/inverted", hex(0xFFFFFFFF ^ reverse_Bits(crc, 32)))
 
-print("aiming for 0x2174604F or maybe 0x4F607421")
+crc = crc32_tbl(input_bytes)
+print("table function = ", hex(crc), "inverted", hex(0xFFFFFFFF ^ crc), end="")
+print("  reversed", hex(reverse_Bits(crc, 32)), "rev/inverted", hex(0xFFFFFFFF ^ reverse_Bits(crc, 32)))
