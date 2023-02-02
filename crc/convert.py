@@ -81,7 +81,7 @@ def convert78(shifts, data):
     result = []
     #print(len(data))
     for n in range(0, len(data)):
-        print("shifts << (n + 1) is ", hex(shifts << (n + 1)))
+        print("shifts << (n + 1) is ", hex((shifts << (n + 1)) & 0xFF))
         if (shifts << (n + 1)) & 0x80:
             print("adding 0x80 to ", hex(data[n]))
             result.append(0x80 | data[n])
@@ -113,8 +113,8 @@ def convert(data):
 # need to split it into 9 byte chunks
 
 result1 = convert(raw1)
-print("result1 is ", [hex(n) for n in result1])
+print("result1 is ", len(result1), [hex(n) for n in result1])
 result2 = convert(raw2)
-print("result2 is ", [hex(n) for n in result2])
+print("result2 is ", len(result2), [hex(n) for n in result2])
 result3 = convert(raw3)
-print("result3 is ", [hex(n) for n in result3])
+print("result3 is ", len(result3), [hex(n) for n in result3])
