@@ -545,7 +545,7 @@ class SetupWindow:
         self.setupWin.title("Setup")
         self.setupWin.resizable(False, False)
         self.setupWin.protocol("WM_DELETE_WINDOW", self.toggle_window)
-        self.canvas = Canvas(self.setupWin, width = 940, height = 370, bg='#313131')
+        self.canvas = Canvas(self.setupWin, width = 940, height = 650, bg='#313131')
         self.canvas.place(x = 0, y = 0)
         self.listbox = Listbox(self.setupWin, width = 50)
         self.listbox.place(x = 20, y = 50)
@@ -563,6 +563,7 @@ class SetupWindow:
         self.showNums = True
         self.portsListed = False
         self.bytes = b''
+        self.bytes8 = b''
         self.hide()
 
     def toggle_window(self):
@@ -583,7 +584,7 @@ class SetupWindow:
     def draw(self):
         if not self.Showing:
             return
-        print("len of bytes = " + str(len(self.bytes)))
+        # print("len of bytes = " + str(len(self.bytes)))
         if len(self.bytes) == 0:
             return
         if self.bytes[0x2A] == 4:
@@ -606,13 +607,38 @@ class SetupWindow:
             tx = str(format(byt, '02X'))
             Xoff = (x * 20) % 320
             Yoff = int(x / 16) * 20
+            # because "ABCD" and "A.BC.D" type patches (dots or not) vary by 5 bytes in length then don't
+            # compare received to old if the lenth just changed (coz everything will have moved!)
             if len(self.bytes) != len(self.oldBytes):
                 self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
             else:
+                # but if this and previous are the same length then draw == bytes in black and changed in red
                 if self.bytes[x + offset] == self.oldBytes[x + offset]:
                     self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
                 else:
                     self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
+
+        # now do all that again but for the bytes AFTER the 7 to 8 bit conversion...
+        byteLimit = len(self.bytes8)
+        for x in range(0, byteLimit):
+            byt = self.bytes8[x + offset]
+            tx = str(format(byt, '02X'))
+            Xoff = (x * 20) % 320
+            Yoff = int(x / 16) * 20
+            # because "ABCD" and "A.BC.D" type patches (dots or not) vary by 5 bytes in length then don't
+            # compare received to old if the lenth just changed (coz everything will have moved!)
+            if len(self.bytes8) != len(self.old8bytes):
+                self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+            else:
+                # but if this and previous are the same length then draw == bytes in black and changed in red
+                if self.bytes8[x + offset] == self.old8bytes[x + offset]:
+                    self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                else:
+                    self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
+        crctxt = "CRC32 = " + str(format(self.crc, '08X'))
+        # show the calculated crc32 which will be key to sending this patch data back to XFM
+        self.canvas.create_text(470 + Xoff, 5800 + Yoff, anchor=tk.NW, text = crctxt, fill='#8080FF', tag="dump")
+
 
     def setPorts(self, inports):
         if len(inports) > 0:
@@ -637,7 +663,12 @@ class SetupWindow:
     def setBytes(self, bytes):
         self.oldBytes = self.bytes
         self.bytes = bytes
-        self.draw()
+        #self.draw()
+
+    def set8bytes(self, bytes):
+        self.old8bytes = self.bytes8
+        self.bytes8 = bytes
+        self.crc = crc32(0, bytes, len(bytes))
 
 def print_dump(bytes):
     txt = ""
@@ -1041,6 +1072,56 @@ def encode_bytes(patch, bytes):
 
     bytes[0xDC] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
 
+# The patch is 8 bit but sysex can only carry 7 bit data so the patch is broken into
+# groups of 7 bytes and each 7 byte group is preceded by a 7 bit mask where each bit
+# says whether or not 0x80 (128) should be added to that byte within the 7
+def convert78(shifts, data):
+    if shifts == 0:
+        return data
+    result = []
+    for n in range(0, len(data)):
+        if (shifts << (n + 1)) & 0x80:
+            result.append(0x80 | data[n])
+        else:
+            result.append(data[n])
+    return result
+
+# So this takes an entire sysex (from F0 to F7) and breaks it into 8 byte
+# groups of 1 shift byte and 7 data bytes then passes each in turn to
+# convert87 above and then concatentates all these into result[]
+def convert(data):
+    result = []
+    # first discard the front 9 bytes
+    data = data[9:]
+    while len(data):
+        if data[-1] == 0xf7:
+            # if we reached the last byte ditch it
+            data = data[:-1]
+        # what then follows is a byte holding possible 0x80 shifts for next 7 bytes
+        shifts = data[0]
+        # and then 7 bytes of data
+        bytes = data[1 : 8]
+        next7 = convert78(shifts, bytes)
+        # now chop off the 8 bytes just processed ready to go again
+        data = data[8:]
+        # the 7 processed bytes are added to the result being built up
+        result.extend(next7)
+    print()
+    return result
+
+# This is the CRC32 that XFM uses. It is the widely used 0xEDB88320 polynomial which is
+# the reveresed polynomial of 0x04C11DB7 which is used in MPEG2, Zlib, PKZip, PNG, Zmodem etc
+#
+# The seed passed in as "crc" to start is 0x00000000 to match what XFM uses.
+def crc32(crc, p, len):
+  crc = 0xffffffff & ~crc
+  for i in range(len):
+    crc = crc ^ p[i]
+    for j in range(8):
+      crc = (crc >> 1) ^ (0xedb88320 & -(crc & 1))
+  return 0xffffffff & ~crc
+
+
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
@@ -1050,6 +1131,11 @@ def rxmsg(msg):
         setupWin.setBytes(bytes)
 
         print_dump(bytes)
+
+        data8 = convert(bytes)
+        setupWin.set8bytes(data8)
+
+        setupWin.draw()
 
         decode_bytes(bytes, patch)
         if setupWin.saveLoadState.get() == 1:
