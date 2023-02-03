@@ -76,17 +76,17 @@ raw3 = [
 
 def convert78(shifts, data):
     if shifts == 0:
-        print("no conversion, return as is")
+        #print("no conversion, return as is")
         return data
     result = []
     #print(len(data))
     for n in range(0, len(data)):
-        print("shifts << (n + 1) is ", hex((shifts << (n + 1)) & 0xFF))
+        #print("shifts << (n + 1) is ", hex((shifts << (n + 1)) & 0xFF))
         if (shifts << (n + 1)) & 0x80:
-            print("adding 0x80 to ", hex(data[n]))
+            #print("adding 0x80 to ", hex(data[n]))
             result.append(0x80 | data[n])
         else:
-            print("using just ", hex(data[n]))
+            #print("using just ", hex(data[n]))
             result.append(data[n])
     return result
     
@@ -100,21 +100,82 @@ def convert(data):
             data = data[:-1]
         # what then follows is a byte holding possible 0x80 shifts for next 7 bytes
         shifts = data[0]
-        print("shifts byte = ", hex(shifts))
+        #print("shifts byte = ", hex(shifts))
         # and then 7 bytes of data
         bytes = data[1 : 8]
-        print("bytes =", [hex(n) for n in bytes])
+        #print("bytes =", [hex(n) for n in bytes])
         next7 = convert78(shifts, bytes)
-        print([hex(n) for n in next7])
+        #print([hex(n) for n in next7])
         data = data[8:]
         result.extend(next7)
     print()
     return result
-# need to split it into 9 byte chunks
+
+#def crc32_2(crc, msg):
+#    #crc = 0x00000000
+#    for b in msg:
+#        crc ^= b
+#        for _ in range(8):
+#            crc = (crc >> 1) ^ 0xedb88320 if crc & 1 else crc >> 1
+#    return crc ^ 0xffffffff
+
+# const Polynomial = 0xedb88320;
+
+# function calcCRC32( bytes, crc )
+# {
+    # let k;
+
+    # crc = (~crc);
+    # for( let i = 0; i < bytes.byteLength; i++ ) {
+        # crc = crc ^ bytes[i];
+        # for ( k = 0; k < 8; k++ ){
+            # crc = ( crc & 1 ) ? ( ( crc >>> 1 ) ^ Polynomial ) : crc >>> 1;
+        # }
+    # }
+    # return (~crc) >>> 0;
+# }
+
+
+#def reverse_bits(n, no_of_bits):
+#    result = 0
+#    for i in range(no_of_bits):
+#        result <<= 1
+#        result |= n & 1
+#        n >>= 1
+#    return result
+
+def crc32(crc, p, len):
+  crc = 0xffffffff & ~crc
+  for i in range(len):
+    crc = crc ^ p[i]
+    for j in range(8):
+      crc = (crc >> 1) ^ (0xedb88320 & -(crc & 1))
+  return 0xffffffff & ~crc
 
 result1 = convert(raw1)
 print("result1 is ", len(result1), [hex(n) for n in result1])
 result2 = convert(raw2)
+#result2.insert(0, 0)
+#result2.insert(0, 0)
+#result2.insert(0, 0)
+#result2.insert(0, 0)
 print("result2 is ", len(result2), [hex(n) for n in result2])
+for n in result2:
+    if n > 31:
+        if n < 127:
+            print(chr(n), end="")
+        else:
+            print("#", end="")
+    else:
+        print('.', end="")
+print()
+#print(result2)
+#binary = bytes(result2)
+#crc = crc32_2(0, binary)
+#print("CRC =", hex(crc), hex( crc ^ 0xFFFFFFFF), hex(reverse_bits(crc, 32)), hex(reverse_bits(crc ^ 0xFFFFFFFF, 32)))
+crc = crc32(0, result2, len(result2))
+#print("CRC alt =", hex(crc), hex( crc ^ 0xFFFFFFFF), hex(reverse_bits(crc, 32)), hex(reverse_bits(crc ^ 0xFFFFFFFF, 32)))
+print("CRC =", hex(crc))
+
 result3 = convert(raw3)
 print("result3 is ", len(result3), [hex(n) for n in result3])
