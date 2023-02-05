@@ -1,0 +1,79 @@
+header         = 'TPDT' ("the patch data"?), 136 bytes
+type           = 0;
+prmNum         = 1;
+fbDecimal      = [0,0,0,0];
+Fixed(), Fixed(), Fixed(), Fixed() int8 (enable) / int32 (freq)
+Operator(), Operator(), Operator(), Operator() int16 (ratio) / int8 (level) / int8 (detune)
+Envelope(), Envelope(), Envelope(), Envelope(), Envelope() 4 * (int8 (time) / int8 (level) )
+KeyboardLevel(), KeyboardLevel(), KeyboardLevel(), KeyboardLevel() int8 (depthL) / int8 (depthR) / uint8 (typeR:4, typeL:4) / int8 (breakpoint)
+connect Int8Array( 4 ), new Int8Array( 4 ), new Int8Array( 4 ), new Int8Array( 4 ), new Int8Array( 4 ) 5 lots of 4 int8
+velSense       = [0,0,0,0]; int8
+rateScale      = [0,0,0,0]; int8
+pitchEnvEnable = [0,0,0,0]; uint8
+EnvelopeCurve(), new EnvelopeCurve(), new EnvelopeCurve(), new EnvelopeCurve(), new EnvelopeCurve() uint8 (up) / uint8 (down)
+masterLevel    = 63;
+
+"dot name"
+feedback 38/39/3A/3B = 1/10ths
+fixed enable 3c/40/44/48
+fixed freq (*10) 3d+E+F / 41+42+43 / 45+46+47 / 49+4A+4B
+ratio (/100) 4C+4D / 50+51 / 54+55 / 58+59
+level 4E / 52 / 56 / 5A
+detune 4F / 53 / 57 / 5B
+env  atime1 5c dtime1 5d stime1 5e rtime1 5f alevel1 60 dlevel1 61 slevel1 62 rlevel1 63
+env  atime2 64 dtime2 65 stime2 66 rtime2 67 alevel2 68 dlevel2 69 slevel2 6a rlevel2 6b
+env  atime3 6c dtime3 6d stime3 6e rtime3 6f alevel3 70 dlevel3 71 slevel3 72 rlevel3 73
+env  atime4 74 dtime4 75 stime4 76 rtime4 77 alevel4 78 dlevel4 79 slevel4 7a rlevel4 7b
+env  atimeM 7C dtimeM 7D stimeM 7E rtimeM 7F alevelM 80 dlevelM 81 slevelM 82 rlevelM 83
+key gainL1 83 gainR1 84 typeRL1 86 break1 (C1..C7) 87
+key gainL2 88 gainR2 89 typeRL2 8A break2 8B
+key gainL3 8C gainR3 8D typeRL3 8E break3 8F
+key gainL4 90 gainR4 91 typeRL4 92 break4 93
+
+feedback1 94
+2->1 95
+3->1 96
+4->1 97
+
+1->2 98
+feedback2 99
+3->2 9A
+4->2 9B
+
+1->3 9C
+2->3 9D
+feedback3 9E
+4->3 9F
+
+1->4 A0
+2->4 A1
+3->4 A2
+feedback4 A3
+
+mixer level1 A4
+mixer level2 A5
+mixer level3 A6
+mixer level4 A7
+
+velsens1 A8
+velsens2 A9
+velsens3 AA
+velsens4 AB
+timescale1 AC
+timescale2 AD
+timescale3 AE
+timescale4 AF
+peq1 B0
+peq2 B1
+peq3 B2
+peq4 B3
+up curv1 B4
+down curv1 B5
+up curv2 B6
+down curv2 B7
+up curv3 B8
+down curv3 B9
+up curv4 BA
+down curv4 BB
+
+mixer level BC

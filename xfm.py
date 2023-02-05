@@ -541,7 +541,7 @@ class RouteWindow:
 class SetupWindow:
     def __init__(self):
         self.setupWin = Toplevel(window)
-        self.setupWin.geometry("940x370")
+        self.setupWin.geometry("940x650")
         self.setupWin.title("Setup")
         self.setupWin.resizable(False, False)
         self.setupWin.protocol("WM_DELETE_WINDOW", self.toggle_window)
@@ -554,8 +554,10 @@ class SetupWindow:
         self.midiButton.bind('<Button>', self.openMIDI)
         self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#313131', fg='#FFFFFF')
         self.midiLabel.place(x = 120, y = 20)
-        self.dumpLabel = Label(self.setupWin, text = "Dump of received sysex (red = changed)", bg='#313131', fg = '#FFFFFF')
+        self.dumpLabel = Label(self.setupWin, text = "Dump of RAW received sysex (red = changed)", bg='#313131', fg = '#FFFFFF')
         self.dumpLabel.place(x = 510, y = 20)
+        self.dump8Label = Label(self.setupWin, text = "Dump of sysex after 7 to 8 bit conversion", bg='#313131', fg = '#FFFFFF')
+        self.dump8Label.place(x = 510, y = 330)
         self.saveLoadState = IntVar()
         self.saveLoadState.set(0)
         self.saveLoad = Checkbutton(self.setupWin, text="Save JSON when patches received", variable=self.saveLoadState, bg='#313131', fg = '#FFFFFF', selectcolor='#313131' )
@@ -564,6 +566,7 @@ class SetupWindow:
         self.portsListed = False
         self.bytes = b''
         self.bytes8 = b''
+        self.crchex = ""
         self.hide()
 
     def toggle_window(self):
@@ -597,9 +600,9 @@ class SetupWindow:
         for y in range(1, 14):
             Ypos = (y * 20) + 50
             addr = str(format(y * 16, '02X')) + " :"
-            self.canvas.create_text(440, Ypos, anchor=tk.NW, text = addr, fill='#8080FF', tag="dump")
+            self.canvas.create_text(400, Ypos, anchor=tk.NW, text = addr, fill='#8080FF', tag="dump")
         for x in range(16):
-            Xpos = x * 20 + 470
+            Xpos = x * 20 + 430
             addr = str(format(x, '02X'))
             self.canvas.create_text(Xpos, 50, anchor=tk.NW, text = addr, fill='#80FF80', tag="dump")
         for x in range(16, byteLimit):
@@ -610,34 +613,52 @@ class SetupWindow:
             # because "ABCD" and "A.BC.D" type patches (dots or not) vary by 5 bytes in length then don't
             # compare received to old if the lenth just changed (coz everything will have moved!)
             if len(self.bytes) != len(self.oldBytes):
-                self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                self.canvas.create_text(430 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
             else:
                 # but if this and previous are the same length then draw == bytes in black and changed in red
                 if self.bytes[x + offset] == self.oldBytes[x + offset]:
-                    self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                    self.canvas.create_text(430 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
                 else:
-                    self.canvas.create_text(470 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
+                    self.canvas.create_text(430 + Xoff, 50 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
 
         # now do all that again but for the bytes AFTER the 7 to 8 bit conversion...
+        for y in range(0, 12):
+            Ypos = (y * 20)
+            addr = str(format(y * 16, '02X')) + " :"
+            self.canvas.create_text(400, Ypos + 370, anchor=tk.NW, text = addr, fill='#8080FF', tag="dump")
         byteLimit = len(self.bytes8)
+        col = 0
+        chrtxt = ""
         for x in range(0, byteLimit):
-            byt = self.bytes8[x + offset]
+            byt = self.bytes8[x]
             tx = str(format(byt, '02X'))
+            if byt > 31 and byt < 128:
+                chrtxt = chrtxt + chr(byt)
+            else:
+                chrtxt = chrtxt + '.'
+            col = col + 1
             Xoff = (x * 20) % 320
             Yoff = int(x / 16) * 20
             # because "ABCD" and "A.BC.D" type patches (dots or not) vary by 5 bytes in length then don't
             # compare received to old if the lenth just changed (coz everything will have moved!)
             if len(self.bytes8) != len(self.old8bytes):
-                self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                self.canvas.create_text(430 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
             else:
                 # but if this and previous are the same length then draw == bytes in black and changed in red
-                if self.bytes8[x + offset] == self.old8bytes[x + offset]:
-                    self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
+                if self.bytes8[x] == self.old8bytes[x]:
+                    self.canvas.create_text(430 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FFFFFF', tag="dump")
                 else:
-                    self.canvas.create_text(470 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
-        crctxt = "CRC32 = " + str(format(self.crc, '08X'))
+                    self.canvas.create_text(430 + Xoff, 370 + Yoff, anchor=tk.NW, text = tx, fill='#FF8080', tag="dump")
+            if col == 16:
+                self.canvas.create_text(760, 370 + Yoff, anchor=tk.NW, text = chrtxt, font=("Consolas", 10), fill = '#80FF80', tag="dump")
+                col = 0
+                chrtxt = ""
+        if len(chrtxt):
+            self.canvas.create_text(760, 370 + Yoff, anchor=tk.NW, text = chrtxt, font=("Consolas", 10), fill = '#80FF80', tag="dump")
+        
+        crctxt = "CRC32 (calculated) = " + str(format(self.crc, '08X')) + "   from XFM = " + self.crchex
         # show the calculated crc32 which will be key to sending this patch data back to XFM
-        self.canvas.create_text(470 + Xoff, 5800 + Yoff, anchor=tk.NW, text = crctxt, fill='#8080FF', tag="dump")
+        self.canvas.create_text(430, 350, anchor=tk.NW, text = crctxt, fill='#8080FF', font=("Consolas", 10), tag="dump")
 
 
     def setPorts(self, inports):
@@ -669,6 +690,9 @@ class SetupWindow:
         self.old8bytes = self.bytes8
         self.bytes8 = bytes
         self.crc = crc32(0, bytes, len(bytes))
+
+    def setCRC(self, hexdigs):
+        self.crchex = hexdigs
 
 def print_dump(bytes):
     txt = ""
@@ -1144,6 +1168,17 @@ def rxmsg(msg):
         # then load the patch (dict)
         loadCtrls(patch)
         routeWin.draw()
+    # Packet 3 has the CRC32
+    if msg.type == 'sysex' and msg.bytes()[8] == 3:
+        crc = convert(msg.bytes())
+        crchex = ""
+        print("CRC from XFM = ", end="")
+        for n in range(4):
+            crchex = crchex + str(format(crc[3 - n], '02X'))
+            print(hex(crc[3 - n]), end=" ")
+        print()
+        setupWin.setCRC(crchex)
+        setupWin.draw()
 
 def loadCtrls(data):
     for i in data:
