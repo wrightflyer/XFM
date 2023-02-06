@@ -547,23 +547,37 @@ class SetupWindow:
         self.setupWin.protocol("WM_DELETE_WINDOW", self.toggle_window)
         self.canvas = Canvas(self.setupWin, width = 940, height = 650, bg='#313131')
         self.canvas.place(x = 0, y = 0)
+
         self.listbox = Listbox(self.setupWin, width = 50)
         self.listbox.place(x = 20, y = 50)
-        self.midiButton = Button(self.setupWin, text = "Open MIDI port")
+        self.midiButton = Button(self.setupWin, text = "Open MIDI IN port")
         self.midiButton.place(x = 120, y = 230)
         self.midiButton.bind('<Button>', self.openMIDI)
-        self.midiLabel = Label(self.setupWin, text="MIDI port: NOT SET", bg='#313131', fg='#FFFFFF')
+        self.midiLabel = Label(self.setupWin, text="MIDI IN port: NOT SET", bg='#313131', fg='#FFFFFF')
         self.midiLabel.place(x = 120, y = 20)
+
+        self.listboxOut = Listbox(self.setupWin, width = 50)
+        self.listboxOut.place(x = 20, y = 300)
+        self.midiButtonOut = Button(self.setupWin, text = "Open MIDI OUT port")
+        self.midiButtonOut.place(x = 120, y = 480)
+        self.midiButton.bind('<Button>', self.openMIDIOut)
+        self.midiLabelOut = Label(self.setupWin, text="MIDI OUT port: NOT SET", bg='#313131', fg='#FFFFFF')
+        self.midiLabelOut.place(x = 120, y = 270)
+
         self.dumpLabel = Label(self.setupWin, text = "Dump of RAW received sysex (red = changed)", bg='#313131', fg = '#FFFFFF')
-        self.dumpLabel.place(x = 510, y = 20)
+        self.dumpLabel.place(x = 430, y = 20)
+        self.LoadSyxButton = Button(self.setupWin, text = "Load SYX file")
+        self.LoadSyxButton.place(x = 750, y = 20)
+        self.LoadSyxButton.bind('<Button>', self.LoadSyx)
         self.dump8Label = Label(self.setupWin, text = "Dump of sysex after 7 to 8 bit conversion", bg='#313131', fg = '#FFFFFF')
-        self.dump8Label.place(x = 510, y = 330)
+        self.dump8Label.place(x = 430, y = 330)
         self.saveLoadState = IntVar()
         self.saveLoadState.set(0)
         self.saveLoad = Checkbutton(self.setupWin, text="Save JSON when patches received", variable=self.saveLoadState, bg='#313131', fg = '#FFFFFF', selectcolor='#313131' )
-        self.saveLoad.place(x = 50, y = 280)
+        self.saveLoad.place(x = 50, y = 580)
         self.showNums = True
         self.portsListed = False
+        self.portsOutListed = False
         self.bytes = b''
         self.bytes8 = b''
         self.crchex = ""
@@ -668,6 +682,13 @@ class SetupWindow:
             self.listbox.selection_anchor(0)
             self.portsListed = True
 
+    def setOutPorts(self, outports):
+        if len(outports) > 0:
+            for port in outports:
+                self.listboxOut.insert(END, port)
+            self.listboxOut.selection_anchor(0)
+            self.portsOutListed = True
+
     def openMIDI(self, event):
         if not self.portsListed:
             return
@@ -677,8 +698,21 @@ class SetupWindow:
             port.close()
         print("going to open: " + self.listbox.get(ANCHOR))
         port = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
-        self.midiLabel.config(text = "MIDI port: " + self.listbox.get(ANCHOR))
+        self.midiLabel.config(text = "MIDI IN port: " + self.listbox.get(ANCHOR))
         portOpen = True
+        window.title("Quick Edit for Liven XFM")
+
+    def openMIDIOut(self, event):
+        if not self.portsOutListed:
+            return
+        global portOut
+        global portOutOpen
+        if portOutOpen:
+            portOut.close()
+        print("going to open: " + self.listboxOut.get(ANCHOR))
+        portOut = mido.open_output(self.listboxOut.get(ANCHOR))
+        self.midiLabelOut.config(text = "MIDI OUT port: " + self.listboxOut.get(ANCHOR))
+        portOutOpen = True
         window.title("Quick Edit for Liven XFM")
 
     def setBytes(self, bytes):
@@ -694,10 +728,18 @@ class SetupWindow:
     def setCRC(self, hexdigs):
         self.crchex = hexdigs
 
+    def LoadSyx(self, event):
+        print("oof")
+        filename = fd.askopenfilename(title="Load Sysex file", filetypes=[("Sysex files", "*.syx")])
+        print(filename)
+        with open(filename, 'rb') as f:
+            bytes = f.read()
+            loadRawBytes(bytes, False)
+
 def print_dump(bytes):
     txt = ""
-    print("10 :", end=" ")
-    for x in range(16, len(bytes) - 1):
+    print("00 :", end=" ")
+    for x in range(len(bytes)):
             byt = bytes[x]
             print(format(byt, '02x'), end = " ")
             if byt > 31 and byt < 128:
@@ -706,8 +748,14 @@ def print_dump(bytes):
                 txt = txt + '.'
             if x % 16 == 15:
                 print(txt)
-                print(format(x + 1, '02x'), ":", end=" ")
                 txt = ""
+                if x != (len(bytes) - 1):
+                    print(format(x + 1, '02x'), ":", end=" ")
+    if len(txt):
+        left = 16 - len(txt)
+        for i in range(left):
+            print("   ", end="")
+        print(txt)
     print()
 
 def make_signed(byte):
@@ -720,6 +768,155 @@ def make_signed(byte):
         retval = int (-1 * (128 - byte))
     return retval
 
+def decode_8bit(bytes, patch):
+# Patch (after conversion to 8bit) has this layout
+# 00: FMTC <u32 total_len> <u32 0> <u32 2>
+# 10: FMNM <u32 len = 14 or 18> <u32 0> <u32 name_len> <u8 name characters (4 or 8)>
+# 28/2C: TPDT <u32 len> <u32 0> <u32 1> <u8 payload>
+    namelen = bytes[0x1C]
+    txt = ""
+    for n in range(namelen):
+        txt += chr(bytes[0x20 + n])
+    patch['Name'] = txt
+    if bytes[0x14] == 0x14: # len of FMNM means it has has just 4 byte payload
+        payload = bytes[0x34:]
+    else: # len is 0x18 so TPDT and rest of patch is 4 bytes further on
+        payload = bytes[0x38:]
+
+    patch["OP1"]['Feedback'] = (make_signed(payload[0x5C]) * 10) + make_signed(payload[0])
+    patch["OP1"]['OP2In'] = payload[0x5D]
+    patch["OP1"]['OP3In'] = payload[0x5E]
+    patch["OP1"]['OP4In'] = payload[0x5F]
+    patch["OP1"]['Output'] = payload[0x6C]
+    patch["OP1"]['PitchEnv'] = payload[0x78]
+    patch["OP1"]['Fixed'] = payload[4]
+    ratio = ((payload[0x15] * 256) + payload[0x14] )
+    patch["OP1"]['Ratio'] = ratio
+    freq = ((payload[7] * 65536) + (payload[6] * 256) + payload[5])
+    patch["OP1"]["Freq"] = freq
+    patch["OP1"]['Detune'] = make_signed(payload[0x17])
+    patch["OP1"]['Level'] = payload[0x16]
+    patch["OP1"]['VelSens'] = payload[0x70]
+    patch["OP1"]['Time'] = payload[0x74]
+    patch["OP1"]['UpCurve'] = make_signed(payload[0x7C])
+    patch["OP1"]['DnCurve'] = make_signed(payload[0x7D])
+    patch["OP1"]['Scale'] = payload[0x4F]
+    patch["OP1"]['ALevel'] = payload[0x28]
+    patch["OP1"]['ATime'] = payload[0x24]
+    patch["OP1"]['DLevel'] = payload[0x29]
+    patch["OP1"]['DTime'] = payload[0x25]
+    patch["OP1"]['SLevel'] = payload[0x2A]
+    patch["OP1"]['STime'] = payload[0x26]
+    patch["OP1"]['RLevel'] = payload[0x2B]
+    patch["OP1"]['RTime'] = payload[0x27]
+    patch["OP1"]['LGain'] = make_signed(payload[0x4C])
+    patch["OP1"]['RGain'] = make_signed(payload[0x4D])
+    patch["OP1"]['LCurve'] = payload[0x4E] & 0x01
+    patch["OP1"]['RCurve'] = 1 if payload[0x4E] & 0x10 else 0
+
+    patch["OP2"]['Feedback'] = (make_signed(payload[0x61]) * 10) + make_signed(payload[1])
+    patch["OP2"]['OP1In'] = payload[0x60]
+    patch["OP2"]['OP3In'] = payload[0x62]
+    patch["OP2"]['OP4In'] = payload[0x63]
+    patch["OP2"]['Output'] = payload[0x6D]
+    patch["OP2"]['PitchEnv'] = payload[0x79]
+    patch["OP2"]['Fixed'] = payload[8]
+    ratio = ((payload[0x19] * 256) + payload[0x18] )
+    patch["OP2"]['Ratio'] = ratio
+    freq = ((payload[0xB] * 65536) + (payload[0xA] * 256) + payload[9])
+    patch["OP2"]["Freq"] = freq
+    patch["OP2"]['Detune'] = make_signed(payload[0x1B])
+    patch["OP2"]['Level'] = payload[0x1A]
+    patch["OP2"]['VelSens'] = payload[0x71]
+    patch["OP2"]['Time'] = payload[0x53]
+    patch["OP2"]['UpCurve'] = make_signed(payload[0x7E])
+    patch["OP2"]['DnCurve'] = make_signed(payload[0x7F])
+    patch["OP2"]['Scale'] = payload[0x53]
+    patch["OP2"]['ALevel'] = payload[0x30]
+    patch["OP2"]['ATime'] = payload[0x2C]
+    patch["OP2"]['DLevel'] = payload[0x31]
+    patch["OP2"]['DTime'] = payload[0x2D]
+    patch["OP2"]['SLevel'] = payload[0x32]
+    patch["OP2"]['STime'] = payload[0x2E]
+    patch["OP2"]['RLevel'] = payload[0x33]
+    patch["OP2"]['RTime'] = payload[0x2F]
+    patch["OP2"]['LGain'] = make_signed(payload[0x50])
+    patch["OP2"]['RGain'] = make_signed(payload[0x51])
+    patch["OP2"]['LCurve'] = payload[0x52] & 0x01
+    patch["OP2"]['RCurve'] = 1 if payload[0x52] & 0x10 else 0
+
+    patch["OP3"]['Feedback'] = (make_signed(payload[0x66]) * 10) + make_signed(payload[2])
+    patch["OP3"]['OP1In'] = payload[0x64]
+    patch["OP3"]['OP2In'] = payload[0x65]
+    patch["OP3"]['OP4In'] = payload[0x67]
+    patch["OP3"]['Output'] = payload[0x6E]
+    patch["OP3"]['PitchEnv'] = payload[0x7A]
+    patch["OP3"]['Fixed'] = payload[0xC]
+    ratio = ((payload[0x1D] * 256) + payload[0x1C] )
+    patch["OP3"]['Ratio'] = ratio
+    freq = ((payload[0xF] * 65536) + (payload[0xE] * 256) + payload[0xD])
+    patch["OP3"]["Freq"] = freq
+    patch["OP3"]['Detune'] = make_signed(payload[0x1F])
+    patch["OP3"]['Level'] = payload[0x1E]
+    patch["OP3"]['VelSens'] = payload[0x72]
+    patch["OP3"]['Time'] = payload[0x76]
+    patch["OP3"]['UpCurve'] = make_signed(payload[0x80])
+    patch["OP3"]['DnCurve'] = make_signed(payload[0x81])
+    patch["OP3"]['Scale'] = payload[0x57]
+    patch["OP3"]['ALevel'] = payload[0x38]
+    patch["OP3"]['ATime'] = payload[0x34]
+    patch["OP3"]['DLevel'] = payload[0x39]
+    patch["OP3"]['DTime'] = payload[0x35]
+    patch["OP3"]['SLevel'] = payload[0x3A]
+    patch["OP3"]['STime'] = payload[0x36]
+    patch["OP3"]['RLevel'] = payload[0x3B]
+    patch["OP3"]['RTime'] = payload[0x37]
+    patch["OP3"]['LGain'] = make_signed(payload[0x54])
+    patch["OP3"]['RGain'] = make_signed(payload[0x55])
+    patch["OP3"]['LCurve'] = payload[0x56] & 0x01
+    patch["OP3"]['RCurve'] = 1 if payload[0x56] & 0x10 else 0
+
+    patch["OP4"]['Feedback'] = (make_signed(payload[0x6B]) * 10) + make_signed(payload[3])
+    patch["OP4"]['OP1In'] = payload[0x68]
+    patch["OP4"]['OP2In'] = payload[0x69]
+    patch["OP4"]['OP3In'] = payload[0x6A]
+    patch["OP4"]['Output'] = payload[0x6F]
+    patch["OP4"]['PitchEnv'] = payload[0x7B]
+    patch["OP4"]['Fixed'] = payload[0x10]
+    ratio = ((payload[0x21] * 256) + payload[0x20] )
+    patch["OP4"]['Ratio'] = ratio
+    freq = ((payload[0x13] * 65536) + (payload[0x12] * 256) + payload[0x11])
+    patch["OP4"]["Freq"] = freq
+    patch["OP4"]['Detune'] = make_signed(payload[0x23])
+    patch["OP4"]['Level'] = payload[0x22]
+    patch["OP4"]['VelSens'] = payload[0x73]
+    patch["OP4"]['Time'] = payload[0x77]
+    patch["OP4"]['UpCurve'] = make_signed(payload[0x82])
+    patch["OP4"]['DnCurve'] = make_signed(payload[0x83])
+    patch["OP4"]['Scale'] = payload[0x5B]
+    patch["OP4"]['ALevel'] = payload[0x40]
+    patch["OP4"]['ATime'] = payload[0x3C]
+    patch["OP4"]['DLevel'] = payload[0x41]
+    patch["OP4"]['DTime'] = payload[0x3D]
+    patch["OP4"]['SLevel'] = payload[0x42]
+    patch["OP4"]['STime'] = payload[0x3E]
+    patch["OP4"]['RLevel'] = payload[0x43]
+    patch["OP4"]['RTime'] = payload[0x3F]
+    patch["OP4"]['LGain'] = make_signed(payload[0x58])
+    patch["OP4"]['RGain'] = make_signed(payload[0x59])
+    patch["OP4"]['LCurve'] = payload[0x5A] & 0x01
+    patch["OP4"]['RCurve'] = 1 if payload[0x5A] & 0x10 else 0
+
+    patch["Pitch"]['ALevel'] = make_signed(payload[0x48])
+    patch["Pitch"]['ATime'] = payload[0x44]
+    patch["Pitch"]['DLevel'] = make_signed(payload[0x49])
+    patch["Pitch"]['DTime'] = payload[0x45]
+    patch["Pitch"]['SLevel'] = make_signed(payload[0x4A])
+    patch["Pitch"]['STime'] = payload[0x46]
+    patch["Pitch"]['RLevel'] = make_signed(payload[0x4B])
+    patch["Pitch"]['RTime'] = payload[0x47]
+
+    patch["Mixer"]['Level'] = make_signed(payload[0x84])
 
 def decode_bytes(bytes, patch):
     txt = ""
@@ -773,7 +970,6 @@ def decode_bytes(bytes, patch):
             freq = freq + 128
         if bytes[offset + 0x44] & 0x01:
             freq = freq + 32768
-    print("op1 freq = ", freq)
     patch["OP1"]["Freq"] = freq
     patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
     patch["OP1"]['Level'] = bytes[offset + 0x5E]
@@ -826,7 +1022,6 @@ def decode_bytes(bytes, patch):
             freq = freq + 128
         if bytes[offset + 0x4C] & 0x08:
             freq = freq + 32768
-    print("op2 freq = ", freq)
     patch["OP2"]["Freq"] = freq
     patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x63 + inc])
     patch["OP2"]['Level'] = bytes[offset + 0x62 + inc]
@@ -878,7 +1073,6 @@ def decode_bytes(bytes, patch):
             freq = freq + 128
         if bytes[offset + 0x54] & 0x40:
             freq = freq + 32768
-    print("op3 freq = ", freq)
     patch["OP3"]["Freq"] = freq
     patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
     patch["OP3"]['Level'] = bytes[offset + 0x67]
@@ -930,7 +1124,6 @@ def decode_bytes(bytes, patch):
             freq = freq + 128
         if bytes[offset + 0x54] & 0x04:
             freq = freq + 32768
-    print("op4 freq = ", freq)
     patch["OP4"]["Freq"] = freq
     patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
     patch["OP4"]['Level'] = bytes[offset + 0x6B + inc]
@@ -1145,29 +1338,39 @@ def crc32(crc, p, len):
       crc = (crc >> 1) ^ (0xedb88320 & -(crc & 1))
   return 0xffffffff & ~crc
 
+def loadRawBytes(bytes, possSaveJson):
+    patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
+    setupWin.setBytes(bytes)
+
+    print("The raw 7bit sysex data")
+    print_dump(bytes)
+
+    data8 = convert(bytes)
+    print("The converted 8bit data")
+    print_dump(data8)
+
+    setupWin.set8bytes(data8)
+
+    setupWin.draw()
+
+    #decode_bytes(bytes, patch)
+    decode_8bit(data8, patch)
+    if setupWin.saveLoadState.get() == 1 and possSaveJson:
+        saveJson(patch)
+
+    # then load the patch (dict)
+    loadCtrls(patch)
+    routeWin.draw()
+
 
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
     if msg.type == 'sysex' and msg.bytes()[8] == 2:
-        patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
         bytes = msg.bytes()
-        setupWin.setBytes(bytes)
-
-        print_dump(bytes)
-
-        data8 = convert(bytes)
-        setupWin.set8bytes(data8)
-
-        setupWin.draw()
-
-        decode_bytes(bytes, patch)
-        if setupWin.saveLoadState.get() == 1:
-            saveJson(patch)
-
-        # then load the patch (dict)
-        loadCtrls(patch)
-        routeWin.draw()
+        # true means do save JSON if user has ticked the Setup box
+        loadRawBytes(bytes, True)
+        
     # Packet 3 has the CRC32
     if msg.type == 'sysex' and msg.bytes()[8] == 3:
         crc = convert(msg.bytes())
@@ -1278,6 +1481,7 @@ def saveJson(patch):
 
 #============================= THE start ================================
 portOpen = False
+portOutOpen = False
 
 # save current (install) directory
 cur_dir = os.getcwd()
@@ -1598,9 +1802,12 @@ for entry in controllist:
 
 inports = mido.get_input_names()
 setupWin.setPorts(inports)
+outports = mido.get_output_names()
+setupWin.setOutPorts(outports)
 
 if len(inports):
-    print("MIDI ports:", inports)
-
+    print("MIDI IN ports:", inports)
+if len(outports):
+    print("MIDI OUT ports:", outports)
 
 window.mainloop()
