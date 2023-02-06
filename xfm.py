@@ -603,7 +603,7 @@ class SetupWindow:
         self.listboxOut.place(x = 20, y = 300)
         self.midiButtonOut = Button(self.setupWin, text = "Open MIDI OUT port")
         self.midiButtonOut.place(x = 120, y = 480)
-        self.midiButton.bind('<Button>', self.openMIDIOut)
+        self.midiButtonOut.bind('<Button>', self.openMIDIOut)
         self.midiLabelOut = Label(self.setupWin, text="MIDI OUT port: NOT SET", bg='#313131', fg='#FFFFFF')
         self.midiLabelOut.place(x = 120, y = 270)
 
@@ -737,6 +737,7 @@ class SetupWindow:
             return
         global port
         global portOpen
+        print("Opening input")
         if portOpen:
             port.close()
         print("going to open: " + self.listbox.get(ANCHOR))
@@ -750,6 +751,7 @@ class SetupWindow:
             return
         global portOut
         global portOutOpen
+        print("Opening output")
         if portOutOpen:
             portOut.close()
         print("going to open: " + self.listboxOut.get(ANCHOR))
@@ -810,8 +812,8 @@ def print_dump(bytes):
 # is in 7 bits not 8 bits) that >64 should be -(128 - n)
 def make_signed(byte):
     retval = int(byte)
-    if byte > 64:
-        retval = int (-1 * (128 - byte))
+    if byte > 127:
+        retval = int (-1 * (256 - byte))
     return retval
 
 # This is the second version of decode - it's MUCH easier after the 7 to 8 bit
@@ -835,6 +837,7 @@ def decode_8bit(bytes, patch):
     else: # len is 0x18 so TPDT and rest of patch is 4 bytes further on
         payload = bytes[0x38:]
 
+    print_dump(payload)
     patch["OP1"]['Feedback'] = (make_signed(payload[0x5C]) * 10) + make_signed(payload[0])
     patch["OP1"]['OP2In'] = payload[0x5D]
     patch["OP1"]['OP3In'] = payload[0x5E]
@@ -877,10 +880,11 @@ def decode_8bit(bytes, patch):
     patch["OP2"]['Ratio'] = ratio
     freq = ((payload[0xB] * 65536) + (payload[0xA] * 256) + payload[9])
     patch["OP2"]["Freq"] = freq
+    print("payload[0x1B] = ", payload[0x1b], make_signed(payload[0x1b]))
     patch["OP2"]['Detune'] = make_signed(payload[0x1B])
     patch["OP2"]['Level'] = payload[0x1A]
     patch["OP2"]['VelSens'] = payload[0x71]
-    patch["OP2"]['Time'] = payload[0x53]
+    patch["OP2"]['Time'] = payload[0x75]
     patch["OP2"]['UpCurve'] = make_signed(payload[0x7E])
     patch["OP2"]['DnCurve'] = make_signed(payload[0x7F])
     patch["OP2"]['Scale'] = payload[0x53]
@@ -939,6 +943,7 @@ def decode_8bit(bytes, patch):
     patch["OP4"]['Ratio'] = ratio
     freq = ((payload[0x13] * 65536) + (payload[0x12] * 256) + payload[0x11])
     patch["OP4"]["Freq"] = freq
+    print("payload[0x23] = ", payload[0x23], make_signed(payload[0x23]))
     patch["OP4"]['Detune'] = make_signed(payload[0x23])
     patch["OP4"]['Level'] = payload[0x22]
     patch["OP4"]['VelSens'] = payload[0x73]
@@ -970,245 +975,6 @@ def decode_8bit(bytes, patch):
 
     patch["Mixer"]['Level'] = make_signed(payload[0x84])
 
-# This is the original decode routine from before trhe point I leanred about
-# the 7/8 bit conversion. This will be removed shortly when decode_8 is proven
-def decode_bytes(bytes, patch):
-    txt = ""
-    # 4 character name or are there dots?
-    txt += chr(bytes[0x2E])
-    txt += chr(bytes[0x2F])
-    txt += chr(bytes[0x30])
-    txt += chr(bytes[0x32])
-    #print("name len = ", bytes[0x2A])
-    if bytes[0x2A] == 4:
-        offset = 0
-        inc = 1 # some (but not all!) values are 1 byte on compared to offset=5 (so really offset = 4)
-    else:
-        if bytes[0x2A] >= 5:
-            txt += chr(bytes[0x33])
-        if bytes[0x2A] >= 6:
-            txt += chr(bytes[0x34])
-        if bytes[0x2A] == 7:
-            txt += chr(bytes[0x35])
-        offset = 5
-        inc = 0
-    patch['Name'] = txt
-
-    patch["OP1"]['Feedback'] = (make_signed(bytes[offset + 0xAE]) * 10) + make_signed(bytes[offset + 0x45])
-    patch["OP1"]['OP2In'] = bytes[offset + 0xAF]
-    patch["OP1"]['OP3In'] = bytes[offset + 0xB0]
-    patch["OP1"]['OP4In'] = bytes[offset + 0xB1 + inc]
-    patch["OP1"]['Output'] = bytes[offset + 0xC0]
-    patch["OP1"]['PitchEnv'] = bytes[offset + 0xCE]
-    patch["OP1"]['Fixed'] = bytes[offset + 0x49 + inc]
-    if offset == 0:
-        ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5C] )
-        if bytes[offset + 0x59] & 0x10:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    else:
-        ratio = ((bytes[offset + 0x5D] * 256) + bytes[offset + 0x5B] )
-        if bytes[offset + 0x54] & 0x01:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    patch["OP1"]['Ratio'] = ratio
-    if offset == 0:
-        freq = ((bytes[offset + 0x4D] * 65536) + (bytes[offset + 0x4C] * 256) + bytes[offset + 0x4B])
-        if bytes[offset + 0x49] & 0x20:
-            freq = freq + 128
-        if bytes[offset + 0x49] & 0x10:
-            freq = freq + 32768
-    else:
-        freq = ((bytes[offset + 0x4D] * 65536) + (bytes[offset + 0x4B] * 256) + bytes[offset + 0x4A])
-        if bytes[offset + 0x44] & 0x02:
-            freq = freq + 128
-        if bytes[offset + 0x44] & 0x01:
-            freq = freq + 32768
-    patch["OP1"]["Freq"] = freq
-    patch["OP1"]['Detune'] = make_signed(bytes[offset + 0x5F])
-    patch["OP1"]['Level'] = bytes[offset + 0x5E]
-    patch["OP1"]['VelSens'] = bytes[offset + 0xC5]
-    patch["OP1"]['Time'] = bytes[offset + 0xC9 + inc]
-    patch["OP1"]['UpCurve'] = make_signed(bytes[offset + 0xD2 + inc])
-    patch["OP1"]['DnCurve'] = make_signed(bytes[offset + 0xD3 + inc])
-    patch["OP1"]['Scale'] = bytes[offset + 0x9F]
-    patch["OP1"]['ALevel'] = bytes[offset + 0x72 + inc]
-    patch["OP1"]['ATime'] = bytes[offset + 0x6E]
-    patch["OP1"]['DLevel'] = bytes[offset + 0x73 + inc]
-    patch["OP1"]['DTime'] = bytes[offset + 0x6F]
-    patch["OP1"]['SLevel'] = bytes[offset + 0x75]
-    patch["OP1"]['STime'] = bytes[offset + 0x70]
-    patch["OP1"]['RLevel'] = bytes[offset + 0x76]
-    patch["OP1"]['RTime'] = bytes[offset + 0x71 + inc]
-    patch["OP1"]['LGain'] = make_signed(bytes[offset + 0x9B + inc])
-    patch["OP1"]['RGain'] = make_signed(bytes[offset + 0x9D])
-    patch["OP1"]['LCurve'] = bytes[offset + 0x9E] & 0x01
-    patch["OP1"]['RCurve'] = 1 if bytes[offset + 0x9E] & 0x10 else 0
-
-    patch["OP2"]['Feedback'] = (make_signed(bytes[offset + 0xB3 + inc]) * 10) + make_signed(bytes[offset + 0x46])
-    patch["OP2"]['OP1In'] = bytes[offset + 0xB2 + inc]
-    patch["OP2"]['OP3In'] = bytes[offset + 0xB5]
-    patch["OP2"]['OP4In'] = bytes[offset + 0xB6]
-    patch["OP2"]['Output'] = bytes[offset + 0xC1 + inc]
-    patch["OP2"]['PitchEnv'] = bytes[offset + 0xCF]
-    patch["OP2"]['Fixed'] = bytes[offset + 0x4E]
-    if offset == 0:
-        ratio = ((bytes[offset + 0x62] * 256) + bytes[offset + 0x60] )
-        if bytes[offset + 0x59] & 0x01:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-        patch["OP2"]['Ratio'] = ratio
-    else:
-        ratio = ((bytes[offset + 0x61] * 256) + bytes[offset + 0x60] )
-        if bytes[offset + 0x5C] & 0x08:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-        patch["OP2"]['Ratio'] = ratio
-    if offset == 0:
-        freq = ((bytes[offset + 0x52] * 65536) + (bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
-        if bytes[offset + 0x49] & 0x02:
-            freq = freq + 128
-        if bytes[offset + 0x49] & 0x01:
-            freq = freq + 32768
-    else:
-        freq = ((bytes[offset + 0x51] * 65536) + (bytes[offset + 0x50] * 256) + bytes[offset + 0x4F])
-        if bytes[offset + 0x4C] & 0x10:
-            freq = freq + 128
-        if bytes[offset + 0x4C] & 0x08:
-            freq = freq + 32768
-    patch["OP2"]["Freq"] = freq
-    patch["OP2"]['Detune'] = make_signed(bytes[offset + 0x63 + inc])
-    patch["OP2"]['Level'] = bytes[offset + 0x62 + inc]
-    patch["OP2"]['VelSens'] = bytes[offset + 0xC6]
-    patch["OP2"]['Time'] = bytes[offset + 0xCA + inc]
-    patch["OP2"]['UpCurve'] = make_signed(bytes[offset + 0xD5])
-    patch["OP2"]['DnCurve'] = make_signed(bytes[offset + 0xD6])
-    patch["OP2"]['Scale'] = bytes[offset + 0xA3 + inc]
-    patch["OP2"]['ALevel'] = bytes[offset + 0x7B + inc]
-    patch["OP2"]['ATime'] = bytes[offset + 0x77]
-    patch["OP2"]['DLevel'] = bytes[offset + 0x7D]
-    patch["OP2"]['DTime'] = bytes[offset + 0x78]
-    patch["OP2"]['SLevel'] = bytes[offset + 0x7E]
-    patch["OP2"]['STime'] = bytes[offset + 0x79 + inc]
-    patch["OP2"]['RLevel'] = bytes[offset + 0x7F]
-    patch["OP2"]['RTime'] = bytes[offset + 0x7A + inc]
-    patch["OP2"]['LGain'] = make_signed(bytes[offset + 0xA0])
-    patch["OP2"]['RGain'] = make_signed(bytes[offset + 0xA1 + inc])
-    patch["OP2"]['LCurve'] = bytes[offset + 0xA3] & 0x01
-    patch["OP2"]['RCurve'] = 1 if bytes[offset + 0xA2 + inc] & 0x10 else 0
-
-    patch["OP3"]['Feedback'] = (make_signed(bytes[offset + 0xB9 + inc]) * 10) + make_signed(bytes[offset + 0x47])
-    patch["OP3"]['OP1In'] = bytes[offset + 0xB7]
-    patch["OP3"]['OP2In'] = bytes[offset + 0xB8]
-    patch["OP3"]['OP4In'] = bytes[offset + 0xBA + inc]
-    patch["OP3"]['Output'] = bytes[offset + 0xC2 + inc]
-    patch["OP3"]['PitchEnv'] = bytes[offset + 0xD0]
-    patch["OP3"]['Fixed'] = bytes[offset + 0x52 + inc]
-    if offset == 0:
-        ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
-        if bytes[offset + 0x61] & 0x08:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    else:
-        ratio = ((bytes[offset + 0x66] * 256) + bytes[offset + 0x65] )
-        if bytes[offset + 0x64] & 0x40:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    patch["OP3"]['Ratio'] = ratio
-    if offset == 0:
-        freq = ((bytes[offset + 0x56] * 65536) + (bytes[offset + 0x55] * 256) + bytes[offset + 0x54])
-        if bytes[offset + 0x51] & 0x10:
-            freq = freq + 128
-        if bytes[offset + 0x51] & 0x08:
-            freq = freq + 32768
-    else:
-        freq = ((bytes[offset + 0x56] * 65536) + (bytes[offset + 0x55] * 256) + bytes[offset + 0x53])
-        if bytes[offset + 0x4c] & 0x10:
-            freq = freq + 128
-        if bytes[offset + 0x54] & 0x40:
-            freq = freq + 32768
-    patch["OP3"]["Freq"] = freq
-    patch["OP3"]['Detune'] = make_signed(bytes[offset + 0x68])
-    patch["OP3"]['Level'] = bytes[offset + 0x67]
-    patch["OP3"]['VelSens'] = bytes[offset + 0xC7]
-    patch["OP3"]['Time'] = bytes[offset + 0xCB + inc]
-    patch["OP3"]['UpCurve'] = make_signed(bytes[offset + 0xD7])
-    patch["OP3"]['DnCurve'] = make_signed(bytes[offset + 0xD8])
-    patch["OP3"]['Scale'] = bytes[offset + 0xA8]
-    patch["OP3"]['ALevel'] = bytes[offset + 0x85]
-    patch["OP3"]['ATime'] = bytes[offset + 0x80]
-    patch["OP3"]['DLevel'] = bytes[offset + 0x86]
-    patch["OP3"]['DTime'] = bytes[offset + 0x81 + inc]
-    patch["OP3"]['SLevel'] = bytes[offset + 0x87]
-    patch["OP3"]['STime'] = bytes[offset + 0x82 + inc]
-    patch["OP3"]['RLevel'] = bytes[offset + 0x88]
-    patch["OP3"]['RTime'] = bytes[offset + 0x83 + inc]
-    patch["OP3"]['LGain'] = make_signed(bytes[offset + 0xA5])
-    patch["OP3"]['RGain'] = make_signed(bytes[offset + 0xA6])
-    patch["OP3"]['LCurve'] = bytes[offset + 0xA7] & 0x01
-    patch["OP3"]['RCurve'] = 1 if bytes[offset + 0xA7] & 0x10 else 0
-
-    patch["OP4"]['Feedback'] = (make_signed(bytes[offset + 0xBF]) * 10) + make_signed(bytes[offset + 0x48])
-    patch["OP4"]['OP1In'] = bytes[offset + 0xBB + inc]
-    patch["OP4"]['OP2In'] = bytes[offset + 0xBD]
-    patch["OP4"]['OP3In'] = bytes[offset + 0xBE]
-    patch["OP4"]['Output'] = bytes[offset + 0xC3 + inc]
-    patch["OP4"]['PitchEnv'] = bytes[offset + 0xD1 + inc]
-    patch["OP4"]['Fixed'] = bytes[offset + 0x57]
-    if offset == 0:
-        ratio = ((bytes[offset + 0x6B] * 256) + bytes[offset + 0x6A] )
-        if bytes[offset + 0x69] & 0x40:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    else:
-        ratio = ((bytes[offset + 0x6A] * 256) + bytes[offset + 0x69] )
-        if bytes[offset + 0x64] & 0x04:
-            # bit 7 of low byte held separately...
-            ratio = ratio + 128
-    patch["OP4"]['Ratio'] = ratio
-    if offset == 0:
-        freq = ((bytes[offset + 0x5B] * 65536) + (bytes[offset + 0x5A] * 256) + bytes[offset + 0x58 + inc])
-        if bytes[offset + 0x51] & 0x01:
-            freq = freq + 128
-        if bytes[offset + 0x59] & 0x40:
-            freq = freq + 32768
-    else:
-        freq = ((bytes[offset + 0x5A] * 65536) + (bytes[offset + 0x59] * 256) + bytes[offset + 0x58 + inc])
-        if bytes[offset + 0x54] & 0x08:
-            freq = freq + 128
-        if bytes[offset + 0x54] & 0x04:
-            freq = freq + 32768
-    patch["OP4"]["Freq"] = freq
-    patch["OP4"]['Detune'] = make_signed(bytes[offset + 0x6D])
-    patch["OP4"]['Level'] = bytes[offset + 0x6B + inc]
-    patch["OP4"]['VelSens'] = bytes[offset + 0xC8]
-    patch["OP4"]['Time'] = bytes[offset + 0xCD]
-    patch["OP4"]['UpCurve'] = make_signed(bytes[offset + 0xD9 + inc])
-    patch["OP4"]['DnCurve'] = make_signed(bytes[offset + 0xDA + inc])
-    patch["OP4"]['Scale'] = bytes[offset + 0xAD]
-    patch["OP4"]['ALevel'] = bytes[offset + 0x8E]
-    patch["OP4"]['ATime'] = bytes[offset + 0x89 + inc]
-    patch["OP4"]['DLevel'] = bytes[offset + 0x8F]
-    patch["OP4"]['DTime'] = bytes[offset + 0x8A + inc]
-    patch["OP4"]['SLevel'] = bytes[offset + 0x90]
-    patch["OP4"]['STime'] = bytes[offset + 0x8B + inc]
-    patch["OP4"]['RLevel'] = bytes[offset + 0x91 + inc]
-    patch["OP4"]['RTime'] = bytes[offset + 0x8D]
-    patch["OP4"]['LGain'] = make_signed(bytes[offset + 0xA9 + inc])
-    patch["OP4"]['RGain'] = make_signed(bytes[offset + 0xAA + inc])
-    patch["OP4"]['LCurve'] = bytes[offset + 0xAB + inc] & 0x01
-    patch["OP4"]['RCurve'] = 1 if bytes[offset + 0xAB + inc] & 0x10 else 0
-
-    patch["Pitch"]['ALevel'] = make_signed(bytes[offset + 0x97])
-    patch["Pitch"]['ATime'] = bytes[offset + 0x92 + inc]
-    patch["Pitch"]['DLevel'] = make_signed(bytes[offset + 0x98])
-    patch["Pitch"]['DTime'] = bytes[offset + 0x93 + inc]
-    patch["Pitch"]['SLevel'] = make_signed(bytes[offset + 0x99 + inc])
-    patch["Pitch"]['STime'] = bytes[offset + 0x95]
-    patch["Pitch"]['RLevel'] = make_signed(bytes[offset + 0x9A + inc])
-    patch["Pitch"]['RTime'] = bytes[offset + 0x96]
-
-    patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDB + inc])
 
 # This has never been tested in anger because at the time this was written
 # it wasn't possible to calculate CRC32. This will be changed to use 
@@ -1406,6 +1172,7 @@ def loadRawBytes(bytes, possSaveJson):
     print("The raw 7bit sysex data")
     print_dump(bytes)
 
+    # convert 7 to 8 bit using every 8th byte as 7 shift masks
     data8 = convert(bytes)
     print("The converted 8bit data")
     print_dump(data8)
@@ -1414,7 +1181,6 @@ def loadRawBytes(bytes, possSaveJson):
 
     setupWin.draw()
 
-    #decode_bytes(bytes, patch)
     decode_8bit(data8, patch)
     if setupWin.saveLoadState.get() == 1 and possSaveJson:
         saveJson(patch)
