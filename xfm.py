@@ -7,6 +7,10 @@ import json
 import mido
 import json
 
+# ADSR class is simply for drawing the rectangular envelope graph. It draws a light grey background
+# then, after .update() is called it draws a blue line between the key points in the graph. Each OP (and
+# "master") owns one of these so self.key holds the identity of each one and is used for it to access
+# the right "controller" to pull the values.
 class Adsr:
     def __init__(self, key, xpos, ypos):
         self.key = key
@@ -77,6 +81,18 @@ class Adsr:
         #print("draw ADSR ", op, "with ",at, al, dt, dl, st, sl, rt, rl)
         self.update(at, al, dt, dl, st, sl, rt, rl)
 
+# This is actually the core of this program. It's really just about 100 separate controls
+# each handled by this class. Part of it is a series of animated images that represent each
+# position of the control. Then it binds to mouse messages which cause the animation to
+# cycle through the animated frames while maintaing the "value" of the control which can
+# be queried at any time.
+#
+# It tries to be as generic as possible but some controls have "special requirements" so
+# I'm afraid there's quite a smattering of "special case" code in there too this is especially
+# prevalent for the "big knobs" ;-)
+#
+# Most controls accept mouse drag up/right to increase and left/down to decrease but the big
+# knobs use up/down for coarse adjustment and left/right for fine adjustments
 class Anim:
     def __init__(self, keyname, title, ctrl, xpos, ypos, offset = 0):
         self.keyname = keyname
@@ -267,7 +283,16 @@ class Anim:
                 self.index = (self.numFrames - 1)
         self.draw()
 
-
+# The main display is basically 5 rectangles:
+#
+#  OP1 | OP3 | M
+#      |     | A
+#  ----------| I
+#  OP2 | OP4 | N
+#      |     | 
+#
+# so this class fills each with a similar textured, dark grey rectangles
+# image passed in as "img"
 class Backdrop:
     def __init__(self, id, xpos, ypos, width, height, img, logo, xlog, ylog):
         self.id = id
@@ -280,6 +305,14 @@ class Backdrop:
         self.canvas.create_image(0, 0, anchor=tk.NW, image = img)
         self.canvas.create_image(xlog, ylog, anchor=tk.NW, image = logo)
 
+# This opens a secondary window that attempts to do a Chris Dodsworth-esque rendition of how the
+# operators are interacting with one another and what, if anything they are sending to the
+# output. Each open box shows non-0 levels to (a) itself (ie "feedback"), (b) other operators
+# using line stippling to show intensity and (c) to the output. When feedback is used it can change
+# the waveform between default sine, square and saw (and at the extreme "noise") so a small wave
+# symbol gives an idea of the wwaveform it's likely producing. As FM is all about the rations of
+# the operators each square is also annotated with the ratio setting or its frequency if it's
+# set to a fixed frequency. Mouse clicks turn annotation on/off to help declutter the display
 class RouteWindow:
     def __init__(self):
         self.routeWin = Toplevel(window)
@@ -538,6 +571,16 @@ class RouteWindow:
         if op4fbk != 0.0 and self.showNums:
             self.canvas.create_image(OP4_LOCX2 - 70, OP4_LOCY2 - 70, anchor=tk.NW, image = wave_file, tag="route")
 
+# The setup class draws a standalone window with its own user interaction where various functions can be performed.
+# Two list boxes list the MIDI IN and OUT ports that Mido can "see". The user can then select one in each list box
+# press a button to open that port. If just viewing only MIDI IN is needed but if planning to send the patch back
+# to XFM then OUT must be set too.
+# Beneath that is a check box. This selects whether the editor should automatically write a JSON copy of the patch
+# data after each patch is received. 
+# On the right the window has dump displays of the raw sysex each time new data is received and a secondary dump of
+# that data after it has been through 7 to 8 bit conversion. The CRC calculated by the editor as well as the CRC that
+# arrived in packet 3 are both shown (basically as debug to make sure it's beeing calculated right). Also sort of debug
+# but possibly useful when there isn't an XFM to hand is the ability to load sysex (just packet 2) from a file on disk
 class SetupWindow:
     def __init__(self):
         self.setupWin = Toplevel(window)
@@ -736,6 +779,9 @@ class SetupWindow:
             bytes = f.read()
             loadRawBytes(bytes, False)
 
+# This just writes a hex dump (including ASCII chars) to the console. It's pretty much the same as
+# the hex dumps in the setup window  except that the copy at the console remains in the log and can
+# be referred back to
 def print_dump(bytes):
     txt = ""
     print("00 :", end=" ")
@@ -758,16 +804,22 @@ def print_dump(bytes):
         print(txt)
     print()
 
+# all valuse have to pack into the 128 steps from 0x00 to 0x7F but some are
+# really "signed" values like -18..+18, -63..+63, -63..+64 so as soon as the
+# dump is received convert such values to signed which basically means (as this
+# is in 7 bits not 8 bits) that >64 should be -(128 - n)
 def make_signed(byte):
-    # all valuse have to pack into the 128 steps from 0x00 to 0x7F but some are
-    # really "signed" values like -18..+18, -63..+63, -63..+64 so as soon as the
-    # dump is received convert such values to signed which basically means (as this
-    # is in 7 bits not 8 bits) that >64 should be -(128 - n)
     retval = int(byte)
     if byte > 64:
         retval = int (-1 * (128 - byte))
     return retval
 
+# This is the second version of decode - it's MUCH easier after the 7 to 8 bit
+# decode because the function does not need to worry about +128 shifts as all that has
+# already been applied. Also, rather than using raw sysex offsets to find data items
+# the offsets in this are based on 0 being the start of the TPDT payload after initial
+# headers have been skipped so the routine can handle patches whether they have four or
+# 8 byte names (that is no dots or with dots).
 def decode_8bit(bytes, patch):
 # Patch (after conversion to 8bit) has this layout
 # 00: FMTC <u32 total_len> <u32 0> <u32 2>
@@ -918,6 +970,8 @@ def decode_8bit(bytes, patch):
 
     patch["Mixer"]['Level'] = make_signed(payload[0x84])
 
+# This is the original decode routine from before trhe point I leanred about
+# the 7/8 bit conversion. This will be removed shortly when decode_8 is proven
 def decode_bytes(bytes, patch):
     txt = ""
     # 4 character name or are there dots?
@@ -1156,6 +1210,9 @@ def decode_bytes(bytes, patch):
 
     patch["Mixer"]['Level'] = make_signed(bytes[offset + 0xDB + inc])
 
+# This has never been tested in anger because at the time this was written
+# it wasn't possible to calculate CRC32. This will be changed to use 
+# proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers
 def encode_bytes(patch, bytes):
     bytes[0x2E] = ord(patch['Name'][0])
     bytes[0x2F] = ord(patch['Name'][1])
@@ -1338,6 +1395,10 @@ def crc32(crc, p, len):
       crc = (crc >> 1) ^ (0xedb88320 & -(crc & 1))
   return 0xffffffff & ~crc
 
+# This has been broken out of rxmsg where it originally lived so it can be called both after
+# sysex arrives in rxmsg and also after a SYX file has been loaded from disk - it basically loads
+# the data into the editor controls (and also dumps data in various ways - both onscreen in "setup"
+# and to the console log.
 def loadRawBytes(bytes, possSaveJson):
     patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
     setupWin.setBytes(bytes)
@@ -1363,6 +1424,9 @@ def loadRawBytes(bytes, possSaveJson):
     routeWin.draw()
 
 
+# This is the main interaction with Mido on message receipt. This will ignore
+# anything that is not sysex and even if it is sysex it's only really interested in
+# packet 2 (the payload) and packet 3 (the little endian CRC32)
 def rxmsg(msg):
     #print("type=", msg.type, "byte5=", msg.bytes()[8])
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
@@ -1383,6 +1447,8 @@ def rxmsg(msg):
         setupWin.setCRC(crchex)
         setupWin.draw()
 
+# This loads a patch (dictionary / associative array) into the corresponding named
+# controls ready to start editing.
 def loadCtrls(data):
     for i in data:
         print("=====", i, "=====")
@@ -1433,6 +1499,9 @@ def loadCtrls(data):
         for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
             adsrs[j].draw()
 
+# this reads the values back out of the controls and creates a tagged dictionary from
+# the values (which can be written as JSON or then passed further to create a binary
+# payload to go back to XFM)
 def readCtrls():
     patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
     nameList = list()
