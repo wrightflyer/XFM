@@ -880,7 +880,6 @@ def decode_8bit(bytes, patch):
     patch["OP2"]['Ratio'] = ratio
     freq = ((payload[0xB] * 65536) + (payload[0xA] * 256) + payload[9])
     patch["OP2"]["Freq"] = freq
-    print("payload[0x1B] = ", payload[0x1b], make_signed(payload[0x1b]))
     patch["OP2"]['Detune'] = make_signed(payload[0x1B])
     patch["OP2"]['Level'] = payload[0x1A]
     patch["OP2"]['VelSens'] = payload[0x71]
@@ -943,7 +942,6 @@ def decode_8bit(bytes, patch):
     patch["OP4"]['Ratio'] = ratio
     freq = ((payload[0x13] * 65536) + (payload[0x12] * 256) + payload[0x11])
     patch["OP4"]["Freq"] = freq
-    print("payload[0x23] = ", payload[0x23], make_signed(payload[0x23]))
     patch["OP4"]['Detune'] = make_signed(payload[0x23])
     patch["OP4"]['Level'] = payload[0x22]
     patch["OP4"]['VelSens'] = payload[0x73]
@@ -978,139 +976,205 @@ def decode_8bit(bytes, patch):
 
 # This has never been tested in anger because at the time this was written
 # it wasn't possible to calculate CRC32. This will be changed to use 
-# proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers
+# proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers in msg2
 def encode_bytes(patch, bytes):
-    bytes[0x2E] = ord(patch['Name'][0])
-    bytes[0x2F] = ord(patch['Name'][1])
-    bytes[0x30] = ord(patch['Name'][2])
-    bytes[0x32] = ord(patch['Name'][3])
+# As note above the sysex payload consists of:
+# 00: FMTC <u32 total_len> <u32 0> <u32 2>
+# 10: FMNM <u32 len = 14 or 18> <u32 0> <u32 name_len> <u8 name characters (4 or 8)>
+# 28/2C: TPDT <u32 len> <u32 0> <u32 1> <u8 payload>
+    SOUND_LEGACY = 0
+    SOUND_BANK = 1
+    PATTERN = 2
+    SOUND = 4
+    
+    # start of is the fixed header (with 01/02/03 message type at end). This (incl 01/02/03) is the 
+    # one bit that does not get put through 8 to 7 bit conversion
+    if len(patch['Name']) == 4:
+        size = 0xBC
+        namelen = b'\x14\x00\x00\x00'
+    else:
+        # it has dots so there are 4 more bytes
+        size = 0xC0
+        namelen = b'\x18\x00\x00\x00'
 
-    bytes[0x45] = patch["OP1"]['Feedback']                 # -63.0 .. +64.0 (+1.0)
-    bytes[0xAF] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
-    bytes[0xB0] = patch["OP1"]['OP3In']
-    bytes[0xB2] = patch["OP1"]['OP4In']
-    bytes[0xC0] = patch["OP1"]['Output']                   # 0..127 (+1)
-    bytes[0xCE] = patch["OP1"]['PitchEnv']                      # OFF / ON
-    bytes[0x4A] = patch["OP1"]['Fixed']                    # OFF / ON
-    bytes[0x5C] = (patch["OP1"]['Ratio']) & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
-    bytes[0x5D] = int((patch["OP1"]['Ratio']) / 256)
-    bytes[0x5F] = patch["OP1"]['Detune']                   # -63 .. 63 (+1)
-    bytes[0x5E] = patch["OP1"]['Level']                    # 0 .. 127 (+1)
-    bytes[0xC5] = patch["OP1"]['VelSens']                  # 0 .. 127 (+1)
-    bytes[0xCA] = patch["OP1"]['Time']                     # 0 .. 127 (+1)
-    bytes[0xD3] = patch["OP1"]['UpCurve']                   # -18 .. +18 (+1)
-    bytes[0xD4] = patch["OP1"]['DnCurve']                   # -18 .. +18 (+1)
-    bytes[0x9F] = patch["OP1"]['Scale']                    # C1 .. C7
-    bytes[0x73] = patch["OP1"]['ALevel']                   # 0 .. 127 (+1)
-    bytes[0x6E] = patch["OP1"]['ATime']
-    bytes[0x74] = patch["OP1"]['DLevel']
-    bytes[0x6F] = patch["OP1"]['DTime']
-    bytes[0x75] = patch["OP1"]['SLevel']
-    bytes[0x70] = patch["OP1"]['STime']
-    bytes[0x76] = patch["OP1"]['RLevel']
-    bytes[0x72] = patch["OP1"]['RTime']
-    bytes[0x9C] = patch["OP1"]['LGain']                    # -63 .. +63 (+1)
-    bytes[0x9D] = patch["OP1"]['RGain']
+    hdr = b'\xF0\x00\x48\x04\x00\x00\x03\x60'
+    fm_type_container = b'FMTC'
+    fm_name = b'FMNM'
+    the_patch_data = b'TPDT'
+    u32_0_le = b'\x00\x00\x00\x00'
+    u32_2_le = b'\x02\x00\x00\x00'
+    u32_4_le = b'\x04\x00\x00\x00'
+
+    msg2payload[0] = patch["OP1"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x5C] = patch["OP1"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x5D] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
+    msg2payload[0x5E] = patch["OP1"]['OP3In']
+    msg2payload[0x5F] = patch["OP1"]['OP4In']
+    msg2payload[0x6C] = patch["OP1"]['Output']                   # 0..127 (+1)
+    msg2payload[0x78] = patch["OP1"]['PitchEnv']                      # OFF / ON
+    msg2payload[4] = patch["OP1"]['Fixed']                    # OFF / ON
+    msg2payload[0x14] = (patch["OP1"]['Ratio']) & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
+    msg2payload[0x15] = int((patch["OP1"]['Ratio']) / 256)
+    msg2payload[5] = (patch["OP1"]["Freq"] & 0x0000FF)
+    msg2payload[6] = (patch["OP1"]["Freq"] & 0x00FF00) >> 8
+    msg2payload[7] = (patch["OP1"]["Freq"] & 0xFF0000) >> 16
+    msg2payload[0x17] = patch["OP1"]['Detune']                   # -63 .. 63 (+1)
+    msg2payload[0x16] = patch["OP1"]['Level']                    # 0 .. 127 (+1)
+    msg2payload[0x70] = patch["OP1"]['VelSens']                  # 0 .. 127 (+1)
+    msg2payload[0x74] = patch["OP1"]['Time']                     # 0 .. 127 (+1)
+    msg2payload[0x7C] = patch["OP1"]['UpCurve']                   # -18 .. +18 (+1)
+    msg2payload[0x7D] = patch["OP1"]['DnCurve']                   # -18 .. +18 (+1)
+    msg2payload[0x4F] = patch["OP1"]['Scale']                    # C1 .. C7
+    msg2payload[0x28] = patch["OP1"]['ALevel']                   # 0 .. 127 (+1)
+    msg2payload[0x24] = patch["OP1"]['ATime']
+    msg2payload[0x29] = patch["OP1"]['DLevel']
+    msg2payload[0x25] = patch["OP1"]['DTime']
+    msg2payload[0x2A] = patch["OP1"]['SLevel']
+    msg2payload[0x26] = patch["OP1"]['STime']
+    msg2payload[0x2B] = patch["OP1"]['RLevel']
+    msg2payload[0x27] = patch["OP1"]['RTime']
+    msg2payload[0x4C] = patch["OP1"]['LGain']                    # -63 .. +63 (+1)
+    msg2payload[0x4D] = patch["OP1"]['RGain']
     curves = (patch["OP1"]['LCurve']) | (patch["OP1"]['RCurve'])  # LINE / EXP
-    bytes[0x9E] = curves
+    msg2payload[0x4E] = curves
 
-    bytes[0x46] = patch["OP2"]['Feedback']
-    bytes[0xB3] = patch["OP2"]['OP1In']
-    bytes[0xB5] = patch["OP2"]['OP3In']
-    bytes[0xB6] = patch["OP2"]['OP4In']
-    bytes[0xC2] = patch["OP2"]['Output']
-    bytes[0xCF] = patch["OP2"]['PitchEnv']
-    bytes[0x4E] = patch["OP2"]['Fixed']
-    bytes[0x60] = (patch["OP2"]['Ratio']) & 0xFF
-    bytes[0x61] = int((patch["OP2"]['Ratio']) / 256)
-    bytes[0x64] = patch["OP2"]['Detune']
-    bytes[0x63] = patch["OP2"]['Level']
-    bytes[0xC6] = patch["OP2"]['VelSens']
-    bytes[0xCB] = patch["OP2"]['Time']
-    bytes[0xD5] = patch["OP2"]['UpCurve']
-    bytes[0xD6] = patch["OP2"]['DnCurve']
-    bytes[0xA4] = patch["OP2"]['Scale']
-    bytes[0x7C] = patch["OP2"]['ALevel']
-    bytes[0x77] = patch["OP2"]['ATime']
-    bytes[0x7D] = patch["OP2"]['DLevel']
-    bytes[0x78] = patch["OP2"]['DTime']
-    bytes[0x7E] = patch["OP2"]['SLevel']
-    bytes[0x7A] = patch["OP2"]['STime']
-    bytes[0x7F] = patch["OP2"]['RLevel']
-    bytes[0x7B] = patch["OP2"]['RTime']
-    bytes[0xA0] = patch["OP2"]['LGain']
-    bytes[0xA2] = patch["OP2"]['RGain']
+    msg2payload[1] = patch["OP2"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x61] = patch["OP2"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x60] = patch["OP2"]['OP1In']
+    msg2payload[0x62] = patch["OP2"]['OP3In']
+    msg2payload[0x63] = patch["OP2"]['OP4In']
+    msg2payload[0x6D] = patch["OP2"]['Output']
+    msg2payload[0x79] = patch["OP2"]['PitchEnv']
+    msg2payload[8] = patch["OP2"]['Fixed']
+    msg2payload[0x18] = (patch["OP2"]['Ratio']) & 0xFF
+    msg2payload[0x19] = int((patch["OP2"]['Ratio']) / 256)
+    msg2payload[9] = (patch["OP2"]["Freq"] & 0x0000FF)
+    msg2payload[0xA] = (patch["OP2"]["Freq"] & 0x00FF00) >> 8
+    msg2payload[0xB] = (patch["OP2"]["Freq"] & 0xFF0000) >> 16
+    msg2payload[0x1B] = patch["OP2"]['Detune']
+    msg2payload[0x1A] = patch["OP2"]['Level']
+    msg2payload[0x71] = patch["OP2"]['VelSens']
+    msg2payload[0x75] = patch["OP2"]['Time']
+    msg2payload[0x7E] = patch["OP2"]['UpCurve']
+    msg2payload[0x7F] = patch["OP2"]['DnCurve']
+    msg2payload[0x53] = patch["OP2"]['Scale']
+    msg2payload[0x30] = patch["OP2"]['ALevel']
+    msg2payload[0x2C] = patch["OP2"]['ATime']
+    msg2payload[0x31] = patch["OP2"]['DLevel']
+    msg2payload[0x2D] = patch["OP2"]['DTime']
+    msg2payload[0x32] = patch["OP2"]['SLevel']
+    msg2payload[0x2E] = patch["OP2"]['STime']
+    msg2payload[0x33] = patch["OP2"]['RLevel']
+    msg2payload[0x2F] = patch["OP2"]['RTime']
+    msg2payload[0x50] = patch["OP2"]['LGain']
+    msg2payload[0x51] = patch["OP2"]['RGain']
     curves = (patch["OP2"]['LCurve']) | (patch["OP2"]['RCurve'])
-    bytes[0xA3] = curves
+    msg2payload[0x52] = curves
 
-    bytes[0x47] = patch["OP3"]['Feedback']
-    bytes[0xB7] = patch["OP3"]['OP1In']
-    bytes[0xB8] = patch["OP3"]['OP2In']
-    bytes[0xBB] = patch["OP3"]['OP4In']
-    bytes[0xC3] = patch["OP3"]['Output']
-    bytes[0xD0] = patch["OP3"]['PitchEnv']
-    bytes[0x53] = patch["OP3"]['Fixed']
-    bytes[0x65] = (patch["OP3"]['Ratio']) & 0xFF
-    bytes[0x66] = int((patch["OP3"]['Ratio']) / 256)
-    bytes[0x68] = patch["OP3"]['Detune']
-    bytes[0x67] = patch["OP3"]['Level']
-    bytes[0xC7] = patch["OP3"]['VelSens']
-    bytes[0xCC] = patch["OP3"]['Time']
-    bytes[0xD7] = patch["OP3"]['UpCurve']
-    bytes[0xD8] = patch["OP3"]['DnCurve']
-    bytes[0xA8] = patch["OP3"]['Scale']
-    bytes[0x85] = patch["OP3"]['ALevel']
-    bytes[0x80] = patch["OP3"]['ATime']
-    bytes[0x86] = patch["OP3"]['DLevel']
-    bytes[0x82] = patch["OP3"]['DTime']
-    bytes[0x87] = patch["OP3"]['SLevel']
-    bytes[0x83] = patch["OP3"]['STime']
-    bytes[0x88] = patch["OP3"]['RLevel']
-    bytes[0x84] = patch["OP3"]['RTime']
-    bytes[0xA5] = patch["OP3"]['LGain']
-    bytes[0xA6] = patch["OP3"]['RGain']
+    msg2payload[2] = patch["OP3"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x66] = patch["OP3"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x64] = patch["OP3"]['OP1In']
+    msg2payload[0x65] = patch["OP3"]['OP2In']
+    msg2payload[0x67] = patch["OP3"]['OP4In']
+    msg2payload[0x6E] = patch["OP3"]['Output']
+    msg2payload[0x7A] = patch["OP3"]['PitchEnv']
+    msg2payload[0xC] = patch["OP3"]['Fixed']
+    msg2payload[0x1C] = (patch["OP3"]['Ratio']) & 0xFF
+    msg2payload[0x1D] = int((patch["OP3"]['Ratio']) / 256)
+    msg2payload[0xD] = (patch["OP3"]["Freq"] & 0x0000FF)
+    msg2payload[0xE] = (patch["OP3"]["Freq"] & 0x00FF00) >> 8
+    msg2payload[0xF] = (patch["OP3"]["Freq"] & 0xFF0000) >> 16
+    msg2payload[0x1F] = patch["OP3"]['Detune']
+    msg2payload[0x1E] = patch["OP3"]['Level']
+    msg2payload[0x72] = patch["OP3"]['VelSens']
+    msg2payload[0x76] = patch["OP3"]['Time']
+    msg2payload[0x80] = patch["OP3"]['UpCurve']
+    msg2payload[0x81] = patch["OP3"]['DnCurve']
+    msg2payload[0x57] = patch["OP3"]['Scale']
+    msg2payload[0x38] = patch["OP3"]['ALevel']
+    msg2payload[0x34] = patch["OP3"]['ATime']
+    msg2payload[0x39] = patch["OP3"]['DLevel']
+    msg2payload[0x35] = patch["OP3"]['DTime']
+    msg2payload[0x3A] = patch["OP3"]['SLevel']
+    msg2payload[0x36] = patch["OP3"]['STime']
+    msg2payload[0x3B] = patch["OP3"]['RLevel']
+    msg2payload[0x37] = patch["OP3"]['RTime']
+    msg2payload[0x54] = patch["OP3"]['LGain']
+    msg2payload[0x55] = patch["OP3"]['RGain']
     curves = (patch["OP3"]['LCurve']) | (patch["OP3"]['RCurve'])
-    bytes[0xA7] = curves
+    msg2payload[0x56] = curves
 
-    bytes[0x48] = patch["OP4"]['Feedback']
-    bytes[0xBC] = patch["OP4"]['OP1In']
-    bytes[0xBD] = patch["OP4"]['OP2In']
-    bytes[0xBE] = patch["OP4"]['OP3In']
-    bytes[0xC4] = patch["OP4"]['Output']
-    bytes[0xD2] = patch["OP4"]['PitchEnv']
-    bytes[0x57] = patch["OP4"]['Fixed']
-    bytes[0x6A] = (patch["OP4"]['Ratio']) & 0xFF
-    bytes[0x6B] = int((patch["OP4"]['Ratio']) / 256)
-    bytes[0x6D] = patch["OP4"]['Detune']
-    bytes[0x6C] = patch["OP4"]['Level']
-    bytes[0xC8] = patch["OP4"]['VelSens']
-    bytes[0xCD] = patch["OP4"]['Time']
-    bytes[0xDA] = patch["OP4"]['UpCurve']
-    bytes[0xDB] = patch["OP4"]['DnCurve']
-    bytes[0xAD] = patch["OP4"]['Scale']
-    bytes[0x8E] = patch["OP4"]['ALevel']
-    bytes[0x8A] = patch["OP4"]['ATime']
-    bytes[0x8F] = patch["OP4"]['DLevel']
-    bytes[0x8B] = patch["OP4"]['DTime']
-    bytes[0x90] = patch["OP4"]['SLevel']
-    bytes[0x8C] = patch["OP4"]['STime']
-    bytes[0x92] = patch["OP4"]['RLevel']
-    bytes[0x8D] = patch["OP4"]['RTime']
-    bytes[0xAA] = patch["OP4"]['LGain']
-    bytes[0xAB] = patch["OP4"]['RGain']
+    msg2payload[3] = patch["OP4"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x6B] = patch["OP4"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x68] = patch["OP4"]['OP1In']
+    msg2payload[0x69] = patch["OP4"]['OP2In']
+    msg2payload[0x6A] = patch["OP4"]['OP3In']
+    msg2payload[0x6F] = patch["OP4"]['Output']
+    msg2payload[0x7B] = patch["OP4"]['PitchEnv']
+    msg2payload[0x10] = patch["OP4"]['Fixed']
+    msg2payload[0x20] = (patch["OP4"]['Ratio']) & 0xFF
+    msg2payload[0x21] = int((patch["OP4"]['Ratio']) / 256)
+    msg2payload[0x11] = (patch["OP4"]["Freq"] & 0x0000FF)
+    msg2payload[0x12] = (patch["OP4"]["Freq"] & 0x00FF00) >> 8
+    msg2payload[0x13] = (patch["OP4"]["Freq"] & 0xFF0000) >> 16
+    msg2payload[0x23] = patch["OP4"]['Detune']
+    msg2payload[0x22] = patch["OP4"]['Level']
+    msg2payload[0x73] = patch["OP4"]['VelSens']
+    msg2payload[0x77] = patch["OP4"]['Time']
+    msg2payload[0x82] = patch["OP4"]['UpCurve']
+    msg2payload[0x83] = patch["OP4"]['DnCurve']
+    msg2payload[0x5B] = patch["OP4"]['Scale']
+    msg2payload[0x40] = patch["OP4"]['ALevel']
+    msg2payload[0x3C] = patch["OP4"]['ATime']
+    msg2payload[0x41] = patch["OP4"]['DLevel']
+    msg2payload[0x3D] = patch["OP4"]['DTime']
+    msg2payload[0x42] = patch["OP4"]['SLevel']
+    msg2payload[0x3E] = patch["OP4"]['STime']
+    msg2payload[0x43] = patch["OP4"]['RLevel']
+    msg2payload[0x3F] = patch["OP4"]['RTime']
+    msg2payload[0x58] = patch["OP4"]['LGain']
+    msg2payload[0x59] = patch["OP4"]['RGain']
     curves = (patch["OP4"]['LCurve']) | (patch["OP4"]['RCurve'])
-    bytes[0xAC] = curves
+    msg2payload[0x5A] = curves
 
-    bytes[0x97] = patch["Pitch"]['ALevel']         # -48 .. +48 (+1)
-    bytes[0x93] = patch["Pitch"]['ATime']          # 0 .. 127 (+1)
-    bytes[0x98] = patch["Pitch"]['DLevel']
-    bytes[0x94] = patch["Pitch"]['DTime']
-    bytes[0x9A] = patch["Pitch"]['SLevel']
-    bytes[0x95] = patch["Pitch"]['STime']
-    bytes[0x9B] = patch["Pitch"]['RLevel']
-    bytes[0x96] = patch["Pitch"]['RTime']
+    msg2payload[0x48] = patch["Pitch"]['ALevel']         # -48 .. +48 (+1)
+    msg2payload[0x44] = patch["Pitch"]['ATime']          # 0 .. 127 (+1)
+    msg2payload[0x49] = patch["Pitch"]['DLevel']
+    msg2payload[0x45] = patch["Pitch"]['DTime']
+    msg2payload[0x4A] = patch["Pitch"]['SLevel']
+    msg2payload[0x46] = patch["Pitch"]['STime']
+    msg2payload[0x4B] = patch["Pitch"]['RLevel']
+    msg2payload[0x47] = patch["Pitch"]['RTime']
 
-    bytes[0xDC] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
+    msg2payload[0x84] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
+
+    msg1 = hdr
+    msg1 += b'\x01'
+    msg1 += SOUND.to_bytes(length = 4, byteorder = 'little')
+    msg1 += size.to_bytes(length = 4, byteorder = 'little')
+    msg1_7bit = convert87(msg1) # this starts at byte 9 and splits into 7's with leading shift mask
+
+    msg2 = hdr
+    msg2 += b'\x02'
+    msg2 += fm_type_container # 'FMTC'
+    msg2 += size.to_bytes(length = 4, byteorder = 'little')
+    msg2 += u32_0_le
+    msg2 += u32_2_le
+    msg2 += fm_name # 'FMNM'
+    msg2 += namelen
+    #msg2payload[] = ord(patch['Name'][0])
+    #msg2payload[] = ord(patch['Name'][1])
+    #msg2payload[] = ord(patch['Name'][2])
+    #msg2payload[] = ord(patch['Name'][3])
+    # @@@ TODO !!
+    msg2_7bit = convert87(msg2)
+    
+    msg3 = hdr
+    msg3 += b'\x03'
+    # CRC is everything in messag2 from byt 9 onwards
+    crc_out = crc_32(0, msg2[9:], len(msg2[9:]))
+    msg3 += crc_out.to_bytes(length = 4, byteorder = 'little')
+    msg3_7bit = convert87(msg3)
 
 # The patch is 8 bit but sysex can only carry 7 bit data so the patch is broken into
 # groups of 7 bytes and each 7 byte group is preceded by a 7 bit mask where each bit
