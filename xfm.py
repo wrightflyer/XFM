@@ -978,10 +978,6 @@ def decode_8bit(bytes, patch):
 # it wasn't possible to calculate CRC32. This will be changed to use 
 # proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers in msg2
 def encode_bytes(patch, bytes):
-# As note above the sysex payload consists of:
-# 00: FMTC <u32 total_len> <u32 0> <u32 2>
-# 10: FMNM <u32 len = 14 or 18> <u32 0> <u32 name_len> <u8 name characters (4 or 8)>
-# 28/2C: TPDT <u32 len> <u32 0> <u32 1> <u8 payload>
     SOUND_LEGACY = 0
     SOUND_BANK = 1
     PATTERN = 2
@@ -1002,6 +998,7 @@ def encode_bytes(patch, bytes):
     fm_name = b'FMNM'
     the_patch_data = b'TPDT'
     u32_0_le = b'\x00\x00\x00\x00'
+    u32_1_le = b'\x01\x00\x00\x00'
     u32_2_le = b'\x02\x00\x00\x00'
     u32_4_le = b'\x04\x00\x00\x00'
 
@@ -1153,7 +1150,12 @@ def encode_bytes(patch, bytes):
     msg1 += SOUND.to_bytes(length = 4, byteorder = 'little')
     msg1 += size.to_bytes(length = 4, byteorder = 'little')
     msg1_7bit = convert87(msg1) # this starts at byte 9 and splits into 7's with leading shift mask
+    msg1_7bit += b'\xF7'
 
+    # As noted above the sysex payload in message 2 consists of:
+    # 00: FMTC <u32 total_len> <u32 0> <u32 2>
+    # 10: FMNM <u32 len = 14 or 18> <u32 0> <u32 name_len> <u8 name characters (4 or 8)>
+    # 28/2C: TPDT <u32 len> <u32 0> <u32 1> <u8 payload>
     msg2 = hdr
     msg2 += b'\x02'
     msg2 += fm_type_container # 'FMTC'
@@ -1161,20 +1163,24 @@ def encode_bytes(patch, bytes):
     msg2 += u32_0_le
     msg2 += u32_2_le
     msg2 += fm_name # 'FMNM'
-    msg2 += namelen
-    #msg2payload[] = ord(patch['Name'][0])
-    #msg2payload[] = ord(patch['Name'][1])
-    #msg2payload[] = ord(patch['Name'][2])
-    #msg2payload[] = ord(patch['Name'][3])
-    # @@@ TODO !!
+    msg2 += namelen # 0x14 or 0x18 in le u32
+    msg2 += u32_0_le
+    msg2 += len(patch['Name']).to_bytes(length = 4, byteorder='little')
+    msg2 += bytearray(patch['Name'])
+    msg2 += the_patch_data # 'TPDT'
+    msg2 += 0 # @@@ TODO - len of this
+    msg2 += u32_1_le
+    msg2 += msg2payload
     msg2_7bit = convert87(msg2)
-    
+    msg2_7bit += b'\xF7'
+
     msg3 = hdr
     msg3 += b'\x03'
     # CRC is everything in messag2 from byt 9 onwards
     crc_out = crc_32(0, msg2[9:], len(msg2[9:]))
     msg3 += crc_out.to_bytes(length = 4, byteorder = 'little')
     msg3_7bit = convert87(msg3)
+    msg3_7bit += b'\xF7'
 
 # The patch is 8 bit but sysex can only carry 7 bit data so the patch is broken into
 # groups of 7 bytes and each 7 byte group is preceded by a 7 bit mask where each bit
