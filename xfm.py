@@ -977,7 +977,7 @@ def decode_8bit(bytes, patch):
 # This has never been tested in anger because at the time this was written
 # it wasn't possible to calculate CRC32. This will be changed to use 
 # proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers in msg2
-def encode_bytes(patch, bytes):
+def encode_bytes(patch):
     SOUND_LEGACY = 0
     SOUND_BANK = 1
     PATTERN = 2
@@ -1002,8 +1002,9 @@ def encode_bytes(patch, bytes):
     u32_2_le = b'\x02\x00\x00\x00'
     u32_4_le = b'\x04\x00\x00\x00'
 
+    msg2payload = bytearray(0x88) # payload is 0x88 because TPDT is always 0x98 bytes (from TPDT onwards) and header is 0x10
     msg2payload[0] = patch["OP1"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x5C] = patch["OP1"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x5C] = int(patch["OP1"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
     msg2payload[0x5D] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
     msg2payload[0x5E] = patch["OP1"]['OP3In']
     msg2payload[0x5F] = patch["OP1"]['OP4In']
@@ -1036,7 +1037,7 @@ def encode_bytes(patch, bytes):
     msg2payload[0x4E] = curves
 
     msg2payload[1] = patch["OP2"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x61] = patch["OP2"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x61] = int(patch["OP2"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
     msg2payload[0x60] = patch["OP2"]['OP1In']
     msg2payload[0x62] = patch["OP2"]['OP3In']
     msg2payload[0x63] = patch["OP2"]['OP4In']
@@ -1069,7 +1070,7 @@ def encode_bytes(patch, bytes):
     msg2payload[0x52] = curves
 
     msg2payload[2] = patch["OP3"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x66] = patch["OP3"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x66] = int(patch["OP3"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
     msg2payload[0x64] = patch["OP3"]['OP1In']
     msg2payload[0x65] = patch["OP3"]['OP2In']
     msg2payload[0x67] = patch["OP3"]['OP4In']
@@ -1102,7 +1103,7 @@ def encode_bytes(patch, bytes):
     msg2payload[0x56] = curves
 
     msg2payload[3] = patch["OP4"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x6B] = patch["OP4"]['Feedback'] / 10                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x6B] = int(patch["OP4"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
     msg2payload[0x68] = patch["OP4"]['OP1In']
     msg2payload[0x69] = patch["OP4"]['OP2In']
     msg2payload[0x6A] = patch["OP4"]['OP3In']
@@ -1144,20 +1145,27 @@ def encode_bytes(patch, bytes):
     msg2payload[0x47] = patch["Pitch"]['RTime']
 
     msg2payload[0x84] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
+    msg2payload[0x85] = 255
+    msg2payload[0x86] = 255
+    msg2payload[0x87] = 255
 
     msg1 = hdr
-    msg1 += b'\x01'
+    msg1 += b'\x01' # sequence number start=1, data=2, crc=3
     msg1 += SOUND.to_bytes(length = 4, byteorder = 'little')
     msg1 += size.to_bytes(length = 4, byteorder = 'little')
+    print("msg1 =")
+    print_dump(msg1)
     msg1_7bit = convert87(msg1) # this starts at byte 9 and splits into 7's with leading shift mask
-    msg1_7bit += b'\xF7'
+    msg1_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
+    print("msg1 (7 bit)=")
+    print_dump(msg1_7bit)
 
     # As noted above the sysex payload in message 2 consists of:
     # 00: FMTC <u32 total_len> <u32 0> <u32 2>
     # 10: FMNM <u32 len = 14 or 18> <u32 0> <u32 name_len> <u8 name characters (4 or 8)>
     # 28/2C: TPDT <u32 len> <u32 0> <u32 1> <u8 payload>
     msg2 = hdr
-    msg2 += b'\x02'
+    msg2 += b'\x02' # sequence number start=1, data=2, crc=3
     msg2 += fm_type_container # 'FMTC'
     msg2 += size.to_bytes(length = 4, byteorder = 'little')
     msg2 += u32_0_le
@@ -1166,26 +1174,64 @@ def encode_bytes(patch, bytes):
     msg2 += namelen # 0x14 or 0x18 in le u32
     msg2 += u32_0_le
     msg2 += len(patch['Name']).to_bytes(length = 4, byteorder='little')
-    msg2 += bytearray(patch['Name'])
+    msg2 += bytearray(patch['Name'].encode())
+    if len(patch['Name']) > 4:
+        # if it's a name with dots then pad with FF at the end if less than 4 dots
+        for n in range(8 - len(patch['Name'])):
+            msg2 += '\xFF'
     msg2 += the_patch_data # 'TPDT'
-    msg2 += 0 # @@@ TODO - len of this
+    msg2 += (0x98).to_bytes(length = 4, byteorder = 'little')
+    msg2 += u32_0_le
     msg2 += u32_1_le
     msg2 += msg2payload
+    print("msg2 =")
+    print_dump(msg2)
     msg2_7bit = convert87(msg2)
-    msg2_7bit += b'\xF7'
+    msg2_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
+    print("msg2 (7 bit)=")
+    print_dump(msg2_7bit)
 
     msg3 = hdr
-    msg3 += b'\x03'
+    msg3 += b'\x03' # sequence number start=1, data=2, crc=3
     # CRC is everything in messag2 from byt 9 onwards
-    crc_out = crc_32(0, msg2[9:], len(msg2[9:]))
+    crc_out = crc32(0, msg2[9:], len(msg2[9:]))
     msg3 += crc_out.to_bytes(length = 4, byteorder = 'little')
+    print("msg3 =")
+    print_dump(msg3)
     msg3_7bit = convert87(msg3)
-    msg3_7bit += b'\xF7'
+    msg3_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
+    print("msg3 (7 bit)=")
+    print_dump(msg3_7bit)
+
+def convert87_chunk(data):
+    mask = 0
+    chunk = list(data)
+    for x in range(len(chunk)):
+        #print("byte is ", hex(chunk[x]), "mask before is ", hex(mask), end="")
+        mask = mask | ((chunk[x] & 0x80) >> (x + 1))
+        #print(" mask after is", hex(mask))
+        chunk[x] = chunk[x] & 0x7F
+    retval = mask.to_bytes(length = 1, byteorder = 'little')
+    #print("retval (mask) =", retval)
+    retval += bytearray(chunk)
+    #print("retval (all) =", retval)
+    return retval
+
+# When sending the body of the messages after the 9 byte header has to be grouped
+# into 7 bytes at a time with a leading byte that shows any +128 shifts for the 7
+# to follow (and that shift byte has to be in 7bits too - hence groups of 7 not 8)
+def convert87(data):
+    retval = data[:9]
+    data = data[9:]
+    for n in range(0, len(data), 7):
+        #print("87 of ", len(data[n:n + 7]), "bytes: ", data[n:n + 7])
+        retval += convert87_chunk(data[n:n + 7])
+    return retval
 
 # The patch is 8 bit but sysex can only carry 7 bit data so the patch is broken into
 # groups of 7 bytes and each 7 byte group is preceded by a 7 bit mask where each bit
 # says whether or not 0x80 (128) should be added to that byte within the 7
-def convert78(shifts, data):
+def convert78_chunk(shifts, data):
     if shifts == 0:
         return data
     result = []
@@ -1199,7 +1245,7 @@ def convert78(shifts, data):
 # So this takes an entire sysex (from F0 to F7) and breaks it into 8 byte
 # groups of 1 shift byte and 7 data bytes then passes each in turn to
 # convert87 above and then concatentates all these into result[]
-def convert(data):
+def convert78(data):
     result = []
     # first discard the front 9 bytes
     data = data[9:]
@@ -1211,7 +1257,7 @@ def convert(data):
         shifts = data[0]
         # and then 7 bytes of data
         bytes = data[1 : 8]
-        next7 = convert78(shifts, bytes)
+        next7 = convert78_chunk(shifts, bytes)
         # now chop off the 8 bytes just processed ready to go again
         data = data[8:]
         # the 7 processed bytes are added to the result being built up
@@ -1243,7 +1289,7 @@ def loadRawBytes(bytes, possSaveJson):
     print_dump(bytes)
 
     # convert 7 to 8 bit using every 8th byte as 7 shift masks
-    data8 = convert(bytes)
+    data8 = convert78(bytes)
     print("The converted 8bit data")
     print_dump(data8)
 
@@ -1273,7 +1319,7 @@ def rxmsg(msg):
         
     # Packet 3 has the CRC32
     if msg.type == 'sysex' and msg.bytes()[8] == 3:
-        crc = convert(msg.bytes())
+        crc = convert78(msg.bytes())
         crchex = ""
         print("CRC from XFM = ", end="")
         for n in range(4):
@@ -1649,6 +1695,9 @@ def saveJSON(event):
     patch = readCtrls()
     saveJson(patch)
 
+def sendPatch(event):
+    encode_bytes(readCtrls())
+
 init = Canvas(width=32, height=32, highlightthickness=0)
 init.place(x=1650, y=410)
 init.create_rectangle(0,0, 31, 31, fill='#C00000')
@@ -1666,6 +1715,12 @@ load.place(x=1600, y=450)
 load.create_rectangle(0,0, 31, 31, fill='#c0C000')
 load.create_text(0, 0, anchor=tk.NW, text=" load\nJSON", fill='#FFFFFF')
 load.bind('<Button>', loadJSON)
+
+load = Canvas(width=32, height=32, highlightthickness=0)
+load.place(x=1650, y=450)
+load.create_rectangle(0,0, 31, 31, fill='#08c5cf')
+load.create_text(0, 0, anchor=tk.NW, text=" Send", fill='#FFFFFF')
+load.bind('<Button>', sendPatch)
 
 routeWin = RouteWindow()
 
