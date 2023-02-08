@@ -1016,12 +1016,12 @@ def encode_bytes(patch):
     msg2payload[5] = (patch["OP1"]["Freq"] & 0x0000FF)
     msg2payload[6] = (patch["OP1"]["Freq"] & 0x00FF00) >> 8
     msg2payload[7] = (patch["OP1"]["Freq"] & 0xFF0000) >> 16
-    msg2payload[0x17] = patch["OP1"]['Detune']                   # -63 .. 63 (+1)
+    msg2payload[0x17] = patch["OP1"]['Detune'] & 0xFF                  # -63 .. 63 (+1)
     msg2payload[0x16] = patch["OP1"]['Level']                    # 0 .. 127 (+1)
     msg2payload[0x70] = patch["OP1"]['VelSens']                  # 0 .. 127 (+1)
     msg2payload[0x74] = patch["OP1"]['Time']                     # 0 .. 127 (+1)
-    msg2payload[0x7C] = patch["OP1"]['UpCurve']                   # -18 .. +18 (+1)
-    msg2payload[0x7D] = patch["OP1"]['DnCurve']                   # -18 .. +18 (+1)
+    msg2payload[0x7C] = patch["OP1"]['UpCurve'] & 0xFF                  # -18 .. +18 (+1)
+    msg2payload[0x7D] = patch["OP1"]['DnCurve'] & 0xFF                  # -18 .. +18 (+1)
     msg2payload[0x4F] = patch["OP1"]['Scale']                    # C1 .. C7
     msg2payload[0x28] = patch["OP1"]['ALevel']                   # 0 .. 127 (+1)
     msg2payload[0x24] = patch["OP1"]['ATime']
@@ -1031,8 +1031,8 @@ def encode_bytes(patch):
     msg2payload[0x26] = patch["OP1"]['STime']
     msg2payload[0x2B] = patch["OP1"]['RLevel']
     msg2payload[0x27] = patch["OP1"]['RTime']
-    msg2payload[0x4C] = patch["OP1"]['LGain']                    # -63 .. +63 (+1)
-    msg2payload[0x4D] = patch["OP1"]['RGain']
+    msg2payload[0x4C] = patch["OP1"]['LGain'] & 0xFF                   # -63 .. +63 (+1)
+    msg2payload[0x4D] = patch["OP1"]['RGain'] & 0xFF
     curves = (patch["OP1"]['LCurve']) | (patch["OP1"]['RCurve'])  # LINE / EXP
     msg2payload[0x4E] = curves
 
@@ -1049,12 +1049,12 @@ def encode_bytes(patch):
     msg2payload[9] = (patch["OP2"]["Freq"] & 0x0000FF)
     msg2payload[0xA] = (patch["OP2"]["Freq"] & 0x00FF00) >> 8
     msg2payload[0xB] = (patch["OP2"]["Freq"] & 0xFF0000) >> 16
-    msg2payload[0x1B] = patch["OP2"]['Detune']
+    msg2payload[0x1B] = patch["OP2"]['Detune'] & 0xFF
     msg2payload[0x1A] = patch["OP2"]['Level']
     msg2payload[0x71] = patch["OP2"]['VelSens']
     msg2payload[0x75] = patch["OP2"]['Time']
-    msg2payload[0x7E] = patch["OP2"]['UpCurve']
-    msg2payload[0x7F] = patch["OP2"]['DnCurve']
+    msg2payload[0x7E] = patch["OP2"]['UpCurve'] & 0xFF
+    msg2payload[0x7F] = patch["OP2"]['DnCurve'] & 0xFF
     msg2payload[0x53] = patch["OP2"]['Scale']
     msg2payload[0x30] = patch["OP2"]['ALevel']
     msg2payload[0x2C] = patch["OP2"]['ATime']
@@ -1064,8 +1064,8 @@ def encode_bytes(patch):
     msg2payload[0x2E] = patch["OP2"]['STime']
     msg2payload[0x33] = patch["OP2"]['RLevel']
     msg2payload[0x2F] = patch["OP2"]['RTime']
-    msg2payload[0x50] = patch["OP2"]['LGain']
-    msg2payload[0x51] = patch["OP2"]['RGain']
+    msg2payload[0x50] = patch["OP2"]['LGain'] & 0xFF
+    msg2payload[0x51] = patch["OP2"]['RGain'] & 0xFF
     curves = (patch["OP2"]['LCurve']) | (patch["OP2"]['RCurve'])
     msg2payload[0x52] = curves
 
@@ -1082,12 +1082,12 @@ def encode_bytes(patch):
     msg2payload[0xD] = (patch["OP3"]["Freq"] & 0x0000FF)
     msg2payload[0xE] = (patch["OP3"]["Freq"] & 0x00FF00) >> 8
     msg2payload[0xF] = (patch["OP3"]["Freq"] & 0xFF0000) >> 16
-    msg2payload[0x1F] = patch["OP3"]['Detune']
+    msg2payload[0x1F] = patch["OP3"]['Detune'] & 0xFF
     msg2payload[0x1E] = patch["OP3"]['Level']
     msg2payload[0x72] = patch["OP3"]['VelSens']
     msg2payload[0x76] = patch["OP3"]['Time']
-    msg2payload[0x80] = patch["OP3"]['UpCurve']
-    msg2payload[0x81] = patch["OP3"]['DnCurve']
+    msg2payload[0x80] = patch["OP3"]['UpCurve'] & 0xFF
+    msg2payload[0x81] = patch["OP3"]['DnCurve'] & 0xFF
     msg2payload[0x57] = patch["OP3"]['Scale']
     msg2payload[0x38] = patch["OP3"]['ALevel']
     msg2payload[0x34] = patch["OP3"]['ATime']
@@ -1097,8 +1097,8 @@ def encode_bytes(patch):
     msg2payload[0x36] = patch["OP3"]['STime']
     msg2payload[0x3B] = patch["OP3"]['RLevel']
     msg2payload[0x37] = patch["OP3"]['RTime']
-    msg2payload[0x54] = patch["OP3"]['LGain']
-    msg2payload[0x55] = patch["OP3"]['RGain']
+    msg2payload[0x54] = patch["OP3"]['LGain'] & 0xFF
+    msg2payload[0x55] = patch["OP3"]['RGain'] & 0xFF
     curves = (patch["OP3"]['LCurve']) | (patch["OP3"]['RCurve'])
     msg2payload[0x56] = curves
 
@@ -1115,12 +1115,12 @@ def encode_bytes(patch):
     msg2payload[0x11] = (patch["OP4"]["Freq"] & 0x0000FF)
     msg2payload[0x12] = (patch["OP4"]["Freq"] & 0x00FF00) >> 8
     msg2payload[0x13] = (patch["OP4"]["Freq"] & 0xFF0000) >> 16
-    msg2payload[0x23] = patch["OP4"]['Detune']
+    msg2payload[0x23] = patch["OP4"]['Detune'] & 0xFF
     msg2payload[0x22] = patch["OP4"]['Level']
     msg2payload[0x73] = patch["OP4"]['VelSens']
     msg2payload[0x77] = patch["OP4"]['Time']
-    msg2payload[0x82] = patch["OP4"]['UpCurve']
-    msg2payload[0x83] = patch["OP4"]['DnCurve']
+    msg2payload[0x82] = patch["OP4"]['UpCurve'] & 0xFF
+    msg2payload[0x83] = patch["OP4"]['DnCurve'] & 0xFF
     msg2payload[0x5B] = patch["OP4"]['Scale']
     msg2payload[0x40] = patch["OP4"]['ALevel']
     msg2payload[0x3C] = patch["OP4"]['ATime']
@@ -1130,21 +1130,21 @@ def encode_bytes(patch):
     msg2payload[0x3E] = patch["OP4"]['STime']
     msg2payload[0x43] = patch["OP4"]['RLevel']
     msg2payload[0x3F] = patch["OP4"]['RTime']
-    msg2payload[0x58] = patch["OP4"]['LGain']
-    msg2payload[0x59] = patch["OP4"]['RGain']
+    msg2payload[0x58] = patch["OP4"]['LGain'] & 0xFF
+    msg2payload[0x59] = patch["OP4"]['RGain'] & 0xFF
     curves = (patch["OP4"]['LCurve']) | (patch["OP4"]['RCurve'])
     msg2payload[0x5A] = curves
 
-    msg2payload[0x48] = patch["Pitch"]['ALevel']         # -48 .. +48 (+1)
+    msg2payload[0x48] = patch["Pitch"]['ALevel'] & 0xFF         # -48 .. +48 (+1)
     msg2payload[0x44] = patch["Pitch"]['ATime']          # 0 .. 127 (+1)
-    msg2payload[0x49] = patch["Pitch"]['DLevel']
+    msg2payload[0x49] = patch["Pitch"]['DLevel'] & 0xFF
     msg2payload[0x45] = patch["Pitch"]['DTime']
-    msg2payload[0x4A] = patch["Pitch"]['SLevel']
+    msg2payload[0x4A] = patch["Pitch"]['SLevel'] & 0xFF
     msg2payload[0x46] = patch["Pitch"]['STime']
-    msg2payload[0x4B] = patch["Pitch"]['RLevel']
+    msg2payload[0x4B] = patch["Pitch"]['RLevel'] & 0xFF
     msg2payload[0x47] = patch["Pitch"]['RTime']
 
-    msg2payload[0x84] = patch["Mixer"]['Level']           # -63 .. +63 (+1)
+    msg2payload[0x84] = patch["Mixer"]['Level'] & 0xFF           # -63 .. +63 (+1)
     msg2payload[0x85] = 255
     msg2payload[0x86] = 255
     msg2payload[0x87] = 255
