@@ -900,6 +900,8 @@ def decode_8bit(bytes, patch):
     patch["OP2"]['LCurve'] = payload[0x52] & 0x01
     patch["OP2"]['RCurve'] = 1 if payload[0x52] & 0x10 else 0
 
+    #print("OP3 Fbck units =", hex(payload[0x66]), "frac =", hex(payload[2]), end="")
+    #print("signed that is", hex(make_signed(payload[0x66])), "and ", hex(make_signed(payload[2])))
     patch["OP3"]['Feedback'] = (make_signed(payload[0x66]) * 10) + make_signed(payload[2])
     patch["OP3"]['OP1In'] = payload[0x64]
     patch["OP3"]['OP2In'] = payload[0x65]
@@ -983,8 +985,6 @@ def encode_bytes(patch):
     PATTERN = 2
     SOUND = 4
     
-    # start of is the fixed header (with 01/02/03 message type at end). This (incl 01/02/03) is the 
-    # one bit that does not get put through 8 to 7 bit conversion
     if len(patch['Name']) == 4:
         size = 0xBC
         namelen = b'\x14\x00\x00\x00'
@@ -993,6 +993,8 @@ def encode_bytes(patch):
         size = 0xC0
         namelen = b'\x18\x00\x00\x00'
 
+    # start of is the fixed header (with 01/02/03 message type at end). This (incl 01/02/03) is the 
+    # one bit that does not get put through 8 to 7 bit conversion
     hdr = b'\xF0\x00\x48\x04\x00\x00\x03\x60'
     fm_type_container = b'FMTC'
     fm_name = b'FMNM'
@@ -1003,19 +1005,32 @@ def encode_bytes(patch):
     u32_4_le = b'\x04\x00\x00\x00'
 
     msg2payload = bytearray(0x88) # payload is 0x88 because TPDT is always 0x98 bytes (from TPDT onwards) and header is 0x10
-    msg2payload[0] = patch["OP1"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x5C] = int(patch["OP1"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
+
+    # Feedback is tricky because it's split over two bytes with .0 .. .9 fraction stored in one
+    # place and feedback/10 (0..64) in another - but it is signed so the high part is easy as -1..-63
+    # is simply 0xFF .. 0xCD but the fractional part is also stored signed so -.1 to -.9 needs
+    # special handling. The following strips the overall sign, converts to absolute then does the %10 to
+    # split the fraction then re-applies the sign to the result and converts to 1 byte
+    fbck = patch["OP1"]['Feedback']
+    fbck_sign = 1
+    if fbck < 0:
+        fbck_sign = -1
+    fbck_frac = ((abs(fbck) % 10) * fbck_sign) & 0xFF
+    msg2payload[0] = fbck_frac                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x5C] = int(fbck / 10) & 0xFF       # -63.0 .. +64.0 (+1.0)
     msg2payload[0x5D] = patch["OP1"]['OP2In']                    # 0 .. 127 (+1)
     msg2payload[0x5E] = patch["OP1"]['OP3In']
     msg2payload[0x5F] = patch["OP1"]['OP4In']
     msg2payload[0x6C] = patch["OP1"]['Output']                   # 0..127 (+1)
     msg2payload[0x78] = patch["OP1"]['PitchEnv']                      # OFF / ON
     msg2payload[4] = patch["OP1"]['Fixed']                    # OFF / ON
-    msg2payload[0x14] = (patch["OP1"]['Ratio']) & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
-    msg2payload[0x15] = int((patch["OP1"]['Ratio']) / 256)
-    msg2payload[5] = (patch["OP1"]["Freq"] & 0x0000FF)
-    msg2payload[6] = (patch["OP1"]["Freq"] & 0x00FF00) >> 8
-    msg2payload[7] = (patch["OP1"]["Freq"] & 0xFF0000) >> 16
+    ratio = patch["OP1"]['Ratio']
+    msg2payload[0x14] = ratio & 0xFF           # 0.50 .. 32.00 (+.01) / 1 .. 9755 (+1)
+    msg2payload[0x15] = int(ratio / 256)        # wonder why I'm not using >> 8 ??
+    freq = patch["OP1"]["Freq"]
+    msg2payload[5] = (freq & 0x0000FF)
+    msg2payload[6] = (freq & 0x00FF00) >> 8
+    msg2payload[7] = (freq & 0xFF0000) >> 16
     msg2payload[0x17] = patch["OP1"]['Detune'] & 0xFF                  # -63 .. 63 (+1)
     msg2payload[0x16] = patch["OP1"]['Level']                    # 0 .. 127 (+1)
     msg2payload[0x70] = patch["OP1"]['VelSens']                  # 0 .. 127 (+1)
@@ -1036,19 +1051,26 @@ def encode_bytes(patch):
     curves = (patch["OP1"]['LCurve']) | (patch["OP1"]['RCurve'])  # LINE / EXP
     msg2payload[0x4E] = curves
 
-    msg2payload[1] = patch["OP2"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x61] = int(patch["OP2"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
+    fbck = patch["OP2"]['Feedback']
+    fbck_sign = 1
+    if fbck < 0:
+        fbck_sign = -1
+    fbck_frac = ((abs(fbck) % 10) * fbck_sign) & 0xFF
+    msg2payload[1] = fbck_frac                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x61] = int(fbck / 10) & 0xFF       # -63.0 .. +64.0 (+1.0)
     msg2payload[0x60] = patch["OP2"]['OP1In']
     msg2payload[0x62] = patch["OP2"]['OP3In']
     msg2payload[0x63] = patch["OP2"]['OP4In']
     msg2payload[0x6D] = patch["OP2"]['Output']
     msg2payload[0x79] = patch["OP2"]['PitchEnv']
     msg2payload[8] = patch["OP2"]['Fixed']
-    msg2payload[0x18] = (patch["OP2"]['Ratio']) & 0xFF
-    msg2payload[0x19] = int((patch["OP2"]['Ratio']) / 256)
-    msg2payload[9] = (patch["OP2"]["Freq"] & 0x0000FF)
-    msg2payload[0xA] = (patch["OP2"]["Freq"] & 0x00FF00) >> 8
-    msg2payload[0xB] = (patch["OP2"]["Freq"] & 0xFF0000) >> 16
+    ratio = patch["OP2"]['Ratio']
+    msg2payload[0x18] = ratio & 0xFF
+    msg2payload[0x19] = int(ratio / 256)
+    freq = patch["OP2"]["Freq"]
+    msg2payload[9]   = (freq & 0x0000FF)
+    msg2payload[0xA] = (freq & 0x00FF00) >> 8
+    msg2payload[0xB] = (freq & 0xFF0000) >> 16
     msg2payload[0x1B] = patch["OP2"]['Detune'] & 0xFF
     msg2payload[0x1A] = patch["OP2"]['Level']
     msg2payload[0x71] = patch["OP2"]['VelSens']
@@ -1069,19 +1091,30 @@ def encode_bytes(patch):
     curves = (patch["OP2"]['LCurve']) | (patch["OP2"]['RCurve'])
     msg2payload[0x52] = curves
 
-    msg2payload[2] = patch["OP3"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x66] = int(patch["OP3"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
+    fbck = patch["OP3"]['Feedback']
+    #print("fbck from control is", hex(fbck))
+    fbck_sign = 1
+    if fbck < 0:
+        fbck_sign = -1
+    #print("fbck sign = ", fbck_sign, "abs(fbck) is", abs(fbck), "and abs(fbck) % 10 is", abs(fbck) % 10)
+    fbck_frac = ((abs(fbck) % 10) * fbck_sign) & 0xFF
+    #print("fraction =", fbck_frac)
+    msg2payload[2] = fbck_frac                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x66] = int(fbck / 10) & 0xFF       # -63.0 .. +64.0 (+1.0)
+    #print("so storing", hex(msg2payload[0x66]), "and", hex(msg2payload[2]))
     msg2payload[0x64] = patch["OP3"]['OP1In']
     msg2payload[0x65] = patch["OP3"]['OP2In']
     msg2payload[0x67] = patch["OP3"]['OP4In']
     msg2payload[0x6E] = patch["OP3"]['Output']
     msg2payload[0x7A] = patch["OP3"]['PitchEnv']
     msg2payload[0xC] = patch["OP3"]['Fixed']
-    msg2payload[0x1C] = (patch["OP3"]['Ratio']) & 0xFF
-    msg2payload[0x1D] = int((patch["OP3"]['Ratio']) / 256)
-    msg2payload[0xD] = (patch["OP3"]["Freq"] & 0x0000FF)
-    msg2payload[0xE] = (patch["OP3"]["Freq"] & 0x00FF00) >> 8
-    msg2payload[0xF] = (patch["OP3"]["Freq"] & 0xFF0000) >> 16
+    ratio = patch["OP3"]['Ratio']
+    msg2payload[0x1C] = ratio & 0xFF
+    msg2payload[0x1D] = int(ratio / 256)
+    freq = patch["OP3"]["Freq"]
+    msg2payload[0xD] = (freq & 0x0000FF)
+    msg2payload[0xE] = (freq & 0x00FF00) >> 8
+    msg2payload[0xF] = (freq & 0xFF0000) >> 16
     msg2payload[0x1F] = patch["OP3"]['Detune'] & 0xFF
     msg2payload[0x1E] = patch["OP3"]['Level']
     msg2payload[0x72] = patch["OP3"]['VelSens']
@@ -1102,19 +1135,26 @@ def encode_bytes(patch):
     curves = (patch["OP3"]['LCurve']) | (patch["OP3"]['RCurve'])
     msg2payload[0x56] = curves
 
-    msg2payload[3] = patch["OP4"]['Feedback'] % 10                # -63.0 .. +64.0 (+1.0)
-    msg2payload[0x6B] = int(patch["OP4"]['Feedback'] / 10)        # -63.0 .. +64.0 (+1.0)
+    fbck = patch["OP4"]['Feedback']
+    fbck_sign = 1
+    if fbck < 0:
+        fbck_sign = -1
+    fbck_frac = ((abs(fbck) % 10) * fbck_sign) & 0xFF
+    msg2payload[3] = fbck_frac                # -63.0 .. +64.0 (+1.0)
+    msg2payload[0x6B] = int(fbck / 10) & 0xFF       # -63.0 .. +64.0 (+1.0)
     msg2payload[0x68] = patch["OP4"]['OP1In']
     msg2payload[0x69] = patch["OP4"]['OP2In']
     msg2payload[0x6A] = patch["OP4"]['OP3In']
     msg2payload[0x6F] = patch["OP4"]['Output']
     msg2payload[0x7B] = patch["OP4"]['PitchEnv']
     msg2payload[0x10] = patch["OP4"]['Fixed']
-    msg2payload[0x20] = (patch["OP4"]['Ratio']) & 0xFF
-    msg2payload[0x21] = int((patch["OP4"]['Ratio']) / 256)
-    msg2payload[0x11] = (patch["OP4"]["Freq"] & 0x0000FF)
-    msg2payload[0x12] = (patch["OP4"]["Freq"] & 0x00FF00) >> 8
-    msg2payload[0x13] = (patch["OP4"]["Freq"] & 0xFF0000) >> 16
+    ratio = patch["OP4"]['Ratio']
+    msg2payload[0x20] = ratio & 0xFF
+    msg2payload[0x21] = int(ratio / 256)
+    freq = patch["OP4"]["Freq"]
+    msg2payload[0x11] = (freq & 0x0000FF)
+    msg2payload[0x12] = (freq & 0x00FF00) >> 8
+    msg2payload[0x13] = (freq & 0xFF0000) >> 16
     msg2payload[0x23] = patch["OP4"]['Detune'] & 0xFF
     msg2payload[0x22] = patch["OP4"]['Level']
     msg2payload[0x73] = patch["OP4"]['VelSens']
@@ -1145,6 +1185,7 @@ def encode_bytes(patch):
     msg2payload[0x47] = patch["Pitch"]['RTime']
 
     msg2payload[0x84] = patch["Mixer"]['Level'] & 0xFF           # -63 .. +63 (+1)
+    # patch is padded to the end with 0xFF in the last 3 bytes
     msg2payload[0x85] = 255
     msg2payload[0x86] = 255
     msg2payload[0x87] = 255
@@ -1190,6 +1231,9 @@ def encode_bytes(patch):
     msg2_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
     print("msg2 (7 bit)=")
     print_dump(msg2_7bit)
+    # following is just debug (so what would be sent can be reloaded via setup to test) but could be useful...
+    with open("test.syx", "wb") as f:
+        f.write(msg2_7bit)
 
     msg3 = hdr
     msg3 += b'\x03' # sequence number start=1, data=2, crc=3
@@ -1412,7 +1456,10 @@ def readCtrls():
         elif item == "Ratio":
             patch[sect][item] = (controllist[x][0].getValue() * 100) + controllist[x][0].fraction
         elif item == "Feedback":
-            patch[sect][item] = (controllist[x][0].getValue() * 10) + controllist[x][0].fraction
+            if controllist[x][0].getValue() >= 0:
+                patch[sect][item] = (controllist[x][0].getValue() * 10) + controllist[x][0].fraction
+            else:
+                patch[sect][item] = (controllist[x][0].getValue() * 10) - controllist[x][0].fraction
         else:
             patch[sect][item] = controllist[x][0].getValue()
     return patch
