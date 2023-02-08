@@ -1178,7 +1178,7 @@ def encode_bytes(patch):
     if len(patch['Name']) > 4:
         # if it's a name with dots then pad with FF at the end if less than 4 dots
         for n in range(8 - len(patch['Name'])):
-            msg2 += '\xFF'
+            msg2 += (0xFF).to_bytes(length = 1, byteorder = 'little')
     msg2 += the_patch_data # 'TPDT'
     msg2 += (0x98).to_bytes(length = 4, byteorder = 'little')
     msg2 += u32_0_le
