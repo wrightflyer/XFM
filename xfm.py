@@ -5,7 +5,6 @@ from tkinter import filedialog as fd
 from PIL import Image, ImageTk
 import json
 import mido
-import json
 
 portIn = None
 portInOpen = False
@@ -287,12 +286,16 @@ class Anim:
         numFrames = ctrlimgs[ctrl]["numframes"]
         self.frameHeight = ctrlimgs[ctrl]["frameH"]
         self.numFrames = numFrames
-        self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0)
+        global settings
+        if settings.outlines == "true":
+            self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0, borderwidth = 1, relief = tk.GROOVE)
+        else:
+            self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0)
         self.canvas.place(x=self.xpos, y=self.ypos)
         self.canvas.bind('<B1-Motion>', self.motion)
         self.canvas.bind('<Button>', self.button_click)
         if len(title) > 0:
-            self.canvas.create_text(self.width / 2, 4, text=title, fill='#ffffff')
+            self.canvas.create_text(self.width / 2, 5, text=title, fill='#ffffff')
         self.prevy = 0
         self.prevx = 0
 
@@ -795,7 +798,11 @@ class SetupWindow:
         self.dump8Label = Label(self.setupWin, text = "Dump of sysex after 7 to 8 bit conversion", bg='#313131', fg = '#FFFFFF')
         self.dump8Label.place(x = 430, y = 330)
         self.saveLoadState = IntVar()
-        self.saveLoadState.set(0)
+        global settings
+        if settings.saveJSON == "true":
+            self.saveLoadState.set(1)
+        else:
+            self.saveLoadState.set(0)
         self.saveLoad = Checkbutton(self.setupWin, text="Save JSON when patches received", variable=self.saveLoadState, bg='#313131', fg = '#FFFFFF', selectcolor='#313131' )
         self.saveLoad.place(x = 50, y = 580)
         self.showNums = True
@@ -1695,6 +1702,9 @@ def setupButtonClick():
         setupWin.hide()
     
 #============================= THE start ================================
+
+with open("settings.json") as f:
+    settings = json.load(f)
 
 # save current (install) directory
 cur_dir = os.getcwd()
