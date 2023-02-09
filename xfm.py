@@ -287,7 +287,7 @@ class Anim:
         self.frameHeight = ctrlimgs[ctrl]["frameH"]
         self.numFrames = numFrames
         global settings
-        if settings.outlines == "true":
+        if settings["showOutlines"] == "true":
             self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0, borderwidth = 1, relief = tk.GROOVE)
         else:
             self.canvas = Canvas(window, width = self.width, height = self.frameHeight + 10, bg='#202020', highlightthickness=0)
@@ -799,7 +799,7 @@ class SetupWindow:
         self.dump8Label.place(x = 430, y = 330)
         self.saveLoadState = IntVar()
         global settings
-        if settings.saveJSON == "true":
+        if settings["saveJSON"] == "true":
             self.saveLoadState.set(1)
         else:
             self.saveLoadState.set(0)
@@ -1387,6 +1387,16 @@ def encode_bytes(patch):
     msg1_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
     print("msg1 (7 bit)=")
     print_dump(msg1_7bit)
+    # by a strange quirk of fate when portOut.send() is used in Mido it will add leading/trailing
+    # 0xF0 and 0xF7 but the message has already been constructed with these. So.... actually send
+    # everything but the first / last byte
+    global portOut
+    global portOutOpen
+    if portOutOpen == True:
+        stripped = msg1_7bit[1:-1]
+        msg = mido.Message(type = 'sysex', data = stripped)
+        #print("Going to send", stripped.hex(), "to MIDI")
+        portOut.send(msg)
 
     # As noted above the sysex payload in message 2 consists of:
     # 00: FMTC <u32 total_len> <u32 0> <u32 2>
@@ -1421,6 +1431,10 @@ def encode_bytes(patch):
     # following is just debug (so what would be sent can be reloaded via setup to test) but could be useful...
     with open("test.syx", "wb") as f:
         f.write(msg2_7bit)
+    if portOutOpen == True:
+        stripped = msg2_7bit[1:-1]
+        msg = mido.Message(type = 'sysex', data = stripped)
+        portOut.send(msg)
 
     msg3 = hdr
     msg3 += b'\x03' # sequence number start=1, data=2, crc=3
@@ -1433,6 +1447,10 @@ def encode_bytes(patch):
     msg3_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
     print("msg3 (7 bit)=")
     print_dump(msg3_7bit)
+    if portOutOpen == True:
+        stripped = msg3_7bit[1:-1]
+        msg = mido.Message(type = 'sysex', data = stripped)
+        portOut.send(msg)
 
 def convert87_chunk(data):
     mask = 0
