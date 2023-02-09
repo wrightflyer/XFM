@@ -1477,6 +1477,12 @@ def saveJson(patch):
     with open("PATCH_" + patch['Name'] + ".json", 'w') as f:
         f.write(jsonpatch)
 
+class PanelButton:
+    def __init__(self, label, xpos, ypos,function):
+        global window
+        self.button = Button(window, text = label, command = function, bg = '#606060', fg = '#FC7903', activebackground = '#000CFF', width  = 6, height = 2)
+        self.button.place(x = xpos, y = ypos)
+    
 #============================= THE start ================================
 portOpen = False
 portOutOpen = False
@@ -1715,7 +1721,7 @@ controls = {
     "Pitch:RLevel" : [ "R Level",   "slideVbi",    1620, 90, -48 ],
     "Pitch:RTime" :  [ "R Time",    "slideH",    1410, 560 ],
 
-    "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 600, -63 ],
+    "Mixer:Level" :  [ "Mixer Level","_63to63",   1600, 410, -63 ],
 }
 
 # For all the above controls simply create their anm objects but don't draw until inits set
@@ -1730,72 +1736,43 @@ for key in controls:
 
 # following is a JSON experiment to load a file (when a canvas is clicked) and load all the
 # values into the controls
-def initJSON(event):
+def initJSON():
     loadInitJson()
 
-def loadJSON(event):
+def loadJSON():
     file = fd.askopenfilename(title="Load JSON patch", filetypes=[("JSON patches", "*.json")])
     if "json" in file:
         loadJson(file)
 
-def saveJSON(event):
+def saveJSON():
     patch = readCtrls()
     saveJson(patch)
 
-def sendPatch(event):
+def sendPatch():
     encode_bytes(readCtrls())
-
-init = Canvas(width=32, height=32, highlightthickness=0)
-init.place(x=1650, y=410)
-init.create_rectangle(0,0, 31, 31, fill='#C00000')
-init.create_text(0, 10, anchor=tk.NW, text="  Init", fill='#FFFFFF')
-init.bind('<Button>', initJSON)
-
-save = Canvas(width=32, height=32, highlightthickness=0)
-save.place(x=1600, y=410)
-save.create_rectangle(0,0, 31, 31, fill='#00C000')
-save.create_text(0, 0, anchor=tk.NW, text=" Save\nJSON", fill='#FFFFFF')
-save.bind('<Button>', saveJSON)
-
-load = Canvas(width=32, height=32, highlightthickness=0)
-load.place(x=1600, y=450)
-load.create_rectangle(0,0, 31, 31, fill='#c0C000')
-load.create_text(0, 0, anchor=tk.NW, text=" load\nJSON", fill='#FFFFFF')
-load.bind('<Button>', loadJSON)
-
-load = Canvas(width=32, height=32, highlightthickness=0)
-load.place(x=1650, y=450)
-load.create_rectangle(0,0, 31, 31, fill='#08c5cf')
-load.create_text(0, 0, anchor=tk.NW, text=" Send", fill='#FFFFFF')
-load.bind('<Button>', sendPatch)
 
 routeWin = RouteWindow()
 
-def routeButtonClick(event):
+def routeButtonClick():
     if not routeWin.Showing:
         routeWin.show()
     else:
         routeWin.hide()
 
-routeButton = Canvas(width=32, height=32, highlightthickness=0)
-routeButton.place(x=1600, y=490)
-routeButton.create_rectangle(0,0, 31, 31, fill='#0000C0')
-route_label = routeButton.create_text(0, 10, anchor=tk.NW, text="Route", fill='#FFFFFF')
-routeButton.bind('<Button>', routeButtonClick)
-
 setupWin = SetupWindow()
 
-def setupButtonClick(event):
+def setupButtonClick():
     if not setupWin.Showing:
         setupWin.show()
     else:
         setupWin.hide()
 
-setupButton = Canvas(width=32, height=32, highlightthickness=0)
-setupButton.place(x=1650, y=490)
-setupButton.create_rectangle(0,0, 31, 31, fill='#C000C0')
-setupButton.create_text(0, 10, anchor=tk.NW, text="Setup", fill='#FFFFFF')
-setupButton.bind('<Button>', setupButtonClick)
+PanelButton("Init", 1650, 510, initJSON)
+PanelButton("Save\nJSON", 1580, 510, saveJSON)
+PanelButton("Load\nJSON", 1580, 560, loadJSON)
+PanelButton("Send", 1650, 560, sendPatch)
+PanelButton("Setup", 1650, 610, setupButtonClick)
+PanelButton("Route", 1580, 610, routeButtonClick)
 
 # now all images/logos loaded back to the install directory where patches/etc will be
 os.chdir(cur_dir)
