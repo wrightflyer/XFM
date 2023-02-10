@@ -225,7 +225,6 @@ class Adsr:
         if self.key == "Pitch:":
             # pitch curve is -48..+48 bi-polar so start at mid height
             ystart = 64
-        #print("start=(", 0, ystart, ") end= (", ax, ay, ")")
         self.canvas.create_line(0, ystart, ax, ay, width=3, fill='#000CFF', tag="adsrline")
         self.canvas.create_line(ax, ay, dx, dy, width=3, fill='#000CFF', tag="adsrline")
         self.canvas.create_line(dx, dy, sx, sy, width=3, fill='#000CFF', tag="adsrline")
@@ -257,7 +256,6 @@ class Adsr:
         sl = controllist[key][0].getValue() + offset
         key = op + "RLevel"
         rl = controllist[key][0].getValue() + offset
-        #print("draw ADSR ", op, "with ",at, al, dt, dl, st, sl, rt, rl)
         self.update(at, al, dt, dl, st, sl, rt, rl)
 
 # This is actually the core of this program. It's really just about 100 separate controls
@@ -303,7 +301,6 @@ class Anim:
         return ctrlimgs[self.ctrl]["frames"][self.index]
 
     def setIndex(self, n):
-        #print(self.keyname, "set value=", n, "limit=", self.numFrames)
         if n >= 0 and n < self.numFrames:
             self.index = n
 
@@ -831,7 +828,6 @@ class SetupWindow:
     def draw(self):
         if not self.Showing:
             return
-        # print("len of bytes = " + str(len(self.bytes)))
         if len(self.bytes) == 0:
             return
         if self.bytes[0x2A] == 4:
@@ -924,10 +920,10 @@ class SetupWindow:
             return
         global portIn
         global portInOpen
-        print("Opening input")
+        #print("Opening input")
         if portInOpen:
             portIn.close()
-        print("going to open: " + self.listbox.get(ANCHOR))
+        #print("going to open: " + self.listbox.get(ANCHOR))
         portIn = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
         self.midiLabel.config(text = "MIDI IN port: " + self.listbox.get(ANCHOR))
         portInOpen = True
@@ -938,10 +934,10 @@ class SetupWindow:
             return
         global portOut
         global portOutOpen
-        print("Opening output")
+        #print("Opening output")
         if portOutOpen:
             portOut.close()
-        print("going to open: " + self.listboxOut.get(ANCHOR))
+        #print("going to open: " + self.listboxOut.get(ANCHOR))
         portOut = mido.open_output(self.listboxOut.get(ANCHOR))
         self.midiLabelOut.config(text = "MIDI OUT port: " + self.listboxOut.get(ANCHOR))
         portOutOpen = True
@@ -961,7 +957,6 @@ class SetupWindow:
         self.crchex = hexdigs
 
     def LoadSyx(self, event):
-        print("oof")
         filename = fd.askopenfilename(title="Load Sysex file", filetypes=[("Sysex files", "*.syx")])
         print(filename)
         with open(filename, 'rb') as f:
@@ -1087,8 +1082,6 @@ def decode_8bit(bytes, patch):
     patch["OP2"]['LCurve'] = payload[0x52] & 0x01
     patch["OP2"]['RCurve'] = 1 if payload[0x52] & 0x10 else 0
 
-    #print("OP3 Fbck units =", hex(payload[0x66]), "frac =", hex(payload[2]), end="")
-    #print("signed that is", hex(make_signed(payload[0x66])), "and ", hex(make_signed(payload[2])))
     patch["OP3"]['Feedback'] = (make_signed(payload[0x66]) * 10) + make_signed(payload[2])
     patch["OP3"]['OP1In'] = payload[0x64]
     patch["OP3"]['OP2In'] = payload[0x65]
@@ -1279,16 +1272,12 @@ def encode_bytes(patch):
     msg2payload[0x52] = curves
 
     fbck = patch["OP3"]['Feedback']
-    #print("fbck from control is", hex(fbck))
     fbck_sign = 1
     if fbck < 0:
         fbck_sign = -1
-    #print("fbck sign = ", fbck_sign, "abs(fbck) is", abs(fbck), "and abs(fbck) % 10 is", abs(fbck) % 10)
     fbck_frac = ((abs(fbck) % 10) * fbck_sign) & 0xFF
-    #print("fraction =", fbck_frac)
     msg2payload[2] = fbck_frac                # -63.0 .. +64.0 (+1.0)
     msg2payload[0x66] = int(fbck / 10) & 0xFF       # -63.0 .. +64.0 (+1.0)
-    #print("so storing", hex(msg2payload[0x66]), "and", hex(msg2payload[2]))
     msg2payload[0x64] = patch["OP3"]['OP1In']
     msg2payload[0x65] = patch["OP3"]['OP2In']
     msg2payload[0x67] = patch["OP3"]['OP4In']
@@ -1395,7 +1384,6 @@ def encode_bytes(patch):
     if portOutOpen == True:
         stripped = msg1_7bit[1:-1]
         msg = mido.Message(type = 'sysex', data = stripped)
-        #print("Going to send", stripped.hex(), "to MIDI")
         portOut.send(msg)
 
     # As noted above the sysex payload in message 2 consists of:
@@ -1456,14 +1444,10 @@ def convert87_chunk(data):
     mask = 0
     chunk = list(data)
     for x in range(len(chunk)):
-        #print("byte is ", hex(chunk[x]), "mask before is ", hex(mask), end="")
         mask = mask | ((chunk[x] & 0x80) >> (x + 1))
-        #print(" mask after is", hex(mask))
         chunk[x] = chunk[x] & 0x7F
     retval = mask.to_bytes(length = 1, byteorder = 'little')
-    #print("retval (mask) =", retval)
     retval += bytearray(chunk)
-    #print("retval (all) =", retval)
     return retval
 
 # When sending the body of the messages after the 9 byte header has to be grouped
@@ -1473,7 +1457,6 @@ def convert87(data):
     retval = data[:9]
     data = data[9:]
     for n in range(0, len(data), 7):
-        #print("87 of ", len(data[n:n + 7]), "bytes: ", data[n:n + 7])
         retval += convert87_chunk(data[n:n + 7])
     return retval
 
@@ -1493,7 +1476,7 @@ def convert78_chunk(shifts, data):
 
 # So this takes an entire sysex (from F0 to F7) and breaks it into 8 byte
 # groups of 1 shift byte and 7 data bytes then passes each in turn to
-# convert87 above and then concatentates all these into result[]
+# convert78 above and then concatentates all these into result[]
 def convert78(data):
     result = []
     # first discard the front 9 bytes
@@ -1511,7 +1494,6 @@ def convert78(data):
         data = data[8:]
         # the 7 processed bytes are added to the result being built up
         result.extend(next7)
-    print()
     return result
 
 # This is the CRC32 that XFM uses. It is the widely used 0xEDB88320 polynomial which is
@@ -1532,6 +1514,7 @@ def crc32(crc, p, len):
 # and to the console log.
 def loadRawBytes(bytes, possSaveJson):
     patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
+    # This sets the bytes into the "7 bit" dump area on the Setup scree
     setupWin.setBytes(bytes)
 
     print("The raw 7bit sysex data")
@@ -1542,16 +1525,22 @@ def loadRawBytes(bytes, possSaveJson):
     print("The converted 8bit data")
     print_dump(data8)
 
+    # this sets the converted to 8 bit bytes into the lower dump area on the setup screen
     setupWin.set8bytes(data8)
 
+    # this ensures that if the Setup screen is visible the dumps are redrawn
     setupWin.draw()
 
+    # this is the "meat" of the whole thing that breaks all the parameters out of the dump into a dictionary (associated array)
     decode_8bit(data8, patch)
+
+    # option is to save patch to PATCH_name.json when loading/decoding...
     if setupWin.saveLoadState.get() == 1 and possSaveJson:
         saveJson(patch)
 
-    # then load the patch (dict)
+    # then load the patch (dict) into all the onscreen controls
     loadCtrls(patch)
+    # and if the route window is visible make sure it is drawn up to date
     routeWin.draw()
 
 
@@ -1579,7 +1568,7 @@ def rxmsg(msg):
         setupWin.draw()
 
 # This loads a patch (dictionary / associative array) into the corresponding named
-# controls ready to start editing.
+# controls ready to start editing. The draw() method is called on each to draw up to date
 def loadCtrls(data):
     for i in data:
         print("=====", i, "=====")
@@ -1801,12 +1790,12 @@ routeWin = RouteWindow()
 
 setupWin = SetupWindow()
 
+PanelButton("Setup", 1580, 510, setupButtonClick)
 PanelButton("Init", 1650, 510, initJSON)
-PanelButton("Save\nJSON", 1580, 510, saveJSON)
-PanelButton("Load\nJSON", 1580, 560, loadJSON)
+PanelButton("Route", 1580, 560, routeButtonClick)
 PanelButton("Send", 1650, 560, sendPatch)
-PanelButton("Setup", 1650, 610, setupButtonClick)
-PanelButton("Route", 1580, 610, routeButtonClick)
+PanelButton("Load\nJSON", 1580, 610, loadJSON)
+PanelButton("Save\nJSON", 1650, 610, saveJSON)
 
 # now all images/logos loaded back to the install directory where patches/etc will be
 os.chdir(cur_dir)
