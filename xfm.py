@@ -407,11 +407,15 @@ class Anim:
         ctrl = self.keyname.split(':')[1]
 
         if event.y < self.prevy:
-            self.inc()
+            diff = self.prevy - event.y
+            for n in range(diff):
+                self.inc()
             newFrame = True
 
         if event.y > self.prevy:
-            self.dec()
+            diff = event.y - self.prevy
+            for n in range(diff):
+                self.dec()
             newFrame = True
 
         if event.x > self.prevx:
@@ -428,7 +432,9 @@ class Anim:
                     self.fraction = self.fraction + 1
                     newFrame = True
             else:
-                self.inc()
+                diff = event.x - self.prevx
+                for n in range(diff):
+                    self.inc()
                 newFrame = True
 
         if event.x < self.prevx:
@@ -437,13 +443,15 @@ class Anim:
                     self.fraction = self.fraction - 1
                     newFrame = True
             else:
-                self.dec()
+                diff = self.prevx - event.x
+                for n in range(diff):
+                    self.dec()
                 newFrame = True
 
         if newFrame == True:
             self.draw()
             routeWin.draw()
-            # if a control just moved that would change ADSR then redraw the ADSR graph
+            # if a (slider) control just moved that would change ADSR then redraw the ADSR graph
             ctrlType = ctrlimgs[self.ctrl]["type"]
             if ctrlType == "slideV" or ctrlType == "slideH" or ctrlType == "slideVbi":
                 op = self.keyname.split(':')[0] + ":"
@@ -462,6 +470,7 @@ class Anim:
             if self.index < 0:
                 self.index = (self.numFrames - 1)
         self.draw()
+        routeWin.draw()
 
 # The main display is basically 5 rectangles:
 #
@@ -1662,6 +1671,8 @@ def loadJson(filename):
     with open(filename) as f:
         data = json.load(f)
         loadCtrls(data)
+    # also make sure route window is updated (if showing)
+    routeWin.draw()
 
 def loadInitJson():
     loadJson("initpatch.json")
