@@ -5,6 +5,7 @@ from tkinter import filedialog as fd
 from PIL import Image, ImageTk
 import json
 import mido
+import mido.backends.rtmidi
 
 portIn = None
 portInOpen = False
