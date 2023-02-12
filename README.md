@@ -5,7 +5,7 @@ So this is intended to be a patch editor for XFM. As users will know the on-boar
 
 The plan with this Python utility is to be able to see everything at once, as "visually" as possible. The aim is also that the interface to XFM itself be as seemless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor but once in the editor, as changes are made they should be automatically sent back.
 
-BUT STOP RIGHT THERE - so here is the current "problem" with this editor and the reason it's not "released" yet. When XFM sends a patch it sends three sysex messages. One is just a preamble, then there is the main body of the patch in the middle message, then finally the third message is some kind of CRC/hash to validate the data. This is fine if all you were doing is sending patches to a PC to be stored "as is" without changing them. You could then send the three messages back when you wanted to restore that patch. But if, while the patch is on the PC, you EDIT it then when you come to send it back the XFM will say "the payload does not match the CRC". What it actually says is "D.ERR" on the 4 characters. So, for an editor to work, it either needs to recalculate the hash/checksum after changes or it needs an XFM that does not insist on a checksum. I've spoken to Sonicware about this. They couldn't give me the re-calculation algo but they have promised that XFM firmware will be updated to make it easier to upload changed patches. Until then this program is really just a *viewer* to see how patches saved out of XFM are constructed.
+BUT STOP RIGHT THERE - so here is the current "problem" with this editor and the reason it's not "released" yet. When XFM sends a patch it sends three sysex messages. One is just a preamble, then there is the main body of the patch in the middle message, then finally the third message is some kind of CRC/hash to validate the data. This is fine if all you were doing is sending patches to a PC to be stored "as is" without changing them. You could then send the three messages back when you wanted to restore that patch. But if, while the patch is on the PC, you EDIT it then when you come to send it back the XFM will say "the payload does not match the CRC". What it actually says is "D.ERR" on the 4 characters. So for an editor to work it needs to recalculate the hash/checksum after changes. I've spoken to Sonicware about this. They couldn't give me the curret re-calculation algo but they have promised that XFM firmware will be updated to make it easier to upload changed patches. Until then this program is really just a *viewer* to see how patches saved out of XFM are constructed.
 
 So on to the development...
 
@@ -15,7 +15,7 @@ The first thing I did was a simple Python program, adsr.py, (I like the simplici
 
 ![](readme_pics/pretty.png)
 
-This was just playing about to understand how to visually represent 8 parameter envelopes as used by XFM.
+This was just playing about to understand how to visually represent 8 parameter envelopes as used by XFM. The work I did here would later become one of the classes used in the main program (with slightly fancier looking graphics)
 
 ### MIDI in Python
 
@@ -40,11 +40,19 @@ At the start I had no idea what any of the bytes of this data controlled. It's n
     print("op1 freq = ", freq)
 ```
 
+However in discussion with Sonicware I later found out the reason for this and it all stems from the fact that MIDI data is 7bit. So if they have a block of patch variables that contain 8/16/24bit values this cannot be sent "as is" within a Sysex. So the main payload is actually put through an 8 bit to 7 bit conversion where the data is broken into blocks of 7 bytes and each is output preceded by a mask byte (also 7 bits) in which  it indicates which, if any of the subsequent 7 need to have an 8th bit (ie + 128) added. Once I understood this the payload made much more sense and while the original decode had me combining + 128's and + 32768's from all over the place - the new decode was much cleaner and the parameters were grouped in sensible ways.
+
 ### Graphics / Animations
 
 I love playing with knobs!
 
-I also wanted to prototype the "look" of the program before I had any way to draw animated knobs in Python. So I reverted to my old friend Ctrlr which is a GUI program for making MIDI control panels. I was just interested in laying out controls more than anything. Now with Ctrlr it has a default "look and feel" as seen in this control panel I actually used for my own design Teensy4 based synth:
+I also wanted to prototype the "look" of the program before I had any way to draw animated knobs in Python. So I reverted to my old friend Ctrlr which is a GUI program for making MIDI control panels. 
+
+[Ctrlr](https://ctrlr.org)
+
+[Ctrlr on Github](https://github.com/RomanKubiak/ctrlr)
+
+I was just interested in laying out controls more than anything. Now with Ctrlr it has a default "look and feel" as seen in this control panel I actually used for my own design Teensy4 based synth:
 
 ![](readme_pics/synthctrlr.png)
 
@@ -62,13 +70,17 @@ It's slow to load but worth the wait as there's tons of knob designs there to ch
 
 It had a "3D" look but I didn't like the red/white scale or the red pointer. I also noticed when I was editing on the XFM with the editing overlay in place that because the holes for the knobs were a bit bigger then the knobs themselves a "blue halo" would show through so I used knobman to create my own knob design that has subtle "ticks" in white to show scale but then a blue halo that grows as the knob is turned.
 
-Another requirement I had (apart from the blue halo) was a way to instantly read the value of every control. So I searched and searched and found a Truetype LCD font that was very like the characters in the XFM display. So I overlaid this on the rotary controls so they would show the value of the reading. In the end the editing looked like:
+Another requirement I had (apart from the blue halo) was a way to instantly read the value of every control. So I searched and searched and found a Truetype LCD font
+
+[LCD_Mono Truetype font - like XFM display](https://www.dafont.com/lcd-lcd-mono.font)
+
+that was very like the characters in the XFM display. So I overlaid this on the rotary controls so they would show the value of the reading. In the end the editing looked like:
 
 ![](readme_pics/knobman_editor.png)
 
-Knobman basically takes all the design elements of the knob (some of which vary from frame to frame - like the angle of the white mark, the blue halo and the LCD printed value) and then it creates either animated GIFs or animated PNG files with every frame in it. I already knew about animated GIF but didn't know about animated PNG. In the latter it basically draws each frame either side-by-side or on top of one another. The nice thing about that is that if you want to do your own animator it's just a case in a file that is w x N*h to cut out the rectangle from (0, h * N1) to (w, h * N2) and drawing that. As many of the controls have a 0..127 range they are effectively 128 small rectangles on top of one another. The code directory is full of such PNG animations like:
+Knobman basically takes all the design elements of the knob (some of which vary from frame to frame - like the angle of the white mark, the blue halo and the LCD printed value) and then it creates either animated GIFs or animated PNG files with every frame in it. I already knew about animated GIF but didn't know about animated PNG. In the latter it basically draws each frame either side-by-side or on top of one another in a very wide or very tall image. The nice thing about that is that if you want to do your own animator it's just a case in a file that is w x N*h to cut out the rectangle from (0, h * N1) to (w, h * N2) and drawing that. As many of the controls have a 0..127 range they are effectively 128 small rectangles on top of one another. The code directory is full of such PNG animations like:
 
-![](example_anim.png)
+![](readme_pics/example_anim.png)
 
 (that is just -18 to +18 so 37 steps but many are 128 small pictures!)
 
@@ -100,7 +112,7 @@ to implement a feature so that when "Route" is pressed on the main editor this s
 
 ### Running / Using the code
 
-So it's a Python program which means that to be able to run it you need to have Python installed. It does not work with the now dead Python 2.7. It has to be some flavour of 3.x (a later one!)
+So it's a Python program which means that to be able to run it using a git clone of this repository you need to have Python installed. It does not work with the now dead Python 2.7. It has to be some flavour of 3.x (a later one!)
 
 Because I tried to stick with lib code that comes with Python (like Tkinter for the GUI graphics) there's not much else you need to install to run it. The main thing is going to be the libs for MIDI support. So you probably need:
 
@@ -119,4 +131,24 @@ To execute the program
 
     python xfm.py
 
-These words aren't finished - I want to say something about how to operate this but that will be in a later update...
+### Download
+
+While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of pythong, the code itself, all the support libs it uses and builds them into one .exe file.
+
+Also in the .zip are some added support files:
+
+**settings.json**: I mentioned this in the video, it's a very simple 2 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as Patch_<name>.json  
+
+**initpatch.json**: this is simply a copy of the TP01 patch after I told XFM to "init" a patch being edited then extracted this from XFM. This is the first file the editor loads to ensure that all the controls start in the default state. It's also reloaded if you press "Init". If you wanted to set up a "template" so the editor always starts in the same place or returns to it when "Init" is pressed then either edit this file or just copy a JSON patch file you have extracted or worked on over the top of initpatch.json
+
+**images_animations/*.***: this is how the editor works - all the controls are just multi-frame PNG animation files and they are all stored in that images_animations/ sub-directory and are loaded at the very start when you first run the program. The pause as the program starts is because it's taking each of these and breaking each one into 100+ sub-images and storing them in a Python dictionary in memory. When you drag a control from value 37 to 56 or whatever all you are really doing is having it play animation frames 37 to 56. I created all the animations themselves using Knobman. I have half a mind to make a video explaining how the program works and how I wrote/engineered it and that will include details of Knobman (https://www.g200kg.com/jp/software/knobman.html). In theory this would allow anyone feeling "artistic" to create a new "skin" for the editor - giving it your own look and feel
+
+### How to use
+
+When you run the editor the main screen with all the controls appears. During the loading process the program does a JSON load of the file called initpatch.json from disk and loads all the values it contains into each and every one of the controls. This even includes setting the four character name at the top right to be "TP01" which is what XFM  uses it if you ask it to "Init" a patch. The basic patch has very little set apart from OP1 output level set to 127 so it consists of nothing but OP1 playing to the output using the default sine wave at a x1.0 ratio.
+
+The editor is basically a whole load of knobs/sliders of which many have  very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click decreases the control by one step and right click increases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down to increase/decrease the control.
+
+![](readme_pics/control1.png)
+
+There are three knobs (only two visible at any time) that behave a little different from all the others.
