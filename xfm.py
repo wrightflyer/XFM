@@ -405,6 +405,15 @@ class Anim:
             self.canvas.create_image(17, 80, anchor=tk.NW, image = ctrlimgs["digits"]["frames"][self.getValue()], tag = "digits")
             self.canvas.create_image(39, 80, anchor=tk.NW, image = ctrlimgs["dig_d_99"]["frames"][self.fraction], tag = "digits")
 
+    def update_win_adsr(self):
+        self.draw()
+        routeWin.draw()
+        # if a (slider) control just moved that would change ADSR then redraw the ADSR graph
+        ctrlType = ctrlimgs[self.ctrl]["type"]
+        if ctrlType == "slideV" or ctrlType == "slideH" or ctrlType == "slideVbi":
+            op = self.keyname.split(':')[0] + ":"
+            adsrs[op].draw()
+
     def motion(self, event):
         newFrame = False
         ctrl = self.keyname.split(':')[1]
@@ -452,13 +461,7 @@ class Anim:
                 newFrame = True
 
         if newFrame == True:
-            self.draw()
-            routeWin.draw()
-            # if a (slider) control just moved that would change ADSR then redraw the ADSR graph
-            ctrlType = ctrlimgs[self.ctrl]["type"]
-            if ctrlType == "slideV" or ctrlType == "slideH" or ctrlType == "slideVbi":
-                op = self.keyname.split(':')[0] + ":"
-                adsrs[op].draw()
+            self.update_win_adsr()
 
         self.prevy = event.y
         self.prevx = event.x
@@ -472,8 +475,7 @@ class Anim:
             self.dec()
             update = True
         if update:
-            self.draw()
-            routeWin.draw()
+            self.update_win_adsr()
 
     def mouse_wheel(self, event):
         # by inspection I have found that event.delta=120 for one wheel move up and -120 for one down
@@ -486,8 +488,7 @@ class Anim:
             self.dec()
             update = True
         if update:
-            self.draw()
-            routeWin.draw()
+            self.update_win_adsr()
 
     def mouse_wheelx(self, event):
         # This is the Shift-MouseWheel event which is horizontal and will be used for fractions
@@ -518,8 +519,7 @@ class Anim:
                 self.dec()
                 newFrame = True
         if newFrame:
-            self.draw()
-            routeWin.draw()
+            self.update_win_adsr()
 #
 # The main display is basically 5 rectangles:
 #
