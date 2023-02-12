@@ -293,6 +293,8 @@ class Anim:
         self.canvas.place(x=self.xpos, y=self.ypos)
         self.canvas.bind('<B1-Motion>', self.motion)
         self.canvas.bind('<Button>', self.button_click)
+        self.canvas.bind('<MouseWheel>', self.mouse_wheel)
+        self.canvas.bind('<Shift-MouseWheel>', self.mouse_wheelx)
         if len(title) > 0:
             self.canvas.create_text(self.width / 2, 5, text=title, fill='#ffffff')
         self.prevy = 0
@@ -462,17 +464,63 @@ class Anim:
         self.prevx = event.x
 
     def button_click(self, event):
+        update = False
         if event.num == 1:
-            self.index = self.index + 1
-            if self.index >= self.numFrames:
-                self.index = 0
+            self.inc()
+            update = True
         if event.num == 3:
-            self.index = self.index - 1
-            if self.index < 0:
-                self.index = (self.numFrames - 1)
-        self.draw()
-        routeWin.draw()
+            self.dec()
+            update = True
+        if update:
+            self.draw()
+            routeWin.draw()
 
+    def mouse_wheel(self, event):
+        # by inspection I have found that event.delta=120 for one wheel move up and -120 for one down
+        # but the 120 thing is apparently Windows only so actually just treat +ve as up and -ve as down...
+        update = False
+        if event.delta > 0:
+            self.inc()
+            update = True
+        if event.delta < 0:
+            self.dec()
+            update = True
+        if update:
+            self.draw()
+            routeWin.draw()
+
+    def mouse_wheelx(self, event):
+        # This is the Shift-MouseWheel event which is horizontal and will be used for fractions
+        newFrame = False
+        ctrl = self.keyname.split(':')[1]
+        if event.delta > 0:
+            if ctrl == "Feedback":
+                if self.fraction < 9:
+                    self.fraction = self.fraction + 1
+                    newFrame = True
+            elif ctrl == "Freq" or ctrl == "Ratio":
+                if self.fraction < 99:
+                    self.fraction = self.fraction + 1
+                    newFrame = True
+            elif ctrl == "Ratio":
+                if self.fraction < 99:
+                    self.fraction = self.fraction + 1
+                    newFrame = True
+            else:
+                self.inc()
+                newFrame = True
+        if event.delta < 0:
+            if ctrl == "Feedback" or ctrl == "Freq" or ctrl == "Ratio":
+                if self.fraction > 0:
+                    self.fraction = self.fraction - 1
+                    newFrame = True
+            else:
+                self.dec()
+                newFrame = True
+        if newFrame:
+            self.draw()
+            routeWin.draw()
+#
 # The main display is basically 5 rectangles:
 #
 #  OP1 | OP3 | M
