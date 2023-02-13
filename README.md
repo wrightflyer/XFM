@@ -145,6 +145,15 @@ Also in the .zip are some added support files:
 
 ### How to use
 
+Maybe start by taking a look at these two YouTube videos I made. One is a desktop capture (on a particularly big monitor) to try and explain the operation of the editor but just using files loaded/saved on disk (no MIDI connection to XFM):
+
+[![vid 1](readme_pics/vid_thumb_1.png)](https://youtu.be/i-gdSHQqYMY)
+
+The other tries to show the real-world situation of XFM, MIDI Interface and PC all connected but is a pretty dreadful video that has sound issues and times when the handheld camera isn't pointing at the right thing - one day it will be replaced with something a bit more professional!
+
+[![vid 2](readme_pics/vid_thumb_2.png)](https://youtu.be/UviOY5Qm6nM)
+
+
 When you run the editor the main screen with all the controls appears. During the loading process the program does a JSON load of the file called initpatch.json from disk and loads all the values it contains into each and every one of the controls. This even includes setting the four character name at the top right to be "TP01" which is what XFM  uses it if you ask it to "Init" a patch. The basic patch has very little set apart from OP1 output level set to 127 so it consists of nothing but OP1 playing to the output using the default sine wave at a x1.0 ratio.
 
 The editor is basically a whole load of knobs/sliders of which many have  very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click decreases the control by one step and right click increases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down to increase/decrease the control.
