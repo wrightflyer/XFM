@@ -978,10 +978,8 @@ class SetupWindow:
             return
         global portIn
         global portInOpen
-        #print("Opening input")
         if portInOpen:
             portIn.close()
-        #print("going to open: " + self.listbox.get(ANCHOR))
         portIn = mido.open_input(self.listbox.get(ANCHOR), callback=rxmsg)
         self.midiLabel.config(text = "MIDI IN port: " + self.listbox.get(ANCHOR))
         portInOpen = True
@@ -992,10 +990,8 @@ class SetupWindow:
             return
         global portOut
         global portOutOpen
-        #print("Opening output")
         if portOutOpen:
             portOut.close()
-        #print("going to open: " + self.listboxOut.get(ANCHOR))
         portOut = mido.open_output(self.listboxOut.get(ANCHOR))
         self.midiLabelOut.config(text = "MIDI OUT port: " + self.listboxOut.get(ANCHOR))
         portOutOpen = True
@@ -1016,7 +1012,8 @@ class SetupWindow:
 
     def LoadSyx(self, event):
         filename = fd.askopenfilename(title="Load Sysex file", filetypes=[("Sysex files", "*.syx")])
-        print(filename)
+        if settings["verbose"] == "true":
+            print(filename)
         with open(filename, 'rb') as f:
             bytes = f.read()
             loadRawBytes(bytes, False)
@@ -1077,7 +1074,8 @@ def decode_8bit(bytes, patch):
     else: # len is 0x18 so TPDT and rest of patch is 4 bytes further on
         payload = bytes[0x38:]
 
-    print_dump(payload)
+    if settings["verbose"] == "true":
+        print_dump(payload)
     patch["OP1"]['Feedback'] = (make_signed(payload[0x5C]) * 10) + make_signed(payload[0])
     patch["OP1"]['OP2In'] = payload[0x5D]
     patch["OP1"]['OP3In'] = payload[0x5E]
@@ -1218,6 +1216,8 @@ def decode_8bit(bytes, patch):
 # it wasn't possible to calculate CRC32. This will be changed to use 
 # proper (0 based) offsets and to create the FMTC/FMNM/TPDT headers in msg2
 def encode_bytes(patch):
+    doPrint = settings["verbose"] == "true"
+
     SOUND_LEGACY = 0
     SOUND_BANK = 1
     PATTERN = 2
@@ -1428,12 +1428,14 @@ def encode_bytes(patch):
     msg1 += b'\x01' # sequence number start=1, data=2, crc=3
     msg1 += SOUND.to_bytes(length = 4, byteorder = 'little')
     msg1 += size.to_bytes(length = 4, byteorder = 'little')
-    print("msg1 =")
-    print_dump(msg1)
+    if doPrint:
+        print("msg1 =")
+        print_dump(msg1)
     msg1_7bit = convert87(msg1) # this starts at byte 9 and splits into 7's with leading shift mask
     msg1_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
-    print("msg1 (7 bit)=")
-    print_dump(msg1_7bit)
+    if doPrint:
+        print("msg1 (7 bit)=")
+        print_dump(msg1_7bit)
     # by a strange quirk of fate when portOut.send() is used in Mido it will add leading/trailing
     # 0xF0 and 0xF7 but the message has already been constructed with these. So.... actually send
     # everything but the first / last byte
@@ -1468,12 +1470,14 @@ def encode_bytes(patch):
     msg2 += u32_0_le
     msg2 += u32_1_le
     msg2 += msg2payload
-    print("msg2 =")
-    print_dump(msg2)
+    if doPrint:
+        print("msg2 =")
+        print_dump(msg2)
     msg2_7bit = convert87(msg2)
     msg2_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
-    print("msg2 (7 bit)=")
-    print_dump(msg2_7bit)
+    if doPrint:
+        print("msg2 (7 bit)=")
+        print_dump(msg2_7bit)
     # following is just debug (so what would be sent can be reloaded via setup to test) but could be useful...
     with open("test.syx", "wb") as f:
         f.write(msg2_7bit)
@@ -1487,12 +1491,14 @@ def encode_bytes(patch):
     # CRC is everything in messag2 from byt 9 onwards
     crc_out = crc32(0, msg2[9:], len(msg2[9:]))
     msg3 += crc_out.to_bytes(length = 4, byteorder = 'little')
-    print("msg3 =")
-    print_dump(msg3)
+    if doPrint:
+        print("msg3 =")
+        print_dump(msg3)
     msg3_7bit = convert87(msg3)
     msg3_7bit += (0xF7).to_bytes(length = 1, byteorder = 'little')
-    print("msg3 (7 bit)=")
-    print_dump(msg3_7bit)
+    if doPrint:
+        print("msg3 (7 bit)=")
+        print_dump(msg3_7bit)
     if portOutOpen == True:
         stripped = msg3_7bit[1:-1]
         msg = mido.Message(type = 'sysex', data = stripped)
@@ -1571,17 +1577,21 @@ def crc32(crc, p, len):
 # the data into the editor controls (and also dumps data in various ways - both onscreen in "setup"
 # and to the console log.
 def loadRawBytes(bytes, possSaveJson):
+    doPrint = settings["verbose"] == "true"
+
     patch = { "Name" : "LOAD", "Pitch" : {}, "OP1" : {}, "OP2" : {}, "OP3" : {}, "OP4" : {}, "Mixer" : {}}
     # This sets the bytes into the "7 bit" dump area on the Setup scree
     setupWin.setBytes(bytes)
 
-    print("The raw 7bit sysex data")
-    print_dump(bytes)
+    if doPrint:
+        print("The raw 7bit sysex data")
+        print_dump(bytes)
 
     # convert 7 to 8 bit using every 8th byte as 7 shift masks
     data8 = convert78(bytes)
-    print("The converted 8bit data")
-    print_dump(data8)
+    if doPrint:
+        print("The converted 8bit data")
+        print_dump(data8)
 
     # this sets the converted to 8 bit bytes into the lower dump area on the setup screen
     setupWin.set8bytes(data8)
@@ -1606,7 +1616,8 @@ def loadRawBytes(bytes, possSaveJson):
 # anything that is not sysex and even if it is sysex it's only really interested in
 # packet 2 (the payload) and packet 3 (the little endian CRC32)
 def rxmsg(msg):
-    #print("type=", msg.type, "byte5=", msg.bytes()[8])
+    doPrint = settings["verbose"] == "true"
+
     # sound dump comes in 3 messages - look for the middle one with sequence number 2 (from 1, 2, 3)
     if msg.type == 'sysex' and msg.bytes()[8] == 2:
         bytes = msg.bytes()
@@ -1617,23 +1628,29 @@ def rxmsg(msg):
     if msg.type == 'sysex' and msg.bytes()[8] == 3:
         crc = convert78(msg.bytes())
         crchex = ""
-        print("CRC from XFM = ", end="")
+        if doPrint:
+            print("CRC from XFM = ", end="")
         for n in range(4):
             crchex = crchex + str(format(crc[3 - n], '02X'))
-            print(hex(crc[3 - n]), end=" ")
-        print()
+            if doPrint:
+                print(hex(crc[3 - n]), end=" ")
+        if doPrint:
+            print()
         setupWin.setCRC(crchex)
         setupWin.draw()
 
 # This loads a patch (dictionary / associative array) into the corresponding named
 # controls ready to start editing. The draw() method is called on each to draw up to date
 def loadCtrls(data):
+    doPrint = settings["verbose"] == "true"
     for i in data:
-        print("=====", i, "=====")
+        if doPrint:
+            print("=====", i, "=====")
         if (i != "Name"):
             for j in data[i]:
                 key = f'{i}:{j}'
-                print(f'{key} = ', data[i][j])
+                if doPrint:
+                    print(f'{key} = ', data[i][j])
                 valToSet = data[i][j]
                 if j == "Freq":
                     valToSet = (valToSet + 5) / 10 # so 4408 (for example) becomes 441
@@ -1652,14 +1669,17 @@ def loadCtrls(data):
             while n < len(data[i]):
                 withDot = False
                 key = f'{i}:chr{charCount}'
-                print(f'{key} =  {data[i][n]}', end="")
+                if doPrint:
+                    print(f'{key} =  {data[i][n]}', end="")
                 chrnum = ord(data[i][n])
                 if n < (len(data[i]) - 1):
                     if data[i][n + 1] == '.':
                         withDot = True
-                        print(".")
+                        if doPrint:
+                            print(".")
                     else:
-                        print()
+                        if doPrint:
+                            print()
                 if chrnum >= ord('A'):
                     chrnum = chrnum - ord('A') + 11 # 11 not 10 because ' '
                 elif chrnum == ord(' '):
@@ -1673,7 +1693,8 @@ def loadCtrls(data):
                 controllist[key][0].draw()
                 charCount = charCount + 1
                 n = n + 1
-            print()
+            if doPrint:
+                print()
         for j in ['OP1:', 'OP2:', 'OP3:', 'OP4:', 'Pitch:']:
             adsrs[j].draw()
 
@@ -1872,9 +1893,10 @@ setupWin.setPorts(inports)
 outports = mido.get_output_names()
 setupWin.setOutPorts(outports)
 
-if len(inports):
-    print("MIDI IN ports:", inports)
-if len(outports):
-    print("MIDI OUT ports:", outports)
+if settings["verbose"] == "true":
+    if len(inports):
+        print("MIDI IN ports:", inports)
+    if len(outports):
+        print("MIDI OUT ports:", outports)
 
 window.mainloop()

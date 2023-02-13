@@ -1,4 +1,12 @@
 {
-	"saveJSON" : "false",
-	"showOutlines" : "false"
+    "comment_general": "All options are 'true' or 'false'. BTW ignore these 'comment_XXX' entries - JSON has no other way to do comments!!",
+
+    "comment_saveJSON": "Start with save JSON ticked in Setup",
+    "saveJSON" : "false",
+
+    "comment_showOutlines": "Should the control animations have a white outline",
+    "showOutlines" : "false",
+
+    "comment_verbose": "Should various debug be printed to the text console",
+    "verbose" : "false"
 }
