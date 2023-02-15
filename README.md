@@ -158,6 +158,18 @@ When you run the editor the main screen with all the controls appears. During th
 
 The editor is basically a whole load of knobs/sliders of which many have  very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click decreases the control by one step and right click increases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down to increase/decrease the control.
 
-![](readme_pics/control1.png)
+![](readme_pics/control1.png)![](readme_pics/control2.png)
 
-There are three knobs (only two visible at any time) that behave a little different from all the others.
+There are three knobs (only two visible at any time) that behave a little different from all the others. These are the Ratio/Frequency and Feedback knobs at the upper right of each panel. For Frequency mouse drag up/down adjusts the upper 2 digits (hunderds/thousands) and mouse drag left/right adjusts the lower two digits. For Ratio and Feedback up/down adjusts the integer part and left/right adjusts the decimal fractional part.
+
+![](readme_pics/control3.png)
+
+The controls can be (and are more easily) adjusted my mouse-wheel movements too. The vertical scroll wheel will adjust the upper two digits (Frequency) or non-fractional part (Ratio / Feedback). 
+
+![](readme_pics/control5.png)
+
+A horizontal scroll wheel (justification for getting something like a Logitech MX Master mouse!) will adjust the lower two digits (Frequency) or the fractional part (Ratio / Feedback).
+
+![](readme_pics/control4.png)
+
+If using a mouse that only has a single scroll wheel then horizontal scroll wheel can be "simulated" by moving the vertical scroll wheel with Shift held down.
