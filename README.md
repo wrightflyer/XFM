@@ -5,7 +5,14 @@ So this is intended to be a patch editor for XFM. As users will know the on-boar
 
 The plan with this Python utility is to be able to see everything at once, as "visually" as possible. The aim is also that the interface to XFM itself be as seemless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor but once in the editor, as changes are made they should be automatically sent back.
 
-BUT STOP RIGHT THERE - so here is the current "problem" with this editor and the reason it's not "released" yet. When XFM sends a patch it sends three sysex messages. One is just a preamble, then there is the main body of the patch in the middle message, then finally the third message is some kind of CRC/hash to validate the data. This is fine if all you were doing is sending patches to a PC to be stored "as is" without changing them. You could then send the three messages back when you wanted to restore that patch. But if, while the patch is on the PC, you EDIT it then when you come to send it back the XFM will say "the payload does not match the CRC". What it actually says is "D.ERR" on the 4 characters. So for an editor to work it needs to recalculate the hash/checksum after changes. I've spoken to Sonicware about this. They couldn't give me the curret re-calculation algo but they have promised that XFM firmware will be updated to make it easier to upload changed patches. Until then this program is really just a *viewer* to see how patches saved out of XFM are constructed.
+Note that this editor MUST have latest firmware in the XFM. At time of writing (in fact on the day it was released) this means V3.0.46 but in any case it won't work if you have an older v2 version so go to the download section on the Sonicware site:
+
+[Sonicware Downloads](https://sonicware.jp/pages/downloads)
+
+and get version 3.0.46 or later. To install it into your XFM follow Chris Dodsworth's video here:
+
+[![How to Update the SONICWARE Liven Series](readme_pics/update.png)](https://youtu.be/bHxyV0qwFns)
+
 
 So on to the development...
 
@@ -133,11 +140,11 @@ To execute the program
 
 ### Download
 
-While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of pythong, the code itself, all the support libs it uses and builds them into one .exe file.
+While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of python, the code itself, all the support libs it uses and builds them into one .exe file.
 
 Also in the .zip are some added support files:
 
-**settings.json**: I mentioned this in the video, it's a very simple 2 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as Patch_<name>.json  
+**settings.json**: I mentioned this in the video, it's a very simple 3 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as Patch_<name>.json and a third allows you to add verbosity so that as things happen info will be output to the launch console if started from a Command Prompt.
 
 **initpatch.json**: this is simply a copy of the TP01 patch after I told XFM to "init" a patch being edited then extracted this from XFM. This is the first file the editor loads to ensure that all the controls start in the default state. It's also reloaded if you press "Init". If you wanted to set up a "template" so the editor always starts in the same place or returns to it when "Init" is pressed then either edit this file or just copy a JSON patch file you have extracted or worked on over the top of initpatch.json
 
@@ -153,14 +160,21 @@ The other tries to show the real-world situation of XFM, MIDI Interface and PC a
 
 [![vid 2](readme_pics/vid_thumb_2.png)](https://youtu.be/UviOY5Qm6nM)
 
-
 When you run the editor the main screen with all the controls appears. During the loading process the program does a JSON load of the file called initpatch.json from disk and loads all the values it contains into each and every one of the controls. This even includes setting the four character name at the top right to be "TP01" which is what XFM  uses it if you ask it to "Init" a patch. The basic patch has very little set apart from OP1 output level set to 127 so it consists of nothing but OP1 playing to the output using the default sine wave at a x1.0 ratio.
+
+The first thing you will need to do is connect two MIDI cables to XFM. On e plugged into its MIDI In and one into its MIDI Out. In the editor you need to find the set of buttons at the right hand side and press the one marked "Setup". Then in the two panels at the left where you will hopefully see the ports out to XFM and back in listed pick one in each box and click the "Open MIDI IN port" / "Open MIDI OUT port" buttons beneath each box. If you are only going to use the editor to view patches (and perhaps only have a single cable from XFM MIDI Out to the PC) then you only need to worry about setting the IN port and can ignore OUT. But if you plan to send edited patches back you will need two cables and to have opened ports in both directions.
+
+On the XFM, to send a patch it's best to put the editing overlay on top of XFM. You aren't necessarily going to edit on XFM but it reveals all important functions like MIDI export. Before you place the overlay press Function-Edit and then select the bank, followed by the patch you would like to work on (which could be one of the unused user patches).
+
+Once you are into EDIT mode on XFM you can then press the button marked "MIDI EXPORT" on the overlay and then the "OK" button. Assuming the right cable is in place and connected to the right port the name of the patch you started to edit and then chose to export on XFM should appear in the four characters at top right of the editor. You are now in business and ready to edit.
+
+![](readme_pics/setup_midi.png)
 
 The editor is basically a whole load of knobs/sliders of which many have  very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click decreases the control by one step and right click increases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down to increase/decrease the control.
 
 ![](readme_pics/control1.png)![](readme_pics/control2.png)
 
-There are three knobs (only two visible at any time) that behave a little different from all the others. These are the Ratio/Frequency and Feedback knobs at the upper right of each panel. For Frequency mouse drag up/down adjusts the upper 2 digits (hunderds/thousands) and mouse drag left/right adjusts the lower two digits. For Ratio and Feedback up/down adjusts the integer part and left/right adjusts the decimal fractional part.
+There are three knobs (only two visible at any time) that behave a little different from all the others. These are the Ratio/Frequency and Feedback knobs at the upper right of each panel. For Frequency mouse drag up/down adjusts the upper 2 digits (hundreds/thousands) and mouse drag left/right adjusts the lower two digits. For Ratio and Feedback up/down adjusts the integer part and left/right adjusts the decimal fractional part.
 
 ![](readme_pics/control3.png)
 
@@ -173,3 +187,7 @@ A horizontal scroll wheel (justification for getting something like a Logitech M
 ![](readme_pics/control4.png)
 
 If using a mouse that only has a single scroll wheel then horizontal scroll wheel can be "simulated" by moving the vertical scroll wheel with Shift held down.
+
+After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as yoiu send it.
+
+...more to come .. will talk about save/load JSON and other more technical stuff in the editor...
