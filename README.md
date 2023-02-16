@@ -47,9 +47,9 @@ On the XFM, to send a patch it's best to put the editing overlay on top of XFM. 
 
 Once you are into EDIT mode on XFM you can then press the button marked "MIDI EXPORT" on the overlay and then the "OK" button. Assuming the right cable is in place and connected to the right port the name of the patch you started to edit and then chose to export on XFM should appear in the four characters at top right of the editor. You are now in business and ready to edit.
 
-The editor is basically a whole load of knobs/sliders of which many have  very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click decreases the control by one step and right click increases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down to increase/decrease the control.
+The editor is basically a whole load of knobs/sliders of which many have very simple 0..127 setting range. The program is mouse operated so for the majority of the controls if you click on one and drag up/down or left/right it will increase/decrease the value shown. For more accurate control you can also adjust by clicking left/right mouse buttons where left click increases the control by one step and right click decreases it by one. The program also supports mouse wheel operation. So you can rotate mouse wheel up/down while hovering over a control to increase/decrease the control.
 
-![](readme_pics/control1.png)![](readme_pics/control2.png)
+![](readme_pics/control1.png)![](readme_pics/control2.png)![](readme_pics/control6.png)
 
 There are three knobs (only two visible at any time) that behave a little different from all the others. These are the Ratio/Frequency and Feedback knobs at the upper right of each panel. For Frequency mouse drag up/down adjusts the upper 2 digits (hundreds/thousands) and mouse drag left/right adjusts the lower two digits. For Ratio and Feedback up/down adjusts the integer part and left/right adjusts the decimal fractional part.
 
