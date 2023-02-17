@@ -1813,11 +1813,11 @@ def pollChanges():
     doSend = False
     for ctl in controllist:
         if controllist[ctl][0].testModified() == True:
-            print(ctl, "modified")
+            # print(ctl, "modified")
             doSend = True
     if doSend:
-        print(".. so would send now")
-        # sendPatch()
+        # print(".. so would send now")
+        sendPatch()
         for ctl in controllist:
             controllist[ctl][0].resetModified()
 

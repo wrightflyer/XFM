@@ -11,5 +11,5 @@
     "verbose" : "false",
 
     "comment_autosend": "After how many milliseconds to re-check for control updates and poss send. 0 = manual",
-    "autosend" : 1000
+    "autosend" : 0
 }
