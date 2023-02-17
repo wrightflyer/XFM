@@ -7,6 +7,8 @@ import json
 import mido
 import mido.backends.rtmidi
 
+VERSION = "1.01-beta1"
+
 portIn = None
 portInOpen = False
 portOut = None
@@ -532,7 +534,7 @@ class Anim:
 # so this class fills each with a similar textured, dark grey rectangles
 # image passed in as "img"
 class Backdrop:
-    def __init__(self, id, xpos, ypos, width, height, img, logo, xlog, ylog):
+    def __init__(self, id, xpos, ypos, width, height, img, logo, xlog, ylog, text=""):
         self.id = id
         self.width = width
         self.height = height
@@ -542,6 +544,8 @@ class Backdrop:
         self.canvas.place(x = xpos, y = ypos)
         self.canvas.create_image(0, 0, anchor=tk.NW, image = img)
         self.canvas.create_image(xlog, ylog, anchor=tk.NW, image = logo)
+        if len(text):
+            self.canvas.create_text(xlog + 170, ylog + (logo.height() - 20), anchor = tk.NW, text = "Ver:" + VERSION, fill = '#FFFFFF', font=('Helvetica','8'))
 
 # This opens a secondary window that attempts to do a Chris Dodsworth-esque rendition of how the
 # operators are interacting with one another and what, if anything they are sending to the
@@ -1847,7 +1851,8 @@ Backdrop("OP1", 0, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][0], 0, 8)
 Backdrop("OP2", 688, 0, 684, 460, backimg, ctrlimgs["op1_4"]["frames"][1], 0, 8)
 Backdrop("OP3", 0, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][2], 0, 8)
 Backdrop("OP4", 688, 462, 684, 462, backimg, ctrlimgs["op1_4"]["frames"][3], 0, 8)
-Backdrop("Master", 1375, 0, 340, 922, mstrimg, mainlogo, 15, 680)
+# optional last parameter passes text to be over-laid.
+Backdrop("Master", 1375, 0, 340, 922, mstrimg, mainlogo, 15, 680, VERSION)
 
 adsrs = {}
 # The five grey ADSR canvases
