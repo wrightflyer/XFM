@@ -279,6 +279,9 @@ class Anim:
         self.ctrl = ctrl
         self.index = 0
         self.fraction = 0
+        # these two will track previous so we know if it's time to send
+        self.prevIndex = 0
+        self.prevFraction = 0
         self.xpos = xpos
         self.ypos = ypos
         self.offset = offset # difference between 0 frame and lowest value (maybe -63 or -48 etc)
@@ -522,6 +525,19 @@ class Anim:
                 newFrame = True
         if newFrame:
             self.update_win_adsr()
+
+    def testModified(self):
+        retval = False
+        if self.index != self.prevIndex:
+            retval = True
+        if self.fraction != self.prevFraction:
+            retval = True
+        return retval
+
+    def resetModified(self):
+        self.prevIndex = self.index
+        self.prevFraction = self.fraction
+
 #
 # The main display is basically 5 rectangles:
 #
@@ -1792,7 +1808,22 @@ def setupButtonClick():
         setupWin.show()
     else:
         setupWin.hide()
-    
+
+def pollChanges():
+    doSend = False
+    for ctl in controllist:
+        if controllist[ctl][0].testModified() == True:
+            print(ctl, "modified")
+            doSend = True
+    if doSend:
+        print(".. so would send now")
+        # sendPatch()
+        for ctl in controllist:
+            controllist[ctl][0].resetModified()
+
+    # we're only in this function in the first place because this was non-0 ;-)
+    window.after(settings["autosend"], pollChanges)
+
 #============================= THE start ================================
 
 with open("settings.json") as f:
@@ -1892,6 +1923,8 @@ loadInitJson()
 # Now init values are set run throught the list and draw all animated controls
 for entry in controllist:
     controllist[entry][0].draw()
+    # part of "updated" tracking to decide when to Send patch
+    controllist[entry][0].resetModified()
 
 inports = mido.get_input_names()
 setupWin.setPorts(inports)
@@ -1903,5 +1936,9 @@ if settings["verbose"] == "true":
         print("MIDI IN ports:", inports)
     if len(outports):
         print("MIDI OUT ports:", outports)
+
+if settings["autosend"] != 0:
+    # first call starts this then each time it times-out it will restart itself
+    pollChanges()
 
 window.mainloop()
