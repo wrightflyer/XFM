@@ -3,7 +3,7 @@
 
 So this is intended to be a patch editor for XFM. As users will know the on-board editing in XFM, with the overlay, is quite a convoluted process because your only view of what is going on is through that four character 14-segment display so you can't "picture" the ADSR wave shapes or anything like that and you can only see the set value of **one** control at a time.
 
-The plan with this Python utility is to be able to see everything at once, as "visually" as possible. The aim is also that the interface to XFM itself be as seemless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor but once in the editor, as changes are made they should be automatically sent back. (that comes later - for now you have to manually trigger a send with "Send" in the editor)
+The plan with this Python utility is to be able to see everything at once, as "visually" as possible. The aim is also that the interface to XFM itself be as seemless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor but once in the editor, as changes are made they should be automatically sent back. 
 
 Note that this editor MUST have latest firmware in the XFM. At time of writing (in fact on the day it was released) this means V3.0.46 but in any case it won't work if you have an older V2 version so go to the download section on the Sonicware site:
 
@@ -19,7 +19,7 @@ While you can "git clone" this repository and "python xfm.py" to run the code (w
 
 Also in the .zip are some added support files:
 
-**settings.json**: I mentioned this in the video, it's a very simple 3 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as Patch_<name>.json and a third allows you to add verbosity so that as things happen info will be output to the launch console if started from a Command Prompt.
+**settings.json**: I mentioned this in the video, it's a very simple 3 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as PATCH_<name>.json and a third allows you to add verbosity so that as things happen info will be output to the launch console if started from a Command Prompt.
 
 **initpatch.json**: this is simply a copy of the TP01 patch after I told XFM to "init" a patch being edited then extracted this from XFM. This is the first file the editor loads to ensure that all the controls start in the default state. It's also reloaded if you press "Init". If you wanted to set up a "template" so the editor always starts in the same place or returns to it when "Init" is pressed then either edit this file or just copy a JSON patch file you have extracted or worked on over the top of initpatch.json
 
@@ -67,8 +67,187 @@ If using a mouse that only has a single scroll wheel then horizontal scroll whee
 
 After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as yoiu send it.
 
-...more to come .. will talk about save/load JSON and other more technical stuff in the editor...
+### Automatic transmission of changes
 
+In the settings.json file there is an entry for "autosend" that you will find set to 0 by default. This is both a "switch" and a configuration for a process that can moditor the editor and automatically send any updates back to XFM. The number is a value in milliseconds for how often the program should check the controls to see if anything has been changed. If set to 1000 (say) then the program will go round the 100-odd controls once a second and ask if any of them have seen an update since the last check. If one or more respond to say there's been a change then the program invokes the same process as if you manually pressed the "Send" button. Set the scan rate to something that works for you as to how often you want updates to be sent. I would not recommend anything below 1000 (apart from 0 to switch the entire process off and use manual only) as it could go a bit manic about sending change after change. With 1 second (or more) you can twiddle a few knobs, wait for that to be sent, then play XFM to hear the effect of your edits.
+
+### Issue reporting
+
+Note that if you have any issues or feature requests or you just need help  you can use this to log them:
+
+https://github.com/wrightflyer/XFM/issues
+
+but that does require you to have a github.com ID to be able to post. So failing that try the Sonicware groups on either Facebook or Reddit which I always monitor anyway.
+
+## JSON files
+
+In order to be able to save something you are working on, so you can some back to it later or perhaps because you have a patch that is *so good* you want to share it with others that have a copy of this editor the program allows you to save (and load) its current state as JSON files. There are buttons for "Save JSON" and "Load JSON" in the group of buttons to the right. 
+
+![](readme_pics/json_buttons.png)
+
+If you work on a patch then click/drag the four characters at the top right of the editor to set a name 
+
+![](readme_pics/name_chars.png)
+
+then click "Save JSON". You don't get a file dialog or anything like that for this - the program will simply save its current edit controls state as PATCH_{four characters}.JSON. So if you have set the patch name to "CJL1" it will save PATCH_CJL1.json to disk (and over-write anything already there that has that name - be careful!).
+
+For those that don't know, JSON looks like this:
+
+```
+D:\XFM>type PATCH_CJL1.json
+{
+    "Name": "CJL1",
+    "Pitch": {
+        "ALevel": -21,
+        "ATime": 37,
+        "DLevel": 26,
+        "DTime": 55,
+        "SLevel": -31,
+        "STime": 52,
+        "RLevel": -2,
+        "RTime": 45
+    },
+    "OP1": {
+        "Feedback": -210,
+        "OP2In": 38,
+        "OP3In": 14,
+        "OP4In": 85,
+        "Output": 127,
+        "PitchEnv": 0,
+        "Fixed": 0,
+        "Ratio": 819,
+        "Freq": 4400,
+        "Detune": 0,
+        "Level": 63,
+        "VelSens": 0,
+        "Time": 0,
+        "UpCurve": 0,
+        "DnCurve": 0,
+        "Scale": 3,
+        "ALevel": 61,
+        "ATime": 45,
+        "DLevel": 65,
+        "DTime": 49,
+        "SLevel": 32,
+        "STime": 0,
+        "RLevel": 0,
+        "RTime": 63,
+        "LGain": 0,
+        "RGain": 0,
+        "LCurve": 0,
+        "RCurve": 0
+    },  
+    etc
+```
+
+As you can see this is human-readable (and editable!) text so you can load any .json file into a text editor to look at it (even modify it). In fact you might have already done some JSON editing with settings.json to setup the program as you want.
+
+Now while you *can* edit JSON patch files I would not recommend it because there is nothing in the editor code to bounds-check the info it finds here to make sure everything falls within a control's range so "odd" things might happen if you load a file that has been changed with *funny* values. Because it's normally the program that writes the JSON files it already polices the controls so they can't go out of bounds so the JSON files it writes are bound to contain sensible values.
+
+If you are tempted to edit the files before load, then most things here have either a -64..+63 or 0..127 range (though some are -63..+63 and there's even -18..+18) but note the three "big" controls: Ratio, Feedback and Frequency. They have a slightly different encoding. Feedback is actually held as N * 10. So if the value is -18.2 it's actually held in the file as 10 times that (so no decimal) as 182. Similarly 76 would be 7.6. Rather curiously, even though the UI only allows Frequency to be set to integers in the range 1Hz to 9750Hz the value in the file is also * 10. So 440Hz (international A) appears in the file as 4400. 9750 would actually be 97500. So the bottom line for Frequency is "add another 0". Ratio is different - what is stored in the file is * 100 the actual value so an actual setting of 8.19 is held in the file as 819
+
+A possible future enhancement for the editor might be to have the JSON load code bounds check the values it find in the file. But for now all JSON load actually does is take a two part section name like "OP2""Atime" and put whatever number is in the file into the control that internally has that name. From the source code you can see the names it uses internally:
+```
+# following is list of all animated controls - a key name, a label, an anim to use and X/Y
+controls = {
+    "Name:chr0" :    [ "",          "chars",   1430, 10 ],
+    "Name:chr1" :    [ "",          "chars",   1430 + 64 - 8, 10 ],
+    "Name:chr2" :    [ "",          "chars",   1430 + ((64 - 8) * 2), 10 ],
+    "Name:chr3":     [ "",          "chars",   1430 + ((64 - 8) * 3), 10 ],
+
+    "OP1:Feedback" : [ "Feedback",  "blk128",    COL_FEEDBACK - 12, 10, -63 ],
+    "OP1:OP2In" :    [ "OP2 Input", "0to127",    COL_RATIO, 130 ],
+    "OP1:OP3In" :    [ "OP3 Input", "0to127",    COL_FEEDBACK, 130 ],
+    "OP1:OP4In" :    [ "OP4 Input", "0to127",    COL_RATIO, 220 ],
+    "OP1:Output" :   [ "Output",    "0to127",    COL_FEEDBACK, 220 ],
+    "OP1:PitchEnv" : [ "Pitch Env",  "on_off",   SWITCH_X + (2 * SWITCH_OFFX), SWITCH_Y ],
+    "OP1:Fixed" :    [ "Fixed",     "on_off",    SWITCH_X + (3 * SWITCH_OFFX), SWITCH_Y ],
+    # two controls - one location - what's displayed depends on Fixed On/Off
+    "OP1:Ratio" :    [ "Ratio",     "blk33",     COL_RATIO - 12, 10 ],#not 0to127 !
+    "OP1:Freq" :     [ "Frequency", "blk98",     COL_RATIO - 12, 10 ],#not 0to127 !
+    "OP1:Detune" :   [ "Detune",    "_63to63",   COL_DETUNE, 25, -63 ],
+    "OP1:Level" :    [ "Level",     "0to127",    COL_RATIO, 310 ],
+    "OP1:VelSens" :  [ "Velo Sens", "0to127",    COL_FEEDBACK, 310 ],
+    "OP1:Time" :     [ "TimeScale", "0to127",    COL_TIMESCALE, 130 ],
+    "OP1:UpCurve" :  [ "Up Curve",  "_18to18",   COL_DETUNE, 130, -18 ],
+    etc.
+
+```
+and those are the exact same names that are used in the JSON file (well part from "Name" which has special handling)
+
+At the bottom left of the Setup screen is a tick box (which is also influenced by the "saveJSON" entry in the settings.json file) that says whether the editor should save JSON patch files automatically on receipt from XFM. 
+
+![](readme_pics/save_json.png)
+
+So if this item is ticked and then you transmit the patch called "WGGL" from XFM then as the editor receives it, it will automatically write it to PATCH_WGGL.json on disk. My thinking behind this option was that if you wanted to automatically archive the patches in XFM you could ensure this option was ticked then just go through all the patches in XFM, one by one, and transmit them to the PC. You'd then find your disk stuffed with PATCH_WGGL.json, PATCH_ORG.1.json, PATCH_F.TRP.json, PATCH_PSYC.json and so on - then store them away somewhere safe so you can now go on to use the editor to wreck them all! ;-)
+
+## The Route window
+
+If you press the "Route" button (it's actually a toggle that will toggle it on/ off):
+
+![](readme_pics/route_but.png)
+
+then a window like this will appear either on top or (if you have the luxury of a proper wide monitor) alongside the main editor:
+
+![](readme_pics/route.png)
+
+That's a lot to take in at first sight but this is trying to give you an "overview picture" of how the four operators that make up the patch are interacting with each other and, ultimately, the "output". So there's a colour-coded box for each operator and I subtly coloured the OP labels in the main editing screen to match - they are also in the same ordinal position as the main editor layout.
+
+Notice the text along the bottom. If you just want the routes without the complexity of the value simply click the mouse anywhere in the window (it toggles between the two states). The simplified view is then:
+
+![](readme_pics/route2.png)
+
+In this simplified form only the absolute key detail (ratio or Frequency) is actually shown but notice the lines that run either between any two operators or those lines that "loopback" on themselves that go back into the same operator. The loopbacks are "Feedback". You probably know this but around 0 (no feedback) the shape of wave output by the operator is **Sine**. If the value is strongly positive (and in the editor I arbitrarily picked 32.0 for this) then the wave changes to **Square**. If it is strongly negative (again this is -32.0 as far as the editor is concerned) then it is **Sawtooth** and if it's in the last range of positive values from +63.0 to +64.0 then it is **Noise**. The routing diagram (with detail) has a small wave graphic to show which of these each of the four operators is set to.
+
+Also in the simplified diagram are lines between each operator. These are drawn with stipples so can be of varying "density" to try and reflect how strong that signal is. So if something is set to 10 (in a 0..127) range it will be very feint dots that are almost invisible to reflect that this path is not very strong. But if it is set all the way up at 127 then the line is almost totally solid to show it is a very strong signal (the default "TP01" patch basically just has one 127/strong path from OP1 to OUTPUT and nothing else)
+
+When the route diagram is in detailed mode then the source point of every line is annotated with its actual set value. In fact one way to know which direction a line is pointing (apart from the fact that they are supposed to have "arrow heads" - but it's subtle!) is that the *start* of each line is where it's value is shown.
+
+I like this routing diagram approach (more than all the editor controls in fact) because it is a very immediate way to answer the question "what's going on in this patch?". It's also a creative tool as you can maybe see "OP3 is not being sent anywhere - what if I set it's feedback to 64 (noise) and then route it at strength 20 (subtle) into OP1 and 2?"
+
+### ADSR controls (question for the audience!)
+
+As you probably know from using XFM already it has "odd" ADSR curves (quite "DX7 like" in fact) in that there aren't just 4 adjustments for ADSR but each point has a level and a time adjustment. I have tried to visualize this but I am ready to admit that I may have misinterpreted things and there's a better way to visualize them but I'll just describe what I am showing and someone can tell me where this is wrong...
+
+So the level and the time controls all have 0..127 ranges. Now the window where I show these in the program are 256 pixels wide and 128 pixels high (guess why I chose these dimensions!!) so for the vertical (level) position I simply take 0..127 and plot it "as is".
+
+For the horizontal position I imagine the 256 pixels broken into four areas that are each 64 pixels wide. So when a control is set to time=127 I start by halving it (63) then it's basically at the right edge of its 64 wide area and any lower value is to the left on that. But this does mean that if not all controls are wound up to 127 for "time" then there's going to be some "spare space" in that segment of the display. So what I actually do is work out how many pixels I am not using in each segment (so if Atime was 87 then there'd be 128-87 = 41 pixels not being used in A (20 after /2 because it's just 64 wide). Then add them all into the "sustain" part of the graph so it kind of "mops up the slack". It's why I draw that line dashed rather than solid. I don't know if this is actually a true representation or should it really only use Atime + Dtime + Stime + Rtime pixels across the graph and stop before the right hand edge? - I just thought it looked "messy" but perhaps it's actually the right thing to do?
+
+In fact I wonder if it helps to show this bit of the code...
+```
+    def update(self, at, al, dt, dl, st, sl, rt, rl):
+        # horizontally 128+128+128+128 is 512 but the window is only 256 wide
+        # so start by halving all the horizontal values (but just for display)
+        at = at / 2
+        dt = dt / 2
+        st = st / 2
+        rt = rt / 2
+        self.canvas.delete("adsrline")
+        ax = at
+        ay = 128 - al
+
+        dx = dt + ax
+        dy = 128 - dl
+
+        sx = st + dx
+        sy = 128 - sl
+
+        rx = rt + sx
+        ry = 128 - rl
+
+        padding = 256 - (at + dt + st + rt)
+
+        ystart = 128 # as Y coordinates start at top left this is bottom left pixel
+        if self.key == "Pitch:":
+            # pitch curve is -48..+48 bi-polar so start at mid height
+            ystart = 64
+        self.canvas.create_line(0, ystart, ax, ay, width=3, fill='#000CFF', tag="adsrline")
+        self.canvas.create_line(ax, ay, dx, dy, width=3, fill='#000CFF', tag="adsrline")
+        self.canvas.create_line(dx, dy, sx, sy, width=3, fill='#000CFF', tag="adsrline")
+        self.canvas.create_line(sx, sy, sx + padding, sy, width=3, dash=(3,1), fill='#000CFF', tag="adsrline")
+        self.canvas.create_line(sx + padding, sy, 256, ry, width=3, fill='#000CFF', tag="adsrline")
+```
+If anyone has a "better" way to approach that I am all ears!
 
 ## History of the development
 
