@@ -6,8 +6,9 @@ from PIL import Image, ImageTk
 import json
 import mido
 import mido.backends.rtmidi
+import random
 
-VERSION = "1.01-beta1"
+VERSION = "1.01-beta2"
 
 portIn = None
 portInOpen = False
@@ -593,6 +594,9 @@ class RouteWindow:
         self.routeWin.withdraw()
         self.Showing = False
 
+    def lift(self):
+        self.routeWin.lift()
+
     def toggleNums(self, event):
         if self.showNums == True:
             self.showNums = False
@@ -902,6 +906,9 @@ class SetupWindow:
     def hide(self):
         self.setupWin.withdraw()
         self.Showing = False
+
+    def lift(self):
+        self.setupWin.lift()
 
     def draw(self):
         if not self.Showing:
@@ -1801,13 +1808,13 @@ def routeButtonClick():
     if not routeWin.Showing:
         routeWin.show()
     else:
-        routeWin.hide()
+        routeWin.lift()
 
 def setupButtonClick():
     if not setupWin.Showing:
         setupWin.show()
     else:
-        setupWin.hide()
+        setupWin.lift()
 
 def pollChanges():
     doSend = False
@@ -1823,6 +1830,14 @@ def pollChanges():
 
     # we're only in this function in the first place because this was non-0 ;-)
     window.after(settings["autosend"], pollChanges)
+
+def randomPatch():
+    for ctl in controllist:
+        controllist[ctl][0].setValue(random.randint(0, 127))
+        controllist[ctl][0].make_inbounds()
+        controllist[ctl][0].draw()
+    for a in adsrs:
+        adsrs[a].draw()
 
 #============================= THE start ================================
 
@@ -1907,12 +1922,13 @@ routeWin = RouteWindow()
 
 setupWin = SetupWindow()
 
-PanelButton("Setup", 1580, 510, setupButtonClick)
-PanelButton("Init", 1650, 510, initJSON)
-PanelButton("Route", 1580, 560, routeButtonClick)
-PanelButton("Send", 1650, 560, sendPatch)
-PanelButton("Load\nJSON", 1580, 610, loadJSON)
-PanelButton("Save\nJSON", 1650, 610, saveJSON)
+PanelButton("Setup", 1580, 530, setupButtonClick)
+PanelButton("Init", 1650, 530, initJSON)
+PanelButton("Route", 1580, 580, routeButtonClick)
+PanelButton("Send", 1650, 580, sendPatch)
+PanelButton("Load\nJSON", 1580, 630, loadJSON)
+PanelButton("Save\nJSON", 1650, 630, saveJSON)
+PanelButton("Random", 1510, 630, randomPatch)
 
 # now all images/logos loaded back to the install directory where patches/etc will be
 os.chdir(cur_dir)
