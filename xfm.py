@@ -478,7 +478,16 @@ class Anim:
             self.inc()
             update = True
         if event.num == 3:
-            self.dec()
+            ctrl = self.keyname.split(':')[1]
+            if ctrl[:3] != "chr":
+                # right click on most controls is decrement by 1
+                self.dec()
+            else:
+                # but for name[] characters it is toggle the dot on/off
+                if self.index < 100:
+                    self.index = self.index + 100
+                else:
+                    self.index = self.index - 100
             update = True
         if update:
             self.update_win_adsr()
@@ -1737,7 +1746,7 @@ def readCtrls():
         if sect == "Name":
             dot  = False
             namechr = controllist[x][0].getValue()
-            if namechr > 100:
+            if namechr >= 100:
                 dot = True
                 namechr = namechr - 100
             if namechr < 10:
@@ -1820,10 +1829,8 @@ def pollChanges():
     doSend = False
     for ctl in controllist:
         if controllist[ctl][0].testModified() == True:
-            # print(ctl, "modified")
             doSend = True
     if doSend:
-        # print(".. so would send now")
         sendPatch()
         for ctl in controllist:
             controllist[ctl][0].resetModified()
