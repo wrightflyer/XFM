@@ -39,7 +39,7 @@ Any unused slots in a bank of 16 not listed there and all of banks BK30, BK31 an
 
 *saveJSON*: The first option will pre-tick the "save JSON" option on the Setup screen if this is "true". This means that each time a patch arrives from XFM it is saved as PATCH_\<name>.json. You can use this to save factory presets easily before you accidentally/deliberately destroy them! ;-)
 
-*showOutlines*: This will add white bounding rectangles to make the position of the controls/labels more obvious. It has this effect...
+*showOutlines*: This will add white bounding rectangles to make the position of the controls/labels more obvious. It has this effect (click picture to see a bigger version where the distinction is clearer)...
 
 ![Outlines](readme_pics/outlines.png)
 
@@ -101,7 +101,7 @@ A horizontal scroll wheel (justification for getting something like a Logitech M
 
 If using a mouse that only has a single scroll wheel then horizontal scroll wheel can be "simulated" by moving the vertical scroll wheel with Shift key on the keyboard held down.
 
-After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as yoiu send it.
+After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as you send it. If you have enabled auto-send you can still press Send to pre-empt it if you want an immediate update but if you only have it set to scan ever few seconds it might be easier just to wait for the automatic update. You can tell when the auto-update happens as noted above - the patch name will briefly appear on the XFM screen.
 
 ### Issue reporting
 
@@ -123,7 +123,7 @@ If you work on a patch then click/drag the four characters at the top right of t
 
 All the usual mouse controls work when adjusting these so you can drag up/down (or left/right if you prefer), You can use either mouse wheel and you can use left mouse clicks to increase characters one by one between 0..9, space, A..Z.
 
-**NOTE:** Just for these four controls the right mouse button does NOT step backwards between the characters. In fact it's the way you can add a dot after any of the characters. Right click toggles the dot on/off. Because right click does not have the usual function of stepping down by one as in other controls if you need to go "backwards" in the character sequence use drag/wheel movements then if you "over shoot" use left-click to advance back to where you want to be. Sorry about this but I couldn't think of anything better than right-click to switch dots on/off! ;-)
+**NOTE:** Just for these four controls the right mouse button does NOT step backwards between the characters. In fact it's the way you can add a dot after any of the characters. Right click toggles the dot on/off. Because right click does not have the usual function of stepping down by one, as in other controls, if you need to go "backwards" in the character sequence use drag/wheel movements then if you "over shoot" use left-click to advance back to where you want to be. Sorry about this but I couldn't think of anything better than right-click to switch dots on/off! ;-)
 
 Once you have set the four characters (+ any dots) then click "Save JSON". You don't get a file dialog or anything like that for this - the program will simply save its current edit controls state, in the current directory, as PATCH_\<four characters + dots>.JSON. So if you have set the patch name to "CJL1" it will save PATCH_CJL1.json to disk (and over-write anything already there that has that name - be careful!).
 
@@ -176,11 +176,11 @@ D:\XFM>type PATCH_CJL1.json
     etc
 ```
 
-As you can see this is human-readable (and editable!) text so you can load any .json file into a text editor to look at it (even modify it). In fact you might have already done some JSON editing with settings.json to setup the program as you want.
+As you can see this is human-readable (and editable!) text so you can load any .json file into a text editor to look at it (even modify it). In fact you might have already done some JSON editing with settings.json to setup the program as you want. When editing just change things on the right of ':' do NOT change the parameter names as these are a direct match to the names the editor assigns internally to each control.
 
-The controls in the program won't allow themselves to be set to any value out of range (to ensure the program doesn't ask to draw an animation frame that does not exist), so if you set a parameter that usually has a -18 .. +18 setting range to 12345 (say) then nothing will happen. The control will not change as it rejects the out of range 12345. Because it's normally the program itself that writes the JSON files it already polices the controls so they can't go out of bounds so the JSON files it writes are bound to contain sensible values - but you could edit in mad values and they will be treated with the scorn they deserve.
+The controls in the program won't allow themselves to be set to any value out of range (to ensure the program doesn't ask to draw an animation frame that does not exist), so if you set a parameter that usually has a -18 .. +18 setting range to 12345 (say) then nothing will happen when the JSON is read/loaded. The control will not change as it rejects the out of range 12345. Because it's normally the program itself that writes the JSON files it already polices the controls so they can't go out of bounds so the JSON files it writes are bound to contain sensible values - but you could edit in mad values and they will be treated with the scorn they deserve ;-)
 
-If you are tempted to edit the files before load, then most things here have either a -64..+63 or 0..127 range (though some are -63..+63 and there's even -18..+18 and the Scale Pos that displays as C1..C7 is actually 0..6 in the file) but note the three "big" controls: Ratio, Feedback and Frequency. They have a slightly different encoding. Feedback is actually held as N * 10 in the file. So if the value is -18.2 it's actually held in the file as 10 times that (so no decimal) as -182. Similarly 76 in the file would be 7.6 displayed. Rather curiously, even though the UI only allows Frequency to be set to integers in the range 1Hz to 9755Hz the value in the file is also * 10. So 440Hz (international A) appears in the file as 4400. 9755 would actually be 97550. So the bottom line for Frequency is "add another 0". Ratio is different - what is stored in the file is * 100 the actual value so an actual setting of 8.19 is held in the file as 819
+If you are tempted to edit the files before load, then most things here have either a -64..+63 or 0..127 range (though some are -63..+63 and there's even -18..+18 and the Scale Pos that displays as C1..C7 is actually 0..6 in the file) but note the three "big" controls: Ratio, Feedback and Frequency. They have a slightly different encoding. Feedback is actually held as N * 10 in the file. So if the value is -18.2 it's actually held in the file as 10 times that (so no decimal) as -182. Similarly 76 in the file would be 7.6 displayed. Rather curiously, even though the UI only allows Frequency to be set to integers in the range 1Hz to 9755Hz, the value in the file is also held * 10. So 440Hz (international A) appears in the file as 4400. 9755Hz would actually be 97550. So the bottom line for Frequency is "add another 0". Ratio is different - what is stored in the file is * 100 the actual value so an actual setting of 8.19 is held in the file as 819
 
 All JSON load actually does is take a two part section name like "OP2""Atime" and put whatever number is in the file into the control that internally has that name. From the source code you can see the names it uses internally:
 ```
@@ -211,11 +211,13 @@ controls = {
 ```
 and those are the exact same names that are used in the JSON file (well part from "Name" which has special handling)
 
+### Auto creation of JSON
+
 At the bottom left of the Setup screen is a tick box (which is also influenced by the "saveJSON" entry in the settings.json file) that says whether the editor should save JSON patch files automatically on receipt from XFM. 
 
 ![](readme_pics/save_json.png)
 
-So if this item is ticked and then you transmit the patch called "WGGL" from XFM then as the editor receives it, it will automatically write it to PATCH_WGGL.json on disk. My thinking behind this option was that if you wanted to automatically archive the patches in XFM you could ensure this option was ticked then just go through all the patches in XFM, one by one, and transmit them to the PC. You'd then find your disk stuffed with PATCH_WGGL.json, PATCH_ORG.1.json, PATCH_F.TRP.json, PATCH_PSYC.json and so on - then store them away somewhere safe so you can now go on to use the editor to wreck them all! ;-) In the ZIP file look at the "factory" directory and you will hopefully find copies of all the factory patches for XFM already extracted in this way. So even when not connected to XFM you can load in factory patches and have a nose around to see what their control settings and route window look like. Talking of route window...
+So if this item is ticked and then you transmit the patch called "WGGL" from XFM then as the editor receives it, it will automatically write it to PATCH_WGGL.json on disk. My thinking behind this option was that if you wanted to automatically archive the patches in XFM you could ensure this option was ticked then just go through all the patches in XFM, one by one, and transmit them to the PC. You'd then find your disk stuffed with PATCH_WGGL.json, PATCH_ORG.1.json, PATCH_F.TRP.json, PATCH_PSYC.json and so on - then store them away somewhere safe so you can now go on to use the editor to wreck them all! ;-) In the ZIP file look at the "factory" directory and you will hopefully find copies of all the [factory patches](https://github.com/wrightflyer/XFM/tree/master/factory) for XFM already extracted in this way. So even when not connected to XFM you can load in factory patches and have a nose around to see what their control settings and route window look like. Talking of route window...
 
 ## The Route window
 
