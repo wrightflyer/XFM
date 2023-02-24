@@ -1,9 +1,9 @@
 # XFM
 ## Sysex viewer/editor for Liven XFM
 
-So this is intended to be a patch editor for XFM. As users will know the on-board editing in XFM, with the overlay, is quite a convoluted process because your only view of what is going on is through that four character 14-segment display so you can't "picture" the ADSR wave shapes or anything like that and you can only see the set value of **one** control at a time.
+So this is intended to be a patch editor for XFM. As users will know the on-board editing in XFM, with the overlay, is quite a convoluted process because your only view of what is going on is through that four character 14-segment display so you can't "picture" the ADSR wave shapes or anything like that and you can only see the set value of **one** control at a time. As the buttons are over-loaded you also need to keep switching between page1/page2 to get the right function on some button.
 
-The plan with this Python utility is to be able to see everything at once, as "visually" as possible. The aim is also that the interface to XFM itself be as seemless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor but once in the editor, as changes are made they should be automatically sent back. 
+The plan with this Python utility is to be able to see everything at once, as "visually" as possible and one knob per control. The aim is also that the interface to XFM itself be as seamless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor to start working on something that already exists in XFM. But, once in the editor, as changes are made they should be automatically sent back (but read below about "autosend" in settings.json)
 
 Note that this editor MUST have latest firmware in the XFM. At time of writing (in fact on the day it was released) this means V3.0.46 but in any case it won't work if you have an older V2 version so go to the download section on the Sonicware site:
 
@@ -13,29 +13,65 @@ and get version 3.0.46 or later. To install it into your XFM follow Chris Dodswo
 
 [![How to Update the SONICWARE Liven Series](readme_pics/update.png)](https://youtu.be/bHxyV0qwFns)
 
+A video linked below also shows how to check that you have V3.0 firmware.
+
 ### Download
 
-While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code - see notes towards the end of this README) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of python, the code itself, all the support libs it uses and builds them into one .exe file.
+While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code - see notes towards the end of this README) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of python, the code itself, all the support libs it uses and builds them into one .exe file: xfm.exe
 
 Also in the .zip are some added support files:
 
-**settings.json**: I mentioned this in the video, it's a very simple 3 entry file. You can use Notepad or some other simple text editor to set either option "true" or "false". One will add white bounding rectangles to make the position of the controls/labels more obvious. The other will pre-tick the "save JSON" option on the Setup screen which means that each time a patch arrives from XFM it is saved as PATCH_<name>.json and a third allows you to add verbosity so that as things happen info will be output to the launch console if started from a Command Prompt.
+**README.mhtml** This is a file you can load into your favourite browser (Chrome, Firefox, Edge, etc) that is a "one-file" version of *this* text you are reading right now - so it is basically the user manual. Ignore this at your peril!
 
-**initpatch.json**: this is simply a copy of the TP01 patch after I told XFM to "init" a patch being edited then extracted this from XFM. This is the first file the editor loads to ensure that all the controls start in the default state. It's also reloaded if you press "Init". If you wanted to set up a "template" so the editor always starts in the same place or returns to it when "Init" is pressed then either edit this file or just copy a JSON patch file you have extracted or worked on over the top of initpatch.json
+**initpatch.json**: this is simply a copy of the TP01, default patch after I told XFM to "init" a patch being edited then extracted this from XFM. This is the first file the editor loads to ensure that all the controls start in the default state. It's also reloaded if you press "Init". If you wanted to set up a "template" so the editor always starts in the same place or returns to it when "Init" is pressed then either edit this file or just copy a JSON patch file you have extracted or worked on over the top of initpatch.json
 
-**images_animations/*.***: this is how the editor works - all the controls are just multi-frame PNG animation files and they are all stored in that images_animations/ sub-directory and are loaded at the very start when you first run the program. The pause as the program starts is because it's taking each of these and breaking each one into 100+ sub-images and storing them in a Python dictionary in memory. When you drag a control from value 37 to 56 or whatever all you are really doing is having it play animation frames 37 to 56. I created all the animations themselves using Knobman. I have half a mind to make a video explaining how the program works and how I wrote/engineered it and that will include details of Knobman (https://www.g200kg.com/jp/software/knobman.html). In theory this would allow anyone feeling "artistic" to create a new "skin" for the editor - giving it your own look and feel
+**images_animations/\*.***: this is core to how the editor works - all the controls are just multi-frame PNG animation files and they are all stored in that images_animations/ sub-directory and are loaded at the very start when you first run the program. The pause as the program starts is because it's taking each of these and breaking each one into 100+ sub-images and storing them in a Python dictionary in memory. When you drag a control from value 37 to 56 or whatever all you are really doing is having it play animation frames 37 to 56. I created all the animations themselves using Knobman. I have half a mind to make a video explaining how the program works and how I wrote/engineered it and that will include details of [Knobman](https://www.g200kg.com/jp/software/knobman.html). In theory this would allow anyone feeling "artistic" to create a new "skin" for the editor - giving it your own look and feel
 
-### How to use
+**stipple/\*.***: In the routing window the lines connecting the operators and OUTPUT are drawn in different densities to try and indicate how strong the signal path is. The density varies by using stipples (dot patterns of varying coverage). The files in this directory are the stipples used (and the images/program used to generate them)
 
-Maybe start by taking a look at these two YouTube videos I made. One is a desktop capture (on a particularly big monitor) to try and explain the operation of the editor but just using files loaded/saved on disk (no MIDI connection to XFM):
+**factory/\*.***: This is an entire collection of all the factory presets in XFM as .json files that can be loaded into the editor and sent to XFM. Use this to put back any patches you inadvertently stomp on. If you want to know the exact order of all the patches in all the banks see the files in [Preset files](https://github.com/wrightflyer/XFM/tree/master/XFM_preset_info) and, in particular:
+
+[List of Presets](https://github.com/wrightflyer/XFM/blob/master/XFM_preset_info/presets.csv)
+
+Any unused slots in a bank of 16 not listed there and all of banks BK30, BK31 and BK32 are simply padded out with up to sixteen TP01 .. TP16 patches. Note that in that chart the suffix "(dup)" means "duplicate". Almost all the patches in the first XFM1 and XFM2 banks (for example) are actually duplicates of patches found in other banks. For example "EP.1" (electric piano 1) appears half way through bank XFM1 but is also found as the first patch in the KEY1 bank too.
+
+**settings.json**: I mention this in the video linked below, it's a very simple 4 entry file. You can use Notepad or some other simple text editor to set most options "true" or "false":
+
+*saveJSON*: The first option will pre-tick the "save JSON" option on the Setup screen if this is "true". This means that each time a patch arrives from XFM it is saved as PATCH_\<name>.json. You can use this to save factory presets easily before you accidentally/deliberately destroy them! ;-)
+
+*showOutlines*: This will add white bounding rectangles to make the position of the controls/labels more obvious. It has this effect...
+
+![Outlines](readme_pics/outlines.png)
+
+*verbose*: The third option allows you to add verbosity so that as things happen info will be output to the launch console if started from a Command Prompt. 
+
+*autosend*: The fourth is quite important so warrants an entire section in this guide...
+
+### Automatically updating XFM
+
+The fourth entry in settings.json is "autosend". Unless I change my mind after writing this the value you will find there will be 0. That means that by default the auto-send feature is switched off. What auto-send can do for you is to repeatedly transmit the patch data back to XFM so that, as you make adjustments to the editor, the values are then sent back to XFM.
+
+Now you wouldn't want this to happen for every minute adjustment. Suppose you dragged a slider or rotated a control from 0 to 127. If the editor sent changed data for every small change then as it passed through 1, 2, 3, 4, ... 125, 126, 127 it would send an update - so 127 updates just for the change of one control.
+
+So I have written things so that controls "remember" if they have been adjusted. Then the auto-send is a *scan* that is made regularly to go round all the controls and ask "have you changed recently?". Once the scan is complete they are all told to erase their memory to wait for the next scan - if something is changed in the meantime they will remember. If, during the scan, even one control says "yes I have changed recently" then the editor sends the updated patch to XFM.
+
+The "autosend" variable in settings.json tells the editor how often it should perform the scan and is expressed in milliseconds (1/1000ths of a second). So if you set the value to 3000 it will perform the scan every 3 seconds and so on. In use I've found 3000 to be a fairly comfortable number to use. Obviously if you want XFM to respond to your edits quicker you could set it to a lower number but say you went all-in and set it to 1 then that means the scan would happen 1,000 times per second and we'd be back to that scenario when dragging a control from 0..127 might be caught 39 times between one end of the movement and the next - so updates would be sent to XFM 39 times just for one small movement. I hope you can see that you don't want that. On the other hand suppose you set it to 60000 where 60000ms is 60s which is a whole minute. If you did that then you could fiddle with controls in the editor but would then have to wait up to a whole minute before they became evident in XFM. So you need to pick a happy balance between responsiveness and silly transmission rates. Like I say I've found 3000 to be a pretty reasonable value. If I was to change I think I'd head in the even slower direction, like maybe 5000 rather than going for anything faster.
+
+By default auto-send is 0. That is a special value meaning "never scan/send". In this case to send patches you have to resort to the **Send** button and just do updates as and when you are ready
+
+### How to use the editor
+
+Maybe start by taking a look at these this YouTube videos I made. Make sure Closed Caption Subtitles are turned on because, after I posted the video, I added some corrections and additional information in the subtitles. (Youtube doesn't let you update the video itself once published - but you can post-edit the sub-titles)
+
+[![vid 1](readme_pics/vid_thumb_2.png)](https://youtu.be/xW3tTtv1Zck)
+
+A second, (earlier!), video is a desktop capture (on a particularly big monitor) to try and explain the operation of the editor but just using files loaded/saved on disk (no MIDI connection to XFM). Some of this is covered in that first video but if nothing else this video demonstrates why the world should all own Samsung 3440x1440 monitors!!:
 
 [![vid 1](readme_pics/vid_thumb_1.png)](https://youtu.be/i-gdSHQqYMY)
 
-The other tries to show the real-world situation of XFM, MIDI Interface and PC all connected but is a pretty dreadful video that has sound issues and times when the handheld camera isn't pointing at the right thing - one day it will be replaced with something a bit more professional!
-
-[![vid 2](readme_pics/vid_thumb_2.png)](https://youtu.be/UviOY5Qm6nM)
-
 When you run the editor the main screen with all the controls appears. During the loading process the program does a JSON load of the file called initpatch.json from disk and loads all the values it contains into each and every one of the controls. This even includes setting the four character name at the top right to be "TP01" which is what XFM  uses it if you ask it to "Init" a patch. The basic patch has very little set apart from OP1 output level set to 127 so it consists of nothing but OP1 playing to the output using the default sine wave at a x1.0 ratio.
+
+### Set MIDI ports
 
 The first thing you will need to do is connect two MIDI cables to XFM. One plugged into its MIDI In and one into its MIDI Out. In the editor you need to find the set of buttons at the right hand side and press the one marked "Setup". 
 
@@ -43,7 +79,7 @@ The first thing you will need to do is connect two MIDI cables to XFM. One plugg
 
 Then in the two panels at the left where you will hopefully see the ports out to XFM and back in listed pick one in each box and click the "Open MIDI IN port" / "Open MIDI OUT port" buttons beneath each box. If you are only going to use the editor to view patches (and perhaps only have a single cable from XFM MIDI Out to the PC) then you only need to worry about setting the IN port and can ignore OUT. But if you plan to send edited patches back you will need two cables and to have opened ports in both directions.
 
-On the XFM, to send a patch it's best to put the editing overlay on top of XFM. You aren't necessarily going to edit on XFM but it reveals all important functions like MIDI export. Before you place the overlay press Function-Edit and then select the bank, followed by the patch you would like to work on (which could be one of the unused user patches).
+On the XFM, to send a patch it's best to put the editing overlay on top of XFM. You aren't necessarily going to edit on XFM but it reveals all important functions like MIDI export. Before you place the overlay press Function-Edit and then select the bank (octave up/down buttons), followed by the patch you would like to work on (which could be one of the unused user patches) - use the value knob or the 16 step keys to pick the right patch within a bank. When you have got to a slot you want to work on then press OK and the display will briefly show "EDIT" to show you are now in edit mode for that patch.
 
 Once you are into EDIT mode on XFM you can then press the button marked "MIDI EXPORT" on the overlay and then the "OK" button. Assuming the right cable is in place and connected to the right port the name of the patch you started to edit and then chose to export on XFM should appear in the four characters at top right of the editor. You are now in business and ready to edit.
 
@@ -63,13 +99,9 @@ A horizontal scroll wheel (justification for getting something like a Logitech M
 
 ![](readme_pics/control4.png)
 
-If using a mouse that only has a single scroll wheel then horizontal scroll wheel can be "simulated" by moving the vertical scroll wheel with Shift held down.
+If using a mouse that only has a single scroll wheel then horizontal scroll wheel can be "simulated" by moving the vertical scroll wheel with Shift key on the keyboard held down.
 
 After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as yoiu send it.
-
-### Automatic transmission of changes
-
-In the settings.json file there is an entry for "autosend" that you will find set to 0 by default. This is both a "switch" and a configuration for a process that can moditor the editor and automatically send any updates back to XFM. The number is a value in milliseconds for how often the program should check the controls to see if anything has been changed. If set to 1000 (say) then the program will go round the 100-odd controls once a second and ask if any of them have seen an update since the last check. If one or more respond to say there's been a change then the program invokes the same process as if you manually pressed the "Send" button. Set the scan rate to something that works for you as to how often you want updates to be sent. I would not recommend anything below 1000 (apart from 0 to switch the entire process off and use manual only) as it could go a bit manic about sending change after change. With 1 second (or more) you can twiddle a few knobs, wait for that to be sent, then play XFM to hear the effect of your edits.
 
 ### Issue reporting
 
@@ -77,7 +109,7 @@ Note that if you have any issues or feature requests or you just need help  you 
 
 https://github.com/wrightflyer/XFM/issues
 
-but that does require you to have a github.com ID to be able to post. So failing that try the Sonicware groups on either Facebook or Reddit which I always monitor anyway.
+but that does require you to have a github.com ID to be able to post. So failing that try the Sonicware groups on either [Facebook](https://www.facebook.com/groups/sonicwareliven/) or [Reddit](https://www.reddit.com/r/sonicware/) which I always monitor anyway.
 
 ## JSON files
 
@@ -85,11 +117,15 @@ In order to be able to save something you are working on, so you can some back t
 
 ![](readme_pics/json_buttons.png)
 
-If you work on a patch then click/drag the four characters at the top right of the editor to set a name 
+If you work on a patch then click/drag the four characters at the top right of the editor to set a name. 
 
 ![](readme_pics/name_chars.png)
 
-then click "Save JSON". You don't get a file dialog or anything like that for this - the program will simply save its current edit controls state as PATCH_{four characters}.JSON. So if you have set the patch name to "CJL1" it will save PATCH_CJL1.json to disk (and over-write anything already there that has that name - be careful!).
+All the usual mouse controls work when adjusting these so you can drag up/down (or left/right if you prefer), You can use either mouse wheel and you can use left mouse clicks to increase characters one by one between 0..9, space, A..Z.
+
+**NOTE:** Just for these four controls the right mouse button does NOT step backwards between the characters. In fact it's the way you can add a dot after any of the characters. Right click toggles the dot on/off. Because right click does not have the usual function of stepping down by one as in other controls if you need to go "backwards" in the character sequence use drag/wheel movements then if you "over shoot" use left-click to advance back to where you want to be. Sorry about this but I couldn't think of anything better than right-click to switch dots on/off! ;-)
+
+Once you have set the four characters (+ any dots) then click "Save JSON". You don't get a file dialog or anything like that for this - the program will simply save its current edit controls state, in the current directory, as PATCH_\<four characters + dots>.JSON. So if you have set the patch name to "CJL1" it will save PATCH_CJL1.json to disk (and over-write anything already there that has that name - be careful!).
 
 For those that don't know, JSON looks like this:
 
@@ -142,11 +178,11 @@ D:\XFM>type PATCH_CJL1.json
 
 As you can see this is human-readable (and editable!) text so you can load any .json file into a text editor to look at it (even modify it). In fact you might have already done some JSON editing with settings.json to setup the program as you want.
 
-Now while you *can* edit JSON patch files I would not recommend it because there is nothing in the editor code to bounds-check the info it finds here to make sure everything falls within a control's range so "odd" things might happen if you load a file that has been changed with *funny* values. Because it's normally the program that writes the JSON files it already polices the controls so they can't go out of bounds so the JSON files it writes are bound to contain sensible values.
+The controls in the program won't allow themselves to be set to any value out of range (to ensure the program doesn't ask to draw an animation frame that does not exist), so if you set a parameter that usually has a -18 .. +18 setting range to 12345 (say) then nothing will happen. The control will not change as it rejects the out of range 12345. Because it's normally the program itself that writes the JSON files it already polices the controls so they can't go out of bounds so the JSON files it writes are bound to contain sensible values - but you could edit in mad values and they will be treated with the scorn they deserve.
 
-If you are tempted to edit the files before load, then most things here have either a -64..+63 or 0..127 range (though some are -63..+63 and there's even -18..+18) but note the three "big" controls: Ratio, Feedback and Frequency. They have a slightly different encoding. Feedback is actually held as N * 10. So if the value is -18.2 it's actually held in the file as 10 times that (so no decimal) as 182. Similarly 76 would be 7.6. Rather curiously, even though the UI only allows Frequency to be set to integers in the range 1Hz to 9750Hz the value in the file is also * 10. So 440Hz (international A) appears in the file as 4400. 9750 would actually be 97500. So the bottom line for Frequency is "add another 0". Ratio is different - what is stored in the file is * 100 the actual value so an actual setting of 8.19 is held in the file as 819
+If you are tempted to edit the files before load, then most things here have either a -64..+63 or 0..127 range (though some are -63..+63 and there's even -18..+18 and the Scale Pos that displays as C1..C7 is actually 0..6 in the file) but note the three "big" controls: Ratio, Feedback and Frequency. They have a slightly different encoding. Feedback is actually held as N * 10 in the file. So if the value is -18.2 it's actually held in the file as 10 times that (so no decimal) as -182. Similarly 76 in the file would be 7.6 displayed. Rather curiously, even though the UI only allows Frequency to be set to integers in the range 1Hz to 9755Hz the value in the file is also * 10. So 440Hz (international A) appears in the file as 4400. 9755 would actually be 97550. So the bottom line for Frequency is "add another 0". Ratio is different - what is stored in the file is * 100 the actual value so an actual setting of 8.19 is held in the file as 819
 
-A possible future enhancement for the editor might be to have the JSON load code bounds check the values it find in the file. But for now all JSON load actually does is take a two part section name like "OP2""Atime" and put whatever number is in the file into the control that internally has that name. From the source code you can see the names it uses internally:
+All JSON load actually does is take a two part section name like "OP2""Atime" and put whatever number is in the file into the control that internally has that name. From the source code you can see the names it uses internally:
 ```
 # following is list of all animated controls - a key name, a label, an anim to use and X/Y
 controls = {
@@ -179,11 +215,11 @@ At the bottom left of the Setup screen is a tick box (which is also influenced b
 
 ![](readme_pics/save_json.png)
 
-So if this item is ticked and then you transmit the patch called "WGGL" from XFM then as the editor receives it, it will automatically write it to PATCH_WGGL.json on disk. My thinking behind this option was that if you wanted to automatically archive the patches in XFM you could ensure this option was ticked then just go through all the patches in XFM, one by one, and transmit them to the PC. You'd then find your disk stuffed with PATCH_WGGL.json, PATCH_ORG.1.json, PATCH_F.TRP.json, PATCH_PSYC.json and so on - then store them away somewhere safe so you can now go on to use the editor to wreck them all! ;-)
+So if this item is ticked and then you transmit the patch called "WGGL" from XFM then as the editor receives it, it will automatically write it to PATCH_WGGL.json on disk. My thinking behind this option was that if you wanted to automatically archive the patches in XFM you could ensure this option was ticked then just go through all the patches in XFM, one by one, and transmit them to the PC. You'd then find your disk stuffed with PATCH_WGGL.json, PATCH_ORG.1.json, PATCH_F.TRP.json, PATCH_PSYC.json and so on - then store them away somewhere safe so you can now go on to use the editor to wreck them all! ;-) In the ZIP file look at the "factory" directory and you will hopefully find copies of all the factory patches for XFM already extracted in this way. So even when not connected to XFM you can load in factory patches and have a nose around to see what their control settings and route window look like. Talking of route window...
 
 ## The Route window
 
-If you press the "Route" button (it's actually a toggle that will toggle it on/ off):
+If you press the "Route" button (it's actually a "lift" button that will open it or bring it to the foreground if it's hidden under something else):
 
 ![](readme_pics/route_but.png)
 
@@ -197,7 +233,7 @@ Notice the text along the bottom. If you just want the routes without the comple
 
 ![](readme_pics/route2.png)
 
-In this simplified form only the absolute key detail (ratio or Frequency) is actually shown but notice the lines that run either between any two operators or those lines that "loopback" on themselves that go back into the same operator. The loopbacks are "Feedback". You probably know this but around 0 (no feedback) the shape of wave output by the operator is **Sine**. If the value is strongly positive (and in the editor I arbitrarily picked 32.0 for this) then the wave changes to **Square**. If it is strongly negative (again this is -32.0 as far as the editor is concerned) then it is **Sawtooth** and if it's in the last range of positive values from +63.0 to +64.0 then it is **Noise**. The routing diagram (with detail) has a small wave graphic to show which of these each of the four operators is set to.
+In this simplified form only the absolute key detail (ratio or Frequency) is actually shown but notice the lines that run either between any two operators or those lines that "loopback" on themselves that go back into the same operator. The loopbacks are "Feedback". You probably know this but around 0 (no feedback) the shape of wave output by the operator is **Sine**. If the value is strongly positive (and in the editor I arbitrarily picked 32.0 for this) then the wave changes to **Square**. If it is strongly negative (again this is -32.0 as far as the editor is concerned) then it is **Sawtooth** and if it's in the last range of positive values from +63.0 to +64.0 then it is **Noise**. The routing diagram (with detail) has a small wave graphic to show which of these each of the four operators is set to. It's just an icon though - it does not try to show the actually wave which morphs square-sine-saw-noise as the control is adjusted - maybe one day.
 
 Also in the simplified diagram are lines between each operator. These are drawn with stipples so can be of varying "density" to try and reflect how strong that signal is. So if something is set to 10 (in a 0..127) range it will be very feint dots that are almost invisible to reflect that this path is not very strong. But if it is set all the way up at 127 then the line is almost totally solid to show it is a very strong signal (the default "TP01" patch basically just has one 127/strong path from OP1 to OUTPUT and nothing else)
 
