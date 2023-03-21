@@ -8,7 +8,7 @@ import mido
 import mido.backends.rtmidi
 import random
 
-VERSION = "1.01-beta2"
+VERSION = "1.01-release"
 
 portIn = None
 portInOpen = False
