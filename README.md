@@ -5,6 +5,9 @@ So this is intended to be a patch editor for XFM. As users will know the on-boar
 
 The plan with this Python utility is to be able to see everything at once, as "visually" as possible and one knob per control. The aim is also that the interface to XFM itself be as seamless as possible. It's true that you will have to manually trigger a patch to be sent from XFM to the PC/editor to start working on something that already exists in XFM. But, once in the editor, as changes are made they should be automatically sent back (but read below about "autosend" in settings.json)
 
+
+### Making sure XFM firmware is up to date
+
 Note that this editor MUST have latest firmware in the XFM. At time of writing (in fact on the day it was released) this means V3.0.46 but in any case it won't work if you have an older V2 version so go to the download section on the Sonicware site:
 
 [Sonicware Downloads](https://sonicware.jp/pages/downloads)
@@ -13,11 +16,14 @@ and get version 3.0.46 or later. To install it into your XFM follow Chris Dodswo
 
 [![How to Update the SONICWARE Liven Series](readme_pics/update.png)](https://youtu.be/bHxyV0qwFns)
 
-A video linked below also shows how to check that you have V3.0 firmware.
+Later: Note that I also made a video (to try and help someone who was having issues) about how to check your current version then update to 3.0.46. That video is here:
 
-### Download
+[![Guide to check/update to 2.0.46](readme_pics/vid_thumb3.png)](https://www.youtube.com/watch?v=GjvfnhyQHYE)
 
-While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code - see notes towards the end of this README) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of python, the code itself, all the support libs it uses and builds them into one .exe file: xfm.exe
+
+## Download the Editor
+
+While you can "git clone" this repository and "python xfm.py" to run the code (which is what you would do if you plan to work on this and edit the .py code - see notes towards the end of this README) it is much easier if you simply want to "use" the program to select "Releases" on the right of this screen, pick the latest issued release and download the .zip file for it. The release .zip has been created using package.bat (in this repo) which in turn uses pyinstaller which gathers together a copy of python, the code itself, all the support libs it uses and builds them into one .exe file: **xfm.exe**
 
 Also in the .zip are some added support files:
 
@@ -31,11 +37,13 @@ Also in the .zip are some added support files:
 
 **factory/\*.***: This is an entire collection of all the factory presets in XFM as .json files that can be loaded into the editor and sent to XFM. Use this to put back any patches you inadvertently stomp on. If you want to know the exact order of all the patches in all the banks see the files in [Preset files](https://github.com/wrightflyer/XFM/tree/master/XFM_preset_info) and, in particular:
 
-[List of Presets](https://github.com/wrightflyer/XFM/blob/master/XFM_preset_info/presets.csv)
+[List of XFM factory Presets](https://github.com/wrightflyer/XFM/blob/master/XFM_preset_info/presets.csv)
 
 Any unused slots in a bank of 16 not listed there and all of banks BK30, BK31 and BK32 are simply padded out with up to sixteen TP01 .. TP16 patches. Note that in that chart the suffix "(dup)" means "duplicate". Almost all the patches in the first XFM1 and XFM2 banks (for example) are actually duplicates of patches found in other banks. For example "EP.1" (electric piano 1) appears half way through bank XFM1 but is also found as the first patch in the KEY1 bank too.
 
 **settings.json**: I mention this in the video linked below, it's a very simple 4 entry file. You can use Notepad or some other simple text editor to set most options "true" or "false":
+
+### Configuration options in settings.json
 
 *saveJSON*: The first option will pre-tick the "save JSON" option on the Setup screen if this is "true". This means that each time a patch arrives from XFM it is saved as PATCH_\<name>.json. You can use this to save factory presets easily before you accidentally/deliberately destroy them! ;-)
 
@@ -47,7 +55,7 @@ Any unused slots in a bank of 16 not listed there and all of banks BK30, BK31 an
 
 *autosend*: The fourth is quite important so warrants an entire section in this guide...
 
-### Automatically updating XFM
+## Automatically updating XFM
 
 The fourth entry in settings.json is "autosend". Unless I change my mind after writing this the value you will find there will be 0. That means that by default the auto-send feature is switched off. What auto-send can do for you is to repeatedly transmit the patch data back to XFM so that, as you make adjustments to the editor, the values are then sent back to XFM.
 
@@ -59,15 +67,15 @@ The "autosend" variable in settings.json tells the editor how often it should pe
 
 By default auto-send is 0. That is a special value meaning "never scan/send". In this case to send patches you have to resort to the **Send** button and just do updates as and when you are ready
 
-### How to use the editor
+## How to use the editor
 
 Maybe start by taking a look at these this YouTube videos I made. Make sure Closed Caption Subtitles are turned on because, after I posted the video, I added some corrections and additional information in the subtitles. (Youtube doesn't let you update the video itself once published - but you can post-edit the sub-titles)
 
-[![vid 1](readme_pics/vid_thumb_2.png)](https://youtu.be/xW3tTtv1Zck)
+[![Main tutorial video](readme_pics/vid_thumb_2.png)](https://youtu.be/xW3tTtv1Zck)
 
 A second, (earlier!), video is a desktop capture (on a particularly big monitor) to try and explain the operation of the editor but just using files loaded/saved on disk (no MIDI connection to XFM). Some of this is covered in that first video but if nothing else this video demonstrates why the world should all own Samsung 3440x1440 monitors!!:
 
-[![vid 1](readme_pics/vid_thumb_1.png)](https://youtu.be/i-gdSHQqYMY)
+[![Previous tutorial](readme_pics/vid_thumb_1.png)](https://youtu.be/i-gdSHQqYMY)
 
 When you run the editor the main screen with all the controls appears. During the loading process the program does a JSON load of the file called initpatch.json from disk and loads all the values it contains into each and every one of the controls. This even includes setting the four character name at the top right to be "TP01" which is what XFM  uses it if you ask it to "Init" a patch. The basic patch has very little set apart from OP1 output level set to 127 so it consists of nothing but OP1 playing to the output using the default sine wave at a x1.0 ratio.
 
@@ -103,7 +111,7 @@ If using a mouse that only has a single scroll wheel then horizontal scroll whee
 
 After you have modified the patch in the editor in some way(s) then in the collection of buttons at the right select "Send" and that will send the modified patch back to XFM. You can tell this has happened (apart from the fact that the sound should change when you play it!) by the fact that the four character name should briefly appear on the XFM screen just as you send it. If you have enabled auto-send you can still press Send to pre-empt it if you want an immediate update but if you only have it set to scan ever few seconds it might be easier just to wait for the automatic update. You can tell when the auto-update happens as noted above - the patch name will briefly appear on the XFM screen.
 
-### Issue reporting
+## Issue reporting
 
 Note that if you have any issues or feature requests or you just need help  you can use this to log them:
 
@@ -243,7 +251,7 @@ When the route diagram is in detailed mode then the source point of every line i
 
 I like this routing diagram approach (more than all the editor controls in fact) because it is a very immediate way to answer the question "what's going on in this patch?". It's also a creative tool as you can maybe see "OP3 is not being sent anywhere - what if I set it's feedback to 64 (noise) and then route it at strength 20 (subtle) into OP1 and 2?"
 
-### ADSR controls (question for the audience!)
+## ADSR controls (question for the audience!)
 
 As you probably know from using XFM already it has "odd" ADSR curves (quite "DX7 like" in fact) in that there aren't just 4 adjustments for ADSR but each point has a level and a time adjustment. I have tried to visualize this but I am ready to admit that I may have misinterpreted things and there's a better way to visualize them but I'll just describe what I am showing and someone can tell me where this is wrong...
 
